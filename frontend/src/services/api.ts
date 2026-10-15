@@ -183,3 +183,27 @@ export async function fetchItemById(id: string): Promise<StoredItemReport> {
 
   return normalizeItemReport(json.data as Record<string, unknown>);
 }
+
+/**
+ * Fetch explainable AI matches for a specific Lost item report.
+ */
+export async function fetchMatchesForItem(
+  id: string,
+  topK = 5
+): Promise<import("../types/item").MatchResponse> {
+  const res = await fetch(`${API_BASE}/api/items/${id}/matches?topK=${topK}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || `Failed to fetch AI matches for report ${id}`);
+  }
+
+  return json;
+}

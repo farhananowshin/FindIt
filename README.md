@@ -38,40 +38,38 @@ FindIt/
   - Multer multipart/form-data image upload (5MB limits, MIME validation).
   - REST endpoints: `POST /api/items`, `GET /api/items`, `GET /api/items/:id`, `GET /api/health`.
   - Frontend integration with live feed, live data refresh, and offline error states.
-- [ ] **Day 3: Multimodal AI Service (FastAPI)**
-  - OpenCLIP visual embedding pipeline.
-  - Sentence Transformers semantic text representation.
-  - Weighted matching algorithm (0.40 Visual, 0.25 Semantic, 0.15 Location, 0.10 Time, 0.10 Attributes).
-- [ ] **Day 4: Admin Verification & Explainability UI**
-  - Match score breakdown & transparent explanation cards.
-  - Human-in-the-loop admin verification dashboard.
+- [x] **Day 3: Multimodal AI Service & Explainable Matching Engine (FastAPI)**
+  - Python FastAPI microservice on port 8000 (`/health`, `/api/embed`, `/api/match`).
+  - OpenCLIP `ViT-B-32` image embeddings (512-dim, L2-normalized) with path traversal guards.
+  - Sentence Transformers `all-MiniLM-L6-v2` semantic text embeddings (384-dim, L2-normalized).
+  - 5-weight formula (0.40 Visual, 0.25 Text, 0.15 Location, 0.10 Time, 0.10 Attribute).
+  - Missing modality weight re-normalization: $W'_m = W_m / \sum W_{\text{available}}$.
+  - Express proxy bridge (`GET /api/items/:id/matches`).
+  - Frontend Explainable Matches Modal with 5-bar similarity breakdown and human-in-the-loop warning.
+- [ ] **Day 4: Admin Verification & Claims Dashboard**
+  - Claim management and ownership authentication workflow.
+  - Human security staff verification against secret details.
 - [ ] **Day 5: Dataset, Validation & Weight Grid Search**
   - 300–500 pair benchmark dataset.
   - Grid search evaluation script for Precision@K, Recall@K, and MRR.
 
 ---
 
-## 🚀 Quick Start Guide (Day 2)
+## 🚀 Quick Start Guide (Day 3: Full Stack + AI)
 
 ### 1. Prerequisites
 - **Node.js**: v18.0.0 or higher (Installed: `v24.18.0`)
-- **npm**: v9.0.0 or higher
+- **Python**: v3.10 to v3.13 (Installed: `3.13`)
 - **MongoDB**: A running local MongoDB instance (`mongodb://localhost:27017`) or a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) connection URI.
 
 ---
 
 ### 2. Verify MongoDB is Running
-On Windows, MongoDB runs as a background service. To check its status:
-1. Open PowerShell and run:
-   ```powershell
-   Get-Service -Name MongoDB
-   ```
-2. If the status says `Stopped`, start it with:
-   ```powershell
-   Start-Service -Name MongoDB
-   ```
-> [!NOTE]
-> If you are using a cloud MongoDB Atlas database, simply set `MONGODB_URI` in `backend/.env` to your Atlas connection string (e.g., `mongodb+srv://user:pass@cluster.mongodb.net/findit?retryWrites=true&w=majority`).
+On Windows, MongoDB runs as a background service:
+```powershell
+Get-Service -Name MongoDB
+# If Stopped, run: Start-Service -Name MongoDB
+```
 
 ---
 
@@ -79,41 +77,65 @@ On Windows, MongoDB runs as a background service. To check its status:
 1. Open a terminal and navigate to the `backend` folder:
    ```bash
    cd d:\my_all_project\FindIt\backend
-   ```
-2. Install backend dependencies (if not already installed):
-   ```bash
    npm install
-   ```
-3. Start the Express backend:
-   ```bash
    npm run dev
    ```
-   *The backend will start on **`http://localhost:5000`** and log:*
-   ```
-   🚀 [FindIt Server] Backend running on http://localhost:5000
-   📡 [FindIt Health] Healthcheck endpoint: http://localhost:5000/api/health
-   ✅ [MongoDB] Connected successfully to host: localhost
-   ```
+   *Express runs on **`http://localhost:5000`** with proxy route `/api/items/:id/matches`.*
 
 ---
 
-### 4. Start the Frontend Application (Terminal 2)
-1. Open a **second terminal** and navigate to the `frontend` folder:
+### 4. Start the Python AI Microservice (Terminal 2)
+1. Open a **second terminal** and navigate to the `ai-service` folder:
+   ```bash
+   cd d:\my_all_project\FindIt\ai-service
+   ```
+2. Activate the virtual environment:
+   ```bash
+   .venv\Scripts\activate
+   ```
+3. Start the FastAPI microservice:
+   ```bash
+   uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+   *FastAPI runs on **`http://localhost:8000`** and loads OpenCLIP (`ViT-B-32`) + Sentence Transformers (`all-MiniLM-L6-v2`).*
+
+---
+
+### 5. Start the Next.js Frontend (Terminal 3)
+1. Open a **third terminal** and navigate to the `frontend` folder:
    ```bash
    cd d:\my_all_project\FindIt\frontend
-   ```
-2. Install frontend dependencies (if not already installed):
-   ```bash
    npm install
-   ```
-3. Start the Next.js development server:
-   ```bash
    npm run dev
    ```
-4. Open your browser and navigate to:
-   ```
-   http://localhost:3000
-   ```
+2. Open your browser and navigate to **`http://localhost:3000`**.
+   - Browse the campus items list.
+   - Click **"Find AI Matches (5-Weight)"** on any Lost item to open the explainable match viewer.
+
+---
+
+## 🧠 Explainable Multimodal Matching Algorithm
+
+FindIt evaluates potential Lost & Found pairs across 5 independent modalities:
+
+$$\text{MatchScore} = \sum_{m \in M_{\text{available}}} W'_m \times S_m$$
+
+### 1. Modality Breakdown
+- **Visual Similarity ($W_{\text{vis}} = 0.40$)**: OpenCLIP `ViT-B-32` image embeddings (512-dim cosine similarity).
+- **Textual Similarity ($W_{\text{txt}} = 0.25$)**: Sentence Transformers `all-MiniLM-L6-v2` semantic description embeddings (384-dim cosine similarity).
+- **Location Proximity ($W_{\text{loc}} = 0.15$)**: Hierarchical campus zone matching (+0.70 same zone, +0.30 landmark overlap).
+- **Temporal Proximity ($W_{\text{time}} = 0.10$)**: Exponential decay with rate $\lambda = 0.10$ ($e^{-0.10 \times |\Delta \text{days}|}$).
+- **Attribute Overlap ($W_{\text{attr}} = 0.10$)**: Normalized category, brand, and color token intersection.
+
+### 2. Missing Modality Weight Re-normalization
+When an item has no photo, the visual modality is omitted and remaining weights dynamically scale up:
+
+$$W'_m = \frac{W_m}{\sum_{k \in M_{\text{available}}} W_k}$$
+
+This guarantees that effective weights always sum to **strictly 1.00 ($100\%$)** regardless of missing photos or descriptions.
+
+### 3. Human-In-The-Loop Safety Guard
+The AI matching engine produces **candidate recommendations only**. Campus security staff must authenticate physical possession and secret verification details prior to returning any lost item.
 
 ---
 

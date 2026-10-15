@@ -10,6 +10,7 @@ import {
   RefreshCw,
   AlertCircle,
   Database,
+  Sparkles,
 } from "lucide-react";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
 
@@ -19,6 +20,7 @@ interface RecentItemsListProps {
   error?: string | null;
   onRefresh?: () => void;
   isLive?: boolean;
+  onFindMatches?: (item: StoredItemReport) => void;
 }
 
 export default function RecentItemsList({
@@ -27,6 +29,7 @@ export default function RecentItemsList({
   error = null,
   onRefresh,
   isLive = false,
+  onFindMatches,
 }: RecentItemsListProps) {
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -326,6 +329,18 @@ export default function RecentItemsList({
                       </span>
                     </div>
                   </div>
+
+                  {/* Find AI Matches Button for Lost Items */}
+                  {isLost && onFindMatches && (
+                    <button
+                      type="button"
+                      onClick={() => onFindMatches(item)}
+                      className="mt-3 w-full py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50 hover:from-indigo-100 hover:to-violet-100 text-indigo-700 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-indigo-200/80 shadow-2xs cursor-pointer active:scale-98"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
+                      Find AI Matches (5-Weight)
+                    </button>
+                  )}
                 </div>
               </div>
             );

@@ -277,4 +277,75 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /api/items/:id/matches
+ * @desc    Proxy matching request to the FastAPI AI service (OpenCLIP + S-BERT)
+ * @access  Public
+ */
+router.get("/:id/matches", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const topK = req.query.topK ? parseInt(req.query.topK, 10) : 5;
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid item ID format: "${id}".`,
+      });
+    }
+
+    // Verify item exists and is a lost item
+    const item = await ItemReport.findById(id).lean();
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: `Item report with ID "${id}" was not found.`,
+      });
+    }
+
+    if (item.type !== "lost") {
+      return res.status(400).json({
+        success: false,
+        message: `Item "${id}" is of type "${item.type}". AI matching is initiated from Lost item reports.`,
+      });
+    }
+
+    // Call FastAPI AI service
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8000";
+    try {
+      const response = await fetch(`${aiServiceUrl}/api/match`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lostItemId: id, topK }),
+        signal: AbortSignal.timeout(15000), // 15s timeout
+      });
+
+      const aiResponse = await response.json();
+
+      if (!response.ok) {
+        return res.status(response.status).json({
+          success: false,
+          message: aiResponse.detail || "AI matching service encountered an error.",
+        });
+      }
+
+      return res.status(200).json(aiResponse);
+    } catch (fetchErr) {
+      console.error("❌ Failed to reach FastAPI AI service:", fetchErr.message);
+      return res.status(503).json({
+        success: false,
+        message:
+          "The Multimodal AI Matching Service (FastAPI) is currently offline or unreachable. Please verify it is running on port 8000.",
+      });
+    }
+  } catch (error) {
+    console.error("❌ Error in matches proxy route:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while retrieving matches.",
+    });
+  }
+});
+
 module.exports = router;

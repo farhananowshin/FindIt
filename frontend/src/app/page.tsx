@@ -6,6 +6,7 @@ import ItemUploadForm from "../components/ItemUploadForm";
 import RecentItemsList from "../components/RecentItemsList";
 import AdminPreview from "../components/AdminPreview";
 import WeightsModal from "../components/WeightsModal";
+import MatchesModal from "../components/MatchesModal";
 import Footer from "../components/Footer";
 import { SAMPLE_CAMPUS_ITEMS } from "../data/sampleItems";
 import { StoredItemReport } from "../types/item";
@@ -15,6 +16,7 @@ import { Sliders } from "lucide-react";
 export default function Home() {
   const [items, setItems] = useState<StoredItemReport[]>(SAMPLE_CAMPUS_ITEMS);
   const [isWeightsOpen, setIsWeightsOpen] = useState(false);
+  const [selectedLostItem, setSelectedLostItem] = useState<StoredItemReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -169,6 +171,7 @@ export default function Home() {
             error={error}
             onRefresh={handleRefresh}
             isLive={isLive}
+            onFindMatches={(item) => setSelectedLostItem(item)}
           />
 
           {/* Section 3: Explainability & Admin Verification Preview */}
@@ -180,6 +183,13 @@ export default function Home() {
       <WeightsModal
         isOpen={isWeightsOpen}
         onClose={() => setIsWeightsOpen(false)}
+      />
+
+      {/* Day 3 Explainable Multimodal Matches Modal */}
+      <MatchesModal
+        lostItem={selectedLostItem}
+        isOpen={Boolean(selectedLostItem)}
+        onClose={() => setSelectedLostItem(null)}
       />
 
       {/* University Footer */}

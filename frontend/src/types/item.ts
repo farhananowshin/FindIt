@@ -117,3 +117,40 @@ export const COMMON_COLORS = [
   { name: "Purple / Pink", hex: "#c026d3" },
   { name: "Orange", hex: "#ea580c" },
 ];
+
+export interface MatchCandidate {
+  itemId: string;
+  title: string;
+  category: string;
+  brand: string;
+  primaryColor: string;
+  campusZone: string;
+  specificLocation: string;
+  dateTime: string;
+  imageUrls: string[];
+  matchScore: number;
+  matchScoreNormalized: number;
+  scoreBreakdown: {
+    visual: number | null;
+    textual: number | null;
+    location: number | null;
+    time: number | null;
+    attribute: number | null;
+  };
+  effectiveWeights: { [key: string]: number };
+  availableModalities: string[];
+  unavailableModalities: string[];
+  explanation: string;
+  status: string;
+  verificationNotice: string;
+}
+
+export interface MatchResponse {
+  success: boolean;
+  sourceItemId: string;
+  sourceItemTitle: string;
+  totalCandidatesEvaluated: number;
+  matchesReturned?: number;
+  matches: MatchCandidate[];
+  message?: string;
+}
