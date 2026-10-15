@@ -1,0 +1,280 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const router = express.Router();
+const ItemReport = require("../models/ItemReport");
+const upload = require("../middleware/upload");
+
+/**
+ * Helper: parse location from either nested object, flat fields, or JSON string.
+ */
+function extractLocation(body) {
+  if (body.location) {
+    if (typeof body.location === "string") {
+      try {
+        return JSON.parse(body.location);
+      } catch (e) {
+        // Fallback if not valid JSON
+      }
+    } else if (typeof body.location === "object") {
+      return body.location;
+    }
+  }
+
+  // Fallback to flat fields from FormData
+  return {
+    campusZone: body.campusZone || body["location[campusZone]"] || body.campusLocation || "",
+    specificLocation: body.specificLocation || body["location[specificLocation]"] || "",
+  };
+}
+
+/**
+ * @route   POST /api/items
+ * @desc    Create a new lost or found item report (Supports JSON & multipart/form-data with images)
+ * @access  Public
+ */
+router.post(
+  "/",
+  (req, res, next) => {
+    // Multer middleware with custom error handling for size/type limits
+    upload.array("images", 4)(req, res, (err) => {
+      if (err) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({
+            success: false,
+            message: "File size exceeds the 5MB limit per image.",
+          });
+        }
+        if (err.code === "LIMIT_UNEXPECTED_FILE" || err.code === "LIMIT_FILE_COUNT") {
+          return res.status(400).json({
+            success: false,
+            message: "You can upload a maximum of 4 images.",
+          });
+        }
+        if (err.code === "INVALID_FILE_TYPE") {
+          return res.status(400).json({
+            success: false,
+            message: err.message,
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: `Upload error: ${err.message}`,
+        });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      const {
+        type,
+        reportType,
+        title,
+        category,
+        brand,
+        primaryColor,
+        secondaryColor,
+        description,
+        uniqueMarks,
+        secretVerificationDetail,
+        secretVerificationHint,
+        dateTime,
+        submitterName,
+        reporterName,
+        submitterStudentId,
+        studentId,
+        submitterEmail,
+        contactEmail,
+        submitterPhone,
+        contactPhone,
+        status,
+      } = req.body;
+
+      // Normalize field names (supporting both frontend form conventions and standard schema names)
+      const effectiveType = (type || reportType || "").toLowerCase();
+      const effectiveVerificationDetail = (secretVerificationDetail || secretVerificationHint || "").trim();
+      const effectiveSubmitterName = (submitterName || reporterName || "").trim();
+      const effectiveStudentId = (submitterStudentId || studentId || "").trim();
+      const effectiveEmail = (submitterEmail || contactEmail || "").trim();
+      const effectivePhone = (submitterPhone || contactPhone || "").trim();
+      const location = extractLocation(req.body);
+
+      // Process uploaded images
+      const imagePaths = [];
+      const imageUrls = [];
+      const protocol = req.protocol;
+      const host = req.get("host");
+
+      if (req.files && Array.isArray(req.files)) {
+        req.files.forEach((file) => {
+          imagePaths.push(`uploads/${file.filename}`);
+          // Publicly accessible URL served by Express
+          imageUrls.push(`${protocol}://${host}/uploads/${file.filename}`);
+        });
+      }
+
+      // Check for manually passed imageUrls if using JSON (e.g., seeding/testing)
+      if (req.body.imageUrls && Array.isArray(req.body.imageUrls)) {
+        imageUrls.push(...req.body.imageUrls);
+      }
+
+      // Instantiate Mongoose document
+      const itemData = {
+        type: effectiveType,
+        title: (title || "").trim(),
+        category: (category || "").toLowerCase().trim(),
+        brand: (brand || "").trim(),
+        primaryColor: (primaryColor || "Black").trim(),
+        secondaryColor: (secondaryColor || "None").trim(),
+        description: (description || "").trim(),
+        uniqueMarks: (uniqueMarks || "").trim(),
+        secretVerificationDetail: effectiveVerificationDetail,
+        location: {
+          campusZone: (location.campusZone || "").trim(),
+          specificLocation: (location.specificLocation || "").trim(),
+        },
+        dateTime: dateTime ? new Date(dateTime) : new Date(),
+        imagePaths,
+        imageUrls,
+        submitterName: effectiveSubmitterName,
+        submitterStudentId: effectiveStudentId,
+        submitterEmail: effectiveEmail,
+        submitterPhone: effectivePhone,
+        status: status || "active",
+      };
+
+      const newItem = new ItemReport(itemData);
+      const savedItem = await newItem.save();
+
+      // Ensure secret verification detail is removed from response payload
+      const responsePayload = savedItem.toObject();
+      delete responsePayload.secretVerificationDetail;
+
+      return res.status(201).json({
+        success: true,
+        message: "Item report created successfully.",
+        data: responsePayload,
+      });
+    } catch (error) {
+      console.error("❌ Error saving item report:", error);
+
+      // Handle Mongoose validation errors
+      if (error.name === "ValidationError") {
+        const messages = Object.values(error.errors).map((err) => err.message);
+        return res.status(400).json({
+          success: false,
+          message: "Validation Error",
+          errors: messages,
+        });
+      }
+
+      // Handle other server errors
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error while saving item report.",
+        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      });
+    }
+  }
+);
+
+/**
+ * @route   GET /api/items
+ * @desc    Fetch all item reports with optional filtering (type, category, status)
+ * @access  Public
+ */
+router.get("/", async (req, res) => {
+  try {
+    const { type, reportType, category, status, search } = req.query;
+    const query = {};
+
+    // Filter by type ('lost' | 'found')
+    const filterType = type || reportType;
+    if (filterType && filterType !== "all") {
+      query.type = filterType.toLowerCase();
+    }
+
+    // Filter by category
+    if (category && category !== "all") {
+      query.category = category.toLowerCase();
+    }
+
+    // Filter by status ('active', 'matched', 'claimed', 'resolved')
+    if (status && status !== "all") {
+      query.status = status.toLowerCase();
+    }
+
+    // Search in title, description, or brand
+    if (search && search.trim() !== "") {
+      const searchRegex = new RegExp(search.trim(), "i");
+      query.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { brand: searchRegex },
+      ];
+    }
+
+    // Fetch from MongoDB, sorting newest first, strictly excluding secretVerificationDetail
+    const items = await ItemReport.find(query)
+      .select("-secretVerificationDetail")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      count: items.length,
+      data: items,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching items:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch item reports.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+});
+
+/**
+ * @route   GET /api/items/:id
+ * @desc    Fetch a single item report by MongoDB ObjectId
+ * @access  Public
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid item ID format: "${id}". Must be a 24-character hexadecimal string.`,
+      });
+    }
+
+    const item = await ItemReport.findById(id)
+      .select("-secretVerificationDetail")
+      .lean();
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: `Item report with ID "${id}" was not found.`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: item,
+    });
+  } catch (error) {
+    console.error(`❌ Error fetching item ${req.params.id}:`, error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve item report.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+});
+
+module.exports = router;

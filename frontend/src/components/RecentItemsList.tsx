@@ -7,33 +7,50 @@ import {
   Clock,
   ImageIcon,
   HelpCircle,
+  RefreshCw,
+  AlertCircle,
+  Database,
 } from "lucide-react";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
 
 interface RecentItemsListProps {
   items: StoredItemReport[];
+  isLoading?: boolean;
+  error?: string | null;
+  onRefresh?: () => void;
+  isLive?: boolean;
 }
 
-export default function RecentItemsList({ items }: RecentItemsListProps) {
+export default function RecentItemsList({
+  items,
+  isLoading = false,
+  error = null,
+  onRefresh,
+  isLive = false,
+}: RecentItemsListProps) {
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const filteredItems = items.filter((item) => {
-    const matchesType = filterType === "all" || item.reportType === filterType;
+    const itemType = item.type || item.reportType;
+    const matchesType = filterType === "all" || itemType === filterType;
     const matchesSearch =
       searchQuery === "" ||
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.brand.toLowerCase().includes(searchQuery.toLowerCase());
+      (item.brand && item.brand.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory =
       selectedCategory === "all" || item.category === selectedCategory;
 
     return matchesType && matchesSearch && matchesCategory;
   });
 
-  const getLocationName = (id: string) => {
-    return CAMPUS_LOCATIONS.find((l) => l.id === id)?.name || id;
+  const getLocationName = (locationIdOrName: string) => {
+    return (
+      CAMPUS_LOCATIONS.find((l) => l.id === locationIdOrName)?.name ||
+      locationIdOrName
+    );
   };
 
   return (
@@ -45,52 +62,98 @@ export default function RecentItemsList({ items }: RecentItemsListProps) {
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
               Campus Feed
             </span>
-            <span className="text-xs text-slate-500 font-medium">
-              Live indexed reports: {items.length}
-            </span>
+            {isLive ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                MongoDB Live ({items.length})
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                <Database className="w-3 h-3" />
+                Local Mode
+              </span>
+            )}
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
             Recent Campus Lost & Found Reports
           </h2>
           <p className="text-sm text-slate-600 mt-1">
-            Browse recently reported items or test how reports are cataloged for the Day 3 AI matching engine.
+            Browse live reports stored in MongoDB or use filters to find your belongings.
           </p>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 self-start md:self-auto">
-          <button
-            onClick={() => setFilterType("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-              filterType === "all"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            All Items ({items.length})
-          </button>
-          <button
-            onClick={() => setFilterType("lost")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-              filterType === "lost"
-                ? "bg-rose-50 text-rose-700 shadow-xs font-bold"
-                : "text-slate-600 hover:text-rose-600"
-            }`}
-          >
-            Lost ({items.filter((i) => i.reportType === "lost").length})
-          </button>
-          <button
-            onClick={() => setFilterType("found")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-              filterType === "found"
-                ? "bg-emerald-50 text-emerald-700 shadow-xs font-bold"
-                : "text-slate-600 hover:text-emerald-600"
-            }`}
-          >
-            Found ({items.filter((i) => i.reportType === "found").length})
-          </button>
+        {/* Action Controls & Filter Tabs */}
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              disabled={isLoading}
+              title="Refresh reports from MongoDB"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-indigo-600" : ""}`} />
+              Refresh
+            </button>
+          )}
+
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <button
+              onClick={() => setFilterType("all")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                filterType === "all"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              All ({items.length})
+            </button>
+            <button
+              onClick={() => setFilterType("lost")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                filterType === "lost"
+                  ? "bg-rose-50 text-rose-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-rose-600"
+              }`}
+            >
+              Lost ({items.filter((i) => (i.type || i.reportType) === "lost").length})
+            </button>
+            <button
+              onClick={() => setFilterType("found")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                filterType === "found"
+                  ? "bg-emerald-50 text-emerald-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-emerald-600"
+              }`}
+            >
+              Found ({items.filter((i) => (i.type || i.reportType) === "found").length})
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Error state notification if backend is offline */}
+      {error && (
+        <div className="mt-4 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">Live Backend Unavailable:</span>
+              <p className="mt-0.5 text-amber-800">{error}</p>
+              <p className="mt-1 text-[11px] text-amber-700">
+                Displaying local preview data. Start the Express backend with <code className="font-mono bg-amber-100 px-1 py-0.5 rounded">npm run dev</code> in the backend folder to connect to MongoDB.
+              </p>
+            </div>
+          </div>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="px-3 py-1 bg-amber-200 hover:bg-amber-300 text-amber-900 rounded-lg font-medium text-xs shrink-0 transition"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Search and Secondary Filter Bar */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -121,31 +184,59 @@ export default function RecentItemsList({ items }: RecentItemsListProps) {
         </select>
       </div>
 
-      {/* Grid of Items */}
-      {filteredItems.length === 0 ? (
+      {/* Loading Skeleton */}
+      {isLoading && items.length === 0 ? (
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="rounded-2xl border border-slate-200 bg-white p-4 animate-pulse space-y-3">
+              <div className="h-44 bg-slate-200 rounded-xl" />
+              <div className="h-4 bg-slate-200 rounded w-3/4" />
+              <div className="h-3 bg-slate-200 rounded w-1/2" />
+              <div className="h-10 bg-slate-100 rounded" />
+            </div>
+          ))}
+        </div>
+      ) : filteredItems.length === 0 ? (
         <div className="mt-8 p-12 text-center rounded-2xl border-2 border-dashed border-slate-200 bg-white">
           <HelpCircle className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h4 className="text-base font-semibold text-slate-700">No matching reports found</h4>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            Try adjusting your search query or submit a new report using the form above.
+            Try adjusting your search query, selecting another category, or submit a new report using the form above.
           </p>
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredItems.map((item) => {
-            const isLost = item.reportType === "lost";
-            const hasImage = item.images && item.images.length > 0;
+            const isLost = (item.type || item.reportType) === "lost";
+            const imageUrl =
+              (item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0]) ||
+              (item.images && item.images.length > 0 && item.images[0].previewUrl) ||
+              null;
+            const imagesCount =
+              (item.imageUrls && item.imageUrls.length) ||
+              (item.images && item.images.length) ||
+              0;
+
+            const campusZone =
+              item.location?.campusZone ||
+              getLocationName(item.campusLocation);
+
+            const specificSpot =
+              item.location?.specificLocation ||
+              item.specificLocation;
+
+            const displayId = item._id || item.id;
 
             return (
               <div
-                key={item.id}
+                key={displayId}
                 className="group rounded-2xl border border-slate-200 bg-white shadow-xs hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col"
               >
                 {/* Image / Thumbnail Section */}
                 <div className="relative h-44 bg-slate-100 overflow-hidden flex items-center justify-center">
-                  {hasImage ? (
+                  {imageUrl ? (
                     <img
-                      src={item.images[0].previewUrl}
+                      src={imageUrl}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
@@ -154,7 +245,7 @@ export default function RecentItemsList({ items }: RecentItemsListProps) {
                       <ImageIcon className="w-10 h-10 mb-1 stroke-1" />
                       <span className="text-xs font-medium">No photo uploaded</span>
                       <span className="text-[10px] text-slate-500 mt-0.5">
-                        Matched via S-BERT text tokens
+                        Indexed via S-BERT text tokens
                       </span>
                     </div>
                   )}
@@ -170,15 +261,18 @@ export default function RecentItemsList({ items }: RecentItemsListProps) {
                     >
                       {isLost ? "Lost Item" : "Found Item"}
                     </span>
-                    {hasImage && item.images.length > 1 && (
+                    {imagesCount > 1 && (
                       <span className="px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-black/60 text-white backdrop-blur-xs">
-                        +{item.images.length - 1} more
+                        +{imagesCount - 1} more
                       </span>
                     )}
                   </div>
 
-                  <span className="absolute top-2.5 right-2.5 text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-white/90 backdrop-blur-xs text-slate-700 border border-slate-200 shadow-xs">
-                    {item.id}
+                  <span
+                    className="absolute top-2.5 right-2.5 text-[11px] font-mono font-medium px-2 py-0.5 rounded bg-white/90 backdrop-blur-xs text-slate-700 border border-slate-200 shadow-xs truncate max-w-[130px]"
+                    title={displayId}
+                  >
+                    #{displayId.slice(-6)}
                   </span>
                 </div>
 
@@ -220,12 +314,16 @@ export default function RecentItemsList({ items }: RecentItemsListProps) {
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                       <span className="truncate">
-                        {getLocationName(item.campusLocation)} — {item.specificLocation}
+                        {campusZone} {specificSpot ? `— ${specificSpot}` : ""}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{item.dateTime ? item.dateTime.replace("T", " ") : "Recently"}</span>
+                      <span>
+                        {item.dateTime
+                          ? item.dateTime.replace("T", " ").slice(0, 16)
+                          : "Recently reported"}
+                      </span>
                     </div>
                   </div>
                 </div>

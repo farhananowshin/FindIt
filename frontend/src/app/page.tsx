@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import ItemUploadForm from "../components/ItemUploadForm";
 import RecentItemsList from "../components/RecentItemsList";
@@ -9,14 +9,65 @@ import WeightsModal from "../components/WeightsModal";
 import Footer from "../components/Footer";
 import { SAMPLE_CAMPUS_ITEMS } from "../data/sampleItems";
 import { StoredItemReport } from "../types/item";
+import { fetchItems } from "../services/api";
 import { Sliders } from "lucide-react";
 
 export default function Home() {
   const [items, setItems] = useState<StoredItemReport[]>(SAMPLE_CAMPUS_ITEMS);
   const [isWeightsOpen, setIsWeightsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+
+  // Manual refresh handler
+  const handleRefresh = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const dbItems = await fetchItems();
+      if (dbItems && dbItems.length > 0) {
+        setItems(dbItems);
+      }
+      setIsLive(true);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to connect to backend server.";
+      setError(message);
+      setIsLive(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Initial load on mount
+  useEffect(() => {
+    let ignore = false;
+    fetchItems()
+      .then((dbItems) => {
+        if (!ignore) {
+          if (dbItems && dbItems.length > 0) {
+            setItems(dbItems);
+          }
+          setIsLive(true);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!ignore) {
+          const message =
+            err instanceof Error ? err.message : "Failed to connect to backend server.";
+          setError(message);
+          setIsLive(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const handleReportCreated = (newReport: StoredItemReport) => {
     setItems((prev) => [newReport, ...prev]);
+    setIsLive(true);
   };
 
   const scrollToSection = (id: string) => {
@@ -108,11 +159,17 @@ export default function Home() {
       {/* Main Content Area */}
       <main className="flex-1 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-          {/* Section 1: Item Upload Form (Day 1 Focus) */}
+          {/* Section 1: Item Upload Form (Connected to POST /api/items) */}
           <ItemUploadForm onReportCreated={handleReportCreated} />
 
-          {/* Section 2: Recent Campus Items Feed */}
-          <RecentItemsList items={items} />
+          {/* Section 2: Recent Campus Items Feed (Connected to GET /api/items) */}
+          <RecentItemsList
+            items={items}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={handleRefresh}
+            isLive={isLive}
+          />
 
           {/* Section 3: Explainability & Admin Verification Preview */}
           <AdminPreview />

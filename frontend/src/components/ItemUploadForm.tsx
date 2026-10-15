@@ -26,6 +26,7 @@ import {
   COMMON_COLORS,
   StoredItemReport,
 } from "../types/item";
+import { submitItemReport } from "../services/api";
 
 interface ItemUploadFormProps {
   onReportCreated?: (report: StoredItemReport) => void;
@@ -62,6 +63,7 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
   const [submissionStep, setSubmissionStep] = useState<string>("");
   const [submittedReport, setSubmittedReport] = useState<StoredItemReport | null>(null);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [serverError, setServerError] = useState<string | null>(null);
 
   // Image Upload Handlers
   const handleFiles = (files: FileList | null) => {
@@ -192,58 +194,76 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
     }
 
     setIsSubmitting(true);
+    setServerError(null);
 
-    // Realistic simulation of Multimodal AI steps for Day 1
-    setSubmissionStep("Validating multimodal payload...");
-    await new Promise((r) => setTimeout(r, 400));
+    try {
+      setSubmissionStep("Preparing multimodal payload & images...");
+      const formData = new FormData();
+      formData.append("type", reportType);
+      formData.append("title", title.trim());
+      formData.append("category", category);
+      formData.append("brand", brand.trim());
+      formData.append("primaryColor", primaryColor);
+      formData.append("secondaryColor", secondaryColor);
+      formData.append("campusLocation", campusLocation);
+      formData.append("specificLocation", specificLocation.trim());
+      formData.append("dateTime", dateTime || new Date().toISOString().slice(0, 16));
+      formData.append("description", description.trim());
+      formData.append("uniqueMarks", uniqueMarks.trim());
+      formData.append("secretVerificationDetail", secretVerificationHint.trim());
+      formData.append("submitterName", reporterName.trim());
+      formData.append("submitterStudentId", studentId.trim());
+      formData.append("submitterEmail", contactEmail.trim());
+      formData.append("submitterPhone", contactPhone.trim());
 
-    if (images.length > 0) {
-      setSubmissionStep("Preparing OpenCLIP vision tensor (512-dim embedding)...");
-      await new Promise((r) => setTimeout(r, 600));
-    } else {
-      setSubmissionStep("Image omitted: Switching to text-only semantic weighting...");
-      await new Promise((r) => setTimeout(r, 500));
-    }
+      // Append uploaded image files
+      images.forEach((img) => {
+        if (img.file) {
+          formData.append("images", img.file);
+        }
+      });
 
-    setSubmissionStep("Generating Sentence Transformers (all-MiniLM-L6-v2) embedding...");
-    await new Promise((r) => setTimeout(r, 500));
+      setSubmissionStep(
+        images.length > 0
+          ? `Uploading ${images.length} photo(s) & indexing in MongoDB...`
+          : "Indexing report in MongoDB..."
+      );
 
-    setSubmissionStep("Assigning campus spatiotemporal coordinates & indexing...");
-    await new Promise((r) => setTimeout(r, 400));
+      // Submit to Express REST backend (POST /api/items)
+      const savedReport = await submitItemReport(formData);
 
-    const newReport: StoredItemReport = {
-      id: `FIND-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      reportType,
-      title: title.trim(),
-      category,
-      brand: brand.trim(),
-      primaryColor,
-      secondaryColor,
-      campusLocation,
-      specificLocation: specificLocation.trim(),
-      dateTime: dateTime || new Date().toISOString().slice(0, 16),
-      description: description.trim(),
-      uniqueMarks: uniqueMarks.trim(),
-      secretVerificationHint: secretVerificationHint.trim(),
-      reporterName: reporterName.trim(),
-      studentId: studentId.trim(),
-      contactEmail: contactEmail.trim(),
-      contactPhone: contactPhone.trim(),
-      images,
-      createdAt: new Date().toISOString(),
-      status: "open",
-    };
+      setIsSubmitting(false);
+      setSubmittedReport(savedReport);
 
-    setIsSubmitting(false);
-    setSubmittedReport(newReport);
+      // Reset form inputs only after successful submission
+      setTitle("");
+      setBrand("");
+      setSpecificLocation("");
+      setDescription("");
+      setUniqueMarks("");
+      setSecretVerificationHint("");
+      setImages([]);
+      setFormErrors({});
+      setServerError(null);
 
-    if (onReportCreated) {
-      onReportCreated(newReport);
+      // Notify parent feed component
+      if (onReportCreated) {
+        onReportCreated(savedReport);
+      }
+    } catch (err: unknown) {
+      console.error("Submission failed:", err);
+      setIsSubmitting(false);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Could not connect to the backend server. Please verify Express is running on port 5000 and MongoDB is active.";
+      setServerError(message);
     }
   };
 
   const resetForm = () => {
     setSubmittedReport(null);
+    setServerError(null);
     setTitle("");
     setBrand("");
     setSpecificLocation("");
@@ -873,6 +893,20 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
               </div>
             </div>
           </div>
+
+          {/* Server Error Alert */}
+          {serverError && (
+            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Backend / Database Error:</span>
+                <p className="mt-0.5">{serverError}</p>
+                <p className="mt-1 text-[11px] text-rose-600">
+                  Tip: Ensure the Express backend is running on port 5000 (`npm run dev` in the backend folder) and MongoDB is active.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Submission Bar */}
           <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">

@@ -44,10 +44,40 @@ export interface ItemReportFormData {
   images: UploadedImage[];
 }
 
-export interface StoredItemReport extends ItemReportFormData {
+export interface StoredItemReport {
   id: string;
+  _id?: string;
+  type?: ReportType;
+  reportType: ReportType;
+  title: string;
+  category: ItemCategory;
+  brand: string;
+  primaryColor: string;
+  secondaryColor: string;
+  campusLocation: string;
+  specificLocation: string;
+  location?: {
+    campusZone: string;
+    specificLocation: string;
+  };
+  dateTime: string;
+  description: string;
+  uniqueMarks?: string;
+  secretVerificationHint?: string;
+  reporterName?: string;
+  submitterName?: string;
+  studentId?: string;
+  submitterStudentId?: string;
+  contactEmail?: string;
+  submitterEmail?: string;
+  contactPhone?: string;
+  submitterPhone?: string;
+  images: UploadedImage[];
+  imageUrls?: string[];
+  imagePaths?: string[];
   createdAt: string;
-  status: "open" | "under_review" | "matched" | "claimed";
+  updatedAt?: string;
+  status: "open" | "active" | "under_review" | "matched" | "claimed" | "resolved";
 }
 
 export const CAMPUS_LOCATIONS: CampusLocation[] = [
