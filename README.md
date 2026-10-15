@@ -39,7 +39,7 @@ FindIt/
   - REST endpoints: `POST /api/items`, `GET /api/items`, `GET /api/items/:id`, `GET /api/health`.
   - Frontend integration with live feed, live data refresh, and offline error states.
 - [x] **Day 3: Multimodal AI Service & Explainable Matching Engine (FastAPI)**
-  - Python FastAPI microservice on port 8000 (`/health`, `/api/embed`, `/api/match`).
+  - Python FastAPI microservice on port 8001 (`/health`, `/api/embed`, `/api/match`).
   - OpenCLIP `ViT-B-32` image embeddings (512-dim, L2-normalized) with path traversal guards.
   - Sentence Transformers `all-MiniLM-L6-v2` semantic text embeddings (384-dim, L2-normalized).
   - 5-weight formula (0.40 Visual, 0.25 Text, 0.15 Location, 0.10 Time, 0.10 Attribute).
@@ -95,9 +95,9 @@ Get-Service -Name MongoDB
    ```
 3. Start the FastAPI microservice:
    ```bash
-   uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+   uvicorn main:app --host 127.0.0.1 --port 8001 --reload
    ```
-   *FastAPI runs on **`http://localhost:8000`** and loads OpenCLIP (`ViT-B-32`) + Sentence Transformers (`all-MiniLM-L6-v2`).*
+   *FastAPI runs on **`http://localhost:8001`** and loads OpenCLIP (`ViT-B-32`) + Sentence Transformers (`all-MiniLM-L6-v2`).*
 
 ---
 

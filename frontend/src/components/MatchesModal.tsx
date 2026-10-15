@@ -156,9 +156,9 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
               </div>
               <p className="leading-relaxed">{error}</p>
               <div className="p-3 bg-white/80 rounded-xl border border-rose-200 font-mono text-[11px] text-slate-700">
-                💡 <strong>Troubleshooting:</strong> Ensure the FastAPI microservice is running on port 8000:
+                💡 <strong>Troubleshooting:</strong> Ensure the FastAPI microservice is running on port 8001:
                 <br />
-                <code>cd ai-service &amp;&amp; uvicorn main:app --reload --port 8000</code>
+                <code>cd ai-service &amp;&amp; uvicorn main:app --reload --port 8001</code>
               </div>
             </div>
           )}

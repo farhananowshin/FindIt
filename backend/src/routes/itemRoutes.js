@@ -312,7 +312,7 @@ router.get("/:id/matches", async (req, res) => {
     }
 
     // Call FastAPI AI service
-    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8000";
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
     try {
       const response = await fetch(`${aiServiceUrl}/api/match`, {
         method: "POST",
@@ -336,7 +336,7 @@ router.get("/:id/matches", async (req, res) => {
       return res.status(503).json({
         success: false,
         message:
-          "The Multimodal AI Matching Service (FastAPI) is currently offline or unreachable. Please verify it is running on port 8000.",
+          "The Multimodal AI Matching Service (FastAPI) is currently offline or unreachable. Please verify it is running on port 8001.",
       });
     }
   } catch (error) {
