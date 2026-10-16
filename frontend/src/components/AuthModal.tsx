@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X,
   Lock,
@@ -11,9 +11,15 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldCheck,
-  Sparkles,
   Zap,
   MapPin,
+  ArrowRight,
+  ArrowLeft,
+  Cpu,
+  Eye,
+  EyeOff,
+  Activity,
+  Layers,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -27,13 +33,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   const { login, register } = useAuth();
   const [tab, setTab] = useState<"login" | "register">(defaultTab);
 
-  React.useEffect(() => {
-    if (isOpen) {
-      setTab(defaultTab);
-      setError(null);
-      setSuccessMsg(null);
-    }
-  }, [isOpen, defaultTab]);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   // Form states
   const [email, setEmail] = useState("");
@@ -45,6 +46,95 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Canvas ref for dynamic neural constellation background
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTab(defaultTab);
+      setError(null);
+      setSuccessMsg(null);
+    }
+  }, [isOpen, defaultTab]);
+
+  // Dynamic interactive neural constellation canvas animation
+  useEffect(() => {
+    if (!isOpen) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = canvas.parentElement?.offsetWidth || 400);
+    let height = (canvas.height = canvas.parentElement?.offsetHeight || 600);
+
+    const resize = () => {
+      if (!canvas || !canvas.parentElement) return;
+      width = canvas.width = canvas.parentElement.offsetWidth;
+      height = canvas.height = canvas.parentElement.offsetHeight;
+    };
+    window.addEventListener("resize", resize);
+
+    // Neural nodes representing multimodal embedding tokens
+    const nodeCount = 26;
+    const nodes = Array.from({ length: nodeCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.7,
+      vy: (Math.random() - 0.5) * 0.7,
+      radius: Math.random() * 2 + 1.2,
+      isCyan: Math.random() > 0.45,
+    }));
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw connecting neural synapses
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 90) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            const alpha = 0.25 * (1 - dist / 90);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+            ctx.lineWidth = 0.85;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw pulsating nodes
+      for (const node of nodes) {
+        node.x += node.vx;
+        node.y += node.vy;
+        if (node.x < 0 || node.x > width) node.vx *= -1;
+        if (node.y < 0 || node.y > height) node.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx.fillStyle = node.isCyan ? "rgba(56, 189, 248, 0.85)" : "rgba(165, 180, 252, 0.85)";
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = node.isCyan ? "#38bdf8" : "#818cf8";
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isOpen, tab]);
 
   if (!isOpen) return null;
 
@@ -110,102 +200,50 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
     }
   };
 
+  const isLoginTab = tab === "login";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md transition-all animate-fadeIn">
-      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-700/60 overflow-hidden grid grid-cols-1 md:grid-cols-12 text-left">
-        {/* Left Column: Animated AI Security Showcase (5 Cols on md) */}
-        <div className="hidden md:flex md:col-span-5 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 flex-col justify-between text-white relative overflow-hidden border-r border-slate-800">
-          {/* Ambient Glows */}
-          <div className="absolute -top-12 -left-12 w-48 h-48 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md transition-all animate-fadeIn">
+      {/* Outer Modal Container */}
+      <div className="relative w-full max-w-4xl min-h-[620px] bg-slate-900 rounded-3xl shadow-2xl border border-slate-700/80 overflow-hidden flex flex-col md:flex-row text-left">
+        
+        {/* Global Modal Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-30 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-full transition cursor-pointer"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5" />
+        </button>
 
-          {/* Top Branding */}
-          <div className="relative z-10 space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Sylhet AI Portal
-            </div>
-            <h4 className="text-xl font-black tracking-tight text-white mt-1">
-              Find<span className="text-sky-400">It</span> Security
-            </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Sylhet Metropolitan Area Lost &amp; Found AI Infrastructure
-            </p>
-          </div>
-
-          {/* Centerpiece: Animated AI Security Scanner & Neural Mesh */}
-          <div className="relative z-10 py-6 text-center">
-            <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
-              {/* Pulsing radar rings */}
-              <div className="absolute inset-0 rounded-full bg-sky-500/10 animate-ping duration-1000" />
-              <div className="absolute -inset-2 rounded-full border border-sky-400/25 animate-spin duration-7000" />
-              <div className="absolute -inset-4 rounded-full border border-indigo-500/15" />
-
-              {/* Glowing Shield Center */}
-              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-[0_0_25px_rgba(99,102,241,0.6)]">
-                <ShieldCheck className="w-9 h-9 text-white animate-pulse" />
-              </div>
-            </div>
-
-            <p className="mt-3 text-xs font-bold text-slate-200">
-              Multimodal Verification Gate
-            </p>
-            <span className="text-[10px] text-slate-400 block mt-0.5">
-              OpenCLIP • S-BERT • Spatiotemporal
-            </span>
-          </div>
-
-          {/* Feature Badges */}
-          <div className="relative z-10 space-y-2 text-xs">
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900/70 border border-slate-800">
-              <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-              <span className="text-slate-300 text-[11px]">Vision &amp; Semantic Embeddings</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900/70 border border-slate-800">
-              <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="text-slate-300 text-[11px]">Confidential Proof Verification</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900/70 border border-slate-800">
-              <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-              <span className="text-slate-300 text-[11px]">Transit Hubs &amp; Campus Coverage</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Interactive Form Panel (7 Cols on md) */}
-        <div className="md:col-span-7 flex flex-col justify-between p-6 sm:p-7 relative bg-white">
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {/* Header */}
+        {/* ======================================================== */}
+        {/* LEFT FORM PANE: Sign In Form (Visible when overlay is on right) */}
+        {/* ======================================================== */}
+        <div
+          className={`w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between bg-slate-900 text-white transition-opacity duration-500 ${
+            !isLoginTab ? "md:opacity-40" : "opacity-100"
+          } ${isLoginTab ? "block" : "hidden md:flex"}`}
+        >
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                {tab === "login" ? "Account Access" : "New Registration"}
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                Sylhet Portal
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              {tab === "login" ? "Sign In to FindIt" : "Create FindIt Account"}
+            <h3 className="text-2xl font-black text-white tracking-tight mt-1">
+              Sign In to Find<span className="text-sky-400">It</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Sylhet Metropolitan Area Identity &amp; Verification
+            <p className="text-xs text-slate-400 mt-0.5">
+              Access your reported items and confidential match verifications
             </p>
 
-            {/* Tab Switcher */}
-            <div className="flex p-1 mt-4 bg-slate-100 rounded-2xl border border-slate-200">
+            {/* Mobile Tab Toggle */}
+            <div className="flex md:hidden p-1 mt-4 bg-slate-800 rounded-xl border border-slate-700">
               <button
                 type="button"
                 onClick={() => handleTabChange("login")}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition cursor-pointer ${
-                  tab === "login"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
+                  tab === "login" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
                 }`}
               >
                 Sign In
@@ -213,65 +251,78 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <button
                 type="button"
                 onClick={() => handleTabChange("register")}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition cursor-pointer ${
-                  tab === "register"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
+                  tab === "register" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
                 }`}
               >
-                Create Account (Citizen / Student)
+                Create Account
               </button>
             </div>
-          </div>
 
-          {/* Alerts */}
-          {error && (
-            <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
-              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+            {/* Alerts */}
+            {error && isLoginTab && (
+              <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-200 text-xs">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
 
-          {successMsg && (
-            <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>{successMsg}</span>
-            </div>
-          )}
+            {successMsg && isLoginTab && (
+              <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 text-xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
 
-          {/* Forms */}
-          {tab === "login" ? (
+            {/* Sign In Form */}
             <form onSubmit={handleLogin} className="mt-4 space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-300 mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your.email@gmail.com or admin@campus.edu"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-300">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer transition"
+                  >
+                    {showLoginPassword ? (
+                      <>
+                        <EyeOff className="w-3 h-3" /> Hide
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3 h-3" /> Show
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
-                    type="password"
+                    type={showLoginPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    className="w-full pl-10 pr-10 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-inner"
                   />
                 </div>
               </div>
@@ -279,7 +330,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 via-indigo-600 to-violet-600 hover:from-sky-400 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -287,136 +338,217 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                     <span>Signing In...</span>
                   </>
                 ) : (
-                  "Sign In to FindIt"
+                  <>
+                    <span>Sign In to FindIt</span>
+                    <ArrowRight className="w-4 h-4 text-sky-200" />
+                  </>
                 )}
               </button>
-
-              {/* 1-Click Quick Demo Login Credentials for Defense & Testing */}
-              <div className="pt-3 border-t border-slate-100">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                  1-Click Demo Credentials (Defense &amp; Testing)
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("admin@campus.edu");
-                      setPassword("admin123");
-                    }}
-                    className="py-1.5 px-2 rounded-xl border border-amber-500/30 bg-amber-50/70 hover:bg-amber-100/90 text-[11px] font-extrabold text-amber-900 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <Zap className="w-3 h-3 text-amber-600" />
-                    ⚡ Fill Demo Admin
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail("student@campus.edu");
-                      setPassword("student123");
-                    }}
-                    className="py-1.5 px-2 rounded-xl border border-indigo-500/30 bg-indigo-50/70 hover:bg-indigo-100/90 text-[11px] font-extrabold text-indigo-900 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                  >
-                    <User className="w-3 h-3 text-indigo-600" />
-                    🎓 Fill Demo Citizen
-                  </button>
-                </div>
-              </div>
             </form>
-          ) : (
-            <form onSubmit={handleRegister} className="mt-4 space-y-3">
+          </div>
+
+          {/* Quick 1-Click Demo Credentials */}
+          <div className="pt-4 border-t border-slate-800/80 mt-4">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+              ⚡ 1-Click Demo Credentials (Defense &amp; Testing)
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("admin@campus.edu");
+                  setPassword("admin123");
+                }}
+                className="py-1.5 px-2 rounded-xl border border-amber-500/30 bg-amber-950/40 hover:bg-amber-900/50 text-[11px] font-extrabold text-amber-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Zap className="w-3 h-3 text-amber-400" />
+                Fill Demo Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("student@campus.edu");
+                  setPassword("student123");
+                }}
+                className="py-1.5 px-2 rounded-xl border border-indigo-500/30 bg-indigo-950/40 hover:bg-indigo-900/50 text-[11px] font-extrabold text-indigo-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <User className="w-3 h-3 text-indigo-400" />
+                Fill Demo Citizen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* RIGHT FORM PANE: Create Account Form (Visible when overlay is on left) */}
+        {/* ======================================================== */}
+        <div
+          className={`w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between bg-slate-900 text-white transition-opacity duration-500 ${
+            isLoginTab ? "md:opacity-40" : "opacity-100"
+          } ${!isLoginTab ? "block" : "hidden md:flex"}`}
+        >
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                Citizen &amp; Student
+              </span>
+            </div>
+            <h3 className="text-2xl font-black text-white tracking-tight mt-1">
+              Create Find<span className="text-sky-400">It</span> Account
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Sylhet Metropolitan Area Identity &amp; Verification
+            </p>
+
+            {/* Mobile Tab Toggle */}
+            <div className="flex md:hidden p-1 mt-4 bg-slate-800 rounded-xl border border-slate-700">
+              <button
+                type="button"
+                onClick={() => handleTabChange("login")}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
+                  tab === "login" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange("register")}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
+                  tab === "register" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
+                }`}
+              >
+                Create Account
+              </button>
+            </div>
+
+            {/* Alerts */}
+            {error && !isLoginTab && (
+              <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-200 text-xs">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && !isLoginTab && (
+              <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 text-xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {/* Register Form */}
+            <form onSubmit={handleRegister} className="mt-3 space-y-2.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-300 mb-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Tanvir Ahmed"
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Student ID / NID (Optional)
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Student ID / NID
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                     <input
                       type="text"
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      placeholder="e.g. 2026-CSE or NID"
-                      className="w-full pl-9 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                      placeholder="2026-CSE / NID"
+                      className="w-full pl-8 pr-2 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
                     Phone (Optional)
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="e.g. 01711-XXXXXX"
-                      className="w-full pl-9 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                      placeholder="01711-XXXXXX"
+                      className="w-full pl-8 pr-2 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-300 mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. your.email@gmail.com"
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    placeholder="your.email@gmail.com"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Create Password (min 6 characters)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-300">
+                    Create Password (min 6 chars)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                    className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer transition"
+                  >
+                    {showRegisterPassword ? (
+                      <>
+                        <EyeOff className="w-3 h-3" /> Hide
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3 h-3" /> Show
+                      </>
+                    )}
+                  </button>
+                </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
-                    type="password"
+                    type={showRegisterPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    className="w-full pl-10 pr-10 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                   />
                 </div>
               </div>
 
-              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 flex items-start gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
-                <span>Registration creates a verified <strong>Citizen / Student</strong> account across Sylhet Metropolitan Hubs.</span>
+              <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 flex items-start gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span>Verified <strong>Citizen / Student</strong> account across Sylhet Metropolitan Hubs.</span>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.35)] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -428,8 +560,199 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 )}
               </button>
             </form>
-          )}
+          </div>
         </div>
+
+        {/* ======================================================== */}
+        {/* SLIDING OVERLAY PANEL (DESKTOP): Glides smoothly left/right */}
+        {/* ======================================================== */}
+        <div
+          className={`hidden md:flex absolute top-0 bottom-0 left-0 w-1/2 z-20 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isLoginTab ? "translate-x-full" : "translate-x-0"
+          }`}
+        >
+          <div
+            className={`w-full h-full p-8 flex flex-col justify-between text-white relative overflow-hidden border-x border-slate-700/80 shadow-2xl transition-colors duration-700 ${
+              isLoginTab
+                ? "bg-gradient-to-br from-slate-950 via-indigo-950/90 to-slate-950"
+                : "bg-gradient-to-br from-slate-950 via-teal-950/90 to-slate-950"
+            }`}
+          >
+            {/* Live Interactive Neural Constellation Canvas Animation */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-60 z-0"
+            />
+
+            {/* Futuristic Perspective Grid Floor */}
+            <div className="absolute inset-x-0 bottom-0 h-44 bg-[radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.15),transparent_70%)] pointer-events-none z-0" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none z-0" />
+
+            {/* Ambient Nebula Glows */}
+            <div
+              className={`absolute -top-16 -left-16 w-60 h-60 rounded-full blur-3xl pointer-events-none transition-colors duration-700 ${
+                isLoginTab ? "bg-sky-500/25" : "bg-emerald-500/25"
+              }`}
+            />
+            <div
+              className={`absolute -bottom-16 -right-16 w-60 h-60 rounded-full blur-3xl pointer-events-none transition-colors duration-700 ${
+                isLoginTab ? "bg-purple-500/25" : "bg-cyan-500/25"
+              }`}
+            />
+
+            {/* Top HUD Status Bar */}
+            <div className="relative z-10 flex items-center justify-between">
+              <div
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border transition-colors ${
+                  isLoginTab
+                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-400/40"
+                    : "bg-teal-500/20 text-teal-300 border-teal-400/40"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full animate-ping ${
+                    isLoginTab ? "bg-cyan-400" : "bg-emerald-400"
+                  }`}
+                />
+                Sylhet Multimodal AI
+              </div>
+              <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest bg-slate-900/70 px-2 py-0.5 rounded border border-slate-700/60">
+                <Activity className="w-3 h-3 text-cyan-400 animate-pulse" />
+                CSE 300
+              </div>
+            </div>
+
+            {/* Animated Cyber Hologram Scanner with Multimodal Reticle */}
+            <div className="relative z-10 my-auto text-center py-2">
+              <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
+                {/* Rotating Tech HUD Circle with Compass Reticle */}
+                <svg
+                  className="absolute inset-0 w-full h-full animate-spin [animation-duration:22s] text-sky-400/30"
+                  viewBox="0 0 100 100"
+                >
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="46"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeDasharray="4 6"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="0.8"
+                    strokeDasharray="12 12"
+                  />
+                </svg>
+
+                {/* Pulsing Core Ripple */}
+                <div
+                  className={`absolute inset-2 rounded-full animate-ping [animation-duration:3s] opacity-20 ${
+                    isLoginTab ? "bg-sky-500" : "bg-emerald-500"
+                  }`}
+                />
+
+                {/* Central Cyber Glowing Shield with Scanning Laser Beam */}
+                <div
+                  className={`relative w-22 h-22 rounded-3xl flex items-center justify-center text-white shadow-2xl transition-all duration-700 animate-neon-breath overflow-hidden ${
+                    isLoginTab
+                      ? "bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 shadow-[0_0_35px_rgba(99,102,241,0.7)]"
+                      : "bg-gradient-to-tr from-emerald-500 via-teal-600 to-cyan-600 shadow-[0_0_35px_rgba(16,185,129,0.7)]"
+                  }`}
+                >
+                  <ShieldCheck className="w-11 h-11 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                  {/* Moving Cyber Laser Scanline */}
+                  <div
+                    className={`absolute left-0 right-0 h-1 shadow-[0_0_12px_#38bdf8] animate-cyber-scan ${
+                      isLoginTab ? "bg-cyan-300" : "bg-emerald-300"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Multimodal AI EQ Visualizer Waves */}
+              <div className="flex items-center justify-center gap-1.5 mt-3 mb-1">
+                {[0.6, 1.0, 0.4, 0.8, 0.5, 0.9, 0.3].map((heightRatio, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 rounded-full transition-colors ${
+                      isLoginTab ? "bg-cyan-400" : "bg-emerald-400"
+                    }`}
+                    style={{
+                      height: `${Math.round(heightRatio * 18)}px`,
+                      animation: `cyberWave ${1 + (i % 3) * 0.4}s ease-in-out infinite alternate`,
+                    }}
+                  />
+                ))}
+                <span className="text-[10px] font-mono text-slate-400 ml-1.5 uppercase tracking-wider">
+                  CLIP &bull; S-BERT &bull; GEO
+                </span>
+              </div>
+
+              {/* Dynamic Overlay Text depending on Tab */}
+              <div className="mt-3 space-y-1.5 px-2">
+                {isLoginTab ? (
+                  <>
+                    <h4 className="text-xl font-black text-white tracking-tight">
+                      New to Find<span className="text-sky-400">It</span> Sylhet?
+                    </h4>
+                    <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
+                      Register as a citizen or student to report belongings and let AI multimodal pairing recover them safely.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="text-xl font-black text-white tracking-tight">
+                      Already Have an Account?
+                    </h4>
+                    <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
+                      Welcome back! Sign in to inspect match candidates, view 5-weight similarity scores, and claim your belongings.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Sliding Overlay Action Button */}
+            <div className="relative z-10 pt-2 space-y-2">
+              {isLoginTab ? (
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("register")}
+                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-lg group cursor-pointer active:scale-98"
+                >
+                  <span>Create Account (Citizen / Student)</span>
+                  <ArrowRight className="w-4 h-4 text-sky-400 group-hover:translate-x-1 transition" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("login")}
+                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-lg group cursor-pointer active:scale-98"
+                >
+                  <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition" />
+                  <span>Back to Sign In</span>
+                </button>
+              )}
+
+              {/* Telemetry Footer */}
+              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-1 font-mono">
+                <span className="flex items-center gap-1">
+                  <Cpu className="w-3 h-3 text-sky-400" /> ViT-B/32 Multimodal
+                </span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-rose-400" /> 11 Sylhet Hubs
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
