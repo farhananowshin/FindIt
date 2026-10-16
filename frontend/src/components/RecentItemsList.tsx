@@ -15,8 +15,17 @@ import {
   ShieldAlert,
   CheckCircle2,
   LayoutGrid,
+  Laptop,
+  CreditCard,
+  BookOpen,
+  Briefcase,
+  Coffee,
+  Key,
+  Shirt,
+  Tag,
 } from "lucide-react";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
+import { resolveImageUrl } from "../services/api";
 
 const CampusMapView = dynamic(() => import("./CampusMapView"), {
   ssr: false,
@@ -70,6 +79,48 @@ export default function RecentItemsList({
       CAMPUS_LOCATIONS.find((l) => l.id === locationIdOrName)?.name ||
       locationIdOrName
     );
+  };
+
+  const getCategoryFallbackStyle = (cat?: string) => {
+    switch (cat?.toLowerCase()) {
+      case "electronics":
+        return "bg-gradient-to-br from-indigo-100 via-blue-50 to-slate-100 border-b border-indigo-200";
+      case "id_cards":
+        return "bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 border-b border-sky-200";
+      case "books_notes":
+        return "bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-100 border-b border-amber-200";
+      case "bags_wallets":
+        return "bg-gradient-to-br from-emerald-100 via-teal-50 to-slate-100 border-b border-emerald-200";
+      case "bottles_accessories":
+        return "bg-gradient-to-br from-cyan-100 via-teal-50 to-blue-100 border-b border-cyan-200";
+      case "keys":
+        return "bg-gradient-to-br from-yellow-100 via-amber-50 to-orange-100 border-b border-yellow-200";
+      case "clothing":
+        return "bg-gradient-to-br from-rose-100 via-pink-50 to-purple-100 border-b border-rose-200";
+      default:
+        return "bg-gradient-to-br from-slate-100 via-gray-50 to-zinc-100 border-b border-slate-200";
+    }
+  };
+
+  const getCategoryFallbackIcon = (cat?: string) => {
+    switch (cat?.toLowerCase()) {
+      case "electronics":
+        return <Laptop className="w-6 h-6 text-indigo-600" />;
+      case "id_cards":
+        return <CreditCard className="w-6 h-6 text-sky-600" />;
+      case "books_notes":
+        return <BookOpen className="w-6 h-6 text-amber-600" />;
+      case "bags_wallets":
+        return <Briefcase className="w-6 h-6 text-emerald-600" />;
+      case "bottles_accessories":
+        return <Coffee className="w-6 h-6 text-cyan-600" />;
+      case "keys":
+        return <Key className="w-6 h-6 text-yellow-600" />;
+      case "clothing":
+        return <Shirt className="w-6 h-6 text-rose-600" />;
+      default:
+        return <Tag className="w-6 h-6 text-slate-600" />;
+    }
   };
 
   return (
@@ -263,10 +314,11 @@ export default function RecentItemsList({
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredItems.map((item) => {
             const isLost = (item.type || item.reportType) === "lost";
-            const imageUrl =
+            const rawUrl =
               (item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0]) ||
               (item.images && item.images.length > 0 && item.images[0].previewUrl) ||
               null;
+            const imageUrl = resolveImageUrl(rawUrl);
             const imagesCount =
               (item.imageUrls && item.imageUrls.length) ||
               (item.images && item.images.length) ||
@@ -296,12 +348,34 @@ export default function RecentItemsList({
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                      <ImageIcon className="w-10 h-10 mb-1 stroke-1" />
-                      <span className="text-xs font-medium">No photo uploaded</span>
-                      <span className="text-[10px] text-slate-500 mt-0.5">
-                        Indexed via S-BERT text tokens
-                      </span>
+                    <div className={`w-full h-full p-4 flex flex-col justify-between transition duration-300 ${getCategoryFallbackStyle(item.category)}`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/80 backdrop-blur-xs text-slate-800 shadow-2xs">
+                          {item.category?.replace("_", " ")}
+                        </span>
+                        {item.brand && (
+                          <span className="text-[10px] font-semibold text-slate-700 bg-white/60 px-1.5 py-0.5 rounded">
+                            {item.brand}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 my-auto">
+                        <div className="p-3 rounded-2xl bg-white/90 shadow-xs text-slate-800 backdrop-blur-xs shrink-0">
+                          {getCategoryFallbackIcon(item.category)}
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-xs font-bold text-slate-900 line-clamp-1">
+                            {item.title}
+                          </p>
+                          <span className="text-[10px] text-slate-600 block mt-0.5">
+                            Indexed via S-BERT text tokens
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-slate-500 flex items-center justify-between pt-1 border-t border-black/5">
+                        <span>Color: <strong>{item.primaryColor || "Standard"}</strong></span>
+                        <span className="text-indigo-700 font-semibold">Semantic Match Active</span>
+                      </div>
                     </div>
                   )}
 

@@ -3,6 +3,20 @@ import { StoredItemReport, ReportType, ItemCategory } from "../types/item";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 /**
+ * Resolves an image URL to an absolute URL pointing to the backend static file server if relative.
+ */
+export function resolveImageUrl(url?: string | null): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${API_BASE}${cleanPath}`;
+}
+
+/**
  * Normalizes raw MongoDB document from the backend into frontend StoredItemReport shape.
  */
 export function normalizeItemReport(raw: Record<string, unknown>): StoredItemReport {
@@ -18,6 +32,8 @@ export function normalizeItemReport(raw: Record<string, unknown>): StoredItemRep
   const rawImagePaths = Array.isArray(raw.imagePaths)
     ? (raw.imagePaths as string[])
     : [];
+
+  const resolvedImageUrls = rawImageUrls.map((u) => resolveImageUrl(u) || u);
 
   const typeVal = ((raw.type || raw.reportType || "lost") as string).toLowerCase() as ReportType;
   const categoryVal = ((raw.category || "other") as string).toLowerCase() as ItemCategory;
@@ -52,10 +68,10 @@ export function normalizeItemReport(raw: Record<string, unknown>): StoredItemRep
     studentId: (raw.submitterStudentId || raw.studentId || "") as string,
     contactEmail: (raw.submitterEmail || raw.contactEmail || "") as string,
     contactPhone: (raw.submitterPhone || raw.contactPhone || "") as string,
-    imageUrls: rawImageUrls,
+    imageUrls: resolvedImageUrls,
     imagePaths: rawImagePaths,
-    images: rawImageUrls.length > 0
-      ? rawImageUrls.map((url: string, index: number) => ({
+    images: resolvedImageUrls.length > 0
+      ? resolvedImageUrls.map((url: string, index: number) => ({
           id: `img-${index}-${Date.now()}`,
           name: url.split("/").pop() || `Photo ${index + 1}`,
           size: 0,
