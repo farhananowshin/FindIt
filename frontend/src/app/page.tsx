@@ -428,40 +428,40 @@ export default function Home() {
           </div>
 
           {/* 3-Step "How FindIt Works" Visual Ribbon */}
-          <div className="mt-4 pt-4 border-t border-slate-800/60 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/80 shadow-lg backdrop-blur-md">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-500/30">
+          <div className="mt-6 pt-6 border-t border-slate-800/60 grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-left">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg backdrop-blur-md">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-sky-500/20 text-sky-300 font-bold text-xs flex items-center justify-center border border-sky-500/30">
                   1
                 </span>
-                <h3 className="text-xs font-bold text-white">Report in 60s</h3>
+                <h3 className="text-xs font-bold text-white tracking-wide">Report in Seconds</h3>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Take a photo or describe the item with Sylhet location (CNG, cafe, campus, station).
+                Submit a photo and location details from any campus, transit spot, or city hub.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/80 shadow-lg backdrop-blur-md">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-5 h-5 rounded-full bg-violet-500/20 text-violet-300 font-bold text-xs flex items-center justify-center border border-violet-500/30">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg backdrop-blur-md">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-500/30">
                   2
                 </span>
-                <h3 className="text-xs font-bold text-white">Multimodal AI Match</h3>
+                <h3 className="text-xs font-bold text-white tracking-wide">Intelligent Match</h3>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                OpenCLIP vision vectors &amp; S-BERT semantic embeddings pair lost &amp; found items instantly.
+                Automated visual and description algorithms connect lost reports with found items in real time.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/80 shadow-lg backdrop-blur-md">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg backdrop-blur-md">
+              <div className="flex items-center gap-2.5 mb-1.5">
                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-xs flex items-center justify-center border border-emerald-500/30">
                   3
                 </span>
-                <h3 className="text-xs font-bold text-white">Verify &amp; Safely Claim</h3>
+                <h3 className="text-xs font-bold text-white tracking-wide">Verified Recovery</h3>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Secret verification questions (wallpaper, marks) confirm true ownership before return.
+                Private ownership questions confirm the rightful owner before item handover.
               </p>
             </div>
           </div>
@@ -469,59 +469,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Content Area with Modern Floating Tab Control */}
+      {/* Main Content Area */}
       <main ref={contentRef} className="flex-1 pb-16 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          {/* Section Navigation Tabs: Sleek Floating Glassmorphic Dock */}
-          <div className="sticky top-20 z-30 flex items-center justify-center py-1">
-            <div className="inline-flex p-1.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 gap-1.5 text-xs font-bold text-slate-600">
-              <button
-                onClick={() => setActiveTab("feed")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  activeTab === "feed"
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-100/80"
-                }`}
-              >
-                <LayoutGrid className={`w-4 h-4 ${activeTab === "feed" ? "text-sky-400" : "text-slate-500"}`} />
-                <span>Sylhet Feed &amp; Map</span>
-                <span
-                  className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    activeTab === "feed"
-                      ? "bg-slate-800 text-sky-300 border-slate-700"
-                      : "bg-slate-100 text-slate-600 border-slate-200"
-                  }`}
-                >
-                  {items.length}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("report")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  activeTab === "report"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-100/80"
-                }`}
-              >
-                <PlusCircle className={`w-4 h-4 ${activeTab === "report" ? "text-white" : "text-emerald-600"}`} />
-                <span>+ Report an Item</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("admin")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                  activeTab === "admin"
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-100/80"
-                }`}
-              >
-                <Shield className={`w-4 h-4 ${activeTab === "admin" ? "text-white" : "text-indigo-600"}`} />
-                <span>Admin &amp; Verification</span>
-              </button>
-            </div>
-          </div>
-
           {/* Tab 1: Live Feed and Map */}
           {activeTab === "feed" && (
             <div id="recent-items" className="animate-in fade-in duration-200">
@@ -549,12 +499,12 @@ export default function Home() {
                     Submitting a {reportFormType === "lost" ? "Lost" : "Found"} Item Report
                   </h2>
                   <p className="text-xs text-indigo-700">
-                    Provide clear details and a photo so our Multimodal AI can match it accurately.
+                    Provide clear details and photos so our matching engine can connect it accurately.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("feed")}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition cursor-pointer"
                 >
                   &larr; Back to Items Feed
                 </button>
@@ -574,18 +524,18 @@ export default function Home() {
           {/* Tab 3: Admin & Verification Preview */}
           {activeTab === "admin" && (
             <div id="admin-preview" className="animate-in fade-in duration-200 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-purple-50/70 border border-purple-100 rounded-2xl">
+              <div className="flex items-center justify-between p-4 bg-slate-900 text-white rounded-2xl border border-slate-800">
                 <div>
-                  <h2 className="text-sm font-bold text-purple-900">
-                    Explainability &amp; Admin Verification Portal
+                  <h2 className="text-sm font-bold text-white">
+                    Verification &amp; Recovery Management Portal
                   </h2>
-                  <p className="text-xs text-purple-700">
-                    Review incoming claims, inspect multimodal feature attributions, and manage safety oversight.
+                  <p className="text-xs text-slate-400">
+                    Review incoming claims, inspect match confidence scores, and verify legitimate ownership.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("feed")}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
                 >
                   &larr; Back to Items Feed
                 </button>

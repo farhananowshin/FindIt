@@ -23,6 +23,7 @@ import {
   Key,
   Shirt,
   Tag,
+  X,
 } from "lucide-react";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
 import { resolveImageUrl } from "../services/api";
@@ -144,28 +145,28 @@ export default function RecentItemsList({
 
   const CATEGORY_PILLS = [
     { id: "all", label: "All Items" },
-    { id: "electronics", label: "💻 Electronics" },
-    { id: "bags_wallets", label: "💼 Wallets & Bags" },
-    { id: "id_cards", label: "💳 IDs & Cards" },
-    { id: "keys", label: "🔑 Keys" },
-    { id: "books_notes", label: "📚 Books" },
-    { id: "bottles_accessories", label: "☕ Accessories" },
-    { id: "clothing", label: "👕 Clothing" },
+    { id: "electronics", label: "Electronics" },
+    { id: "bags_wallets", label: "Wallets & Bags" },
+    { id: "id_cards", label: "ID Cards & Docs" },
+    { id: "keys", label: "Keys" },
+    { id: "books_notes", label: "Books & Notes" },
+    { id: "bottles_accessories", label: "Accessories" },
+    { id: "clothing", label: "Clothing" },
   ];
 
   return (
     <section id="recent-items" className="w-full max-w-6xl mx-auto pt-2 px-4 sm:px-6">
-      {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-200">
+      {/* Section Header with Integrated Compact Toolbar */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-5 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Sylhet Metropolitan Feed
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+              Sylhet Metropolitan Network
             </span>
             {isLive ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                MongoDB Live ({items.length})
+                Live Database ({items.length})
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
@@ -174,34 +175,78 @@ export default function RecentItemsList({
               </span>
             )}
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
-            Recent Lost &amp; Found Reports in Sylhet
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1.5">
+            Recent Lost &amp; Found Reports
           </h2>
-          <p className="text-sm text-slate-600 mt-1">
-            Browse live reports across Sylhet city hubs or filter by category and location.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Browse verified community reports across campuses, transit hubs, and city centers.
           </p>
         </div>
 
-        {/* Action Controls & Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          {onRefresh && (
-            <button
-              onClick={onRefresh}
-              disabled={isLoading}
-              title="Refresh reports from MongoDB"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-95 disabled:opacity-50 cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-indigo-600" : ""}`} />
-              Refresh
-            </button>
-          )}
+        {/* Compact Integrated Action Toolbar */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
+          {/* Quick Inline Filter Input (No big duplicate search block) */}
+          <div className="relative w-full sm:w-56">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filter items..."
+              className="w-full pl-8 pr-7 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
-          {/* View Mode Segmented Control: Grid vs Sylhet Map */}
+          {/* Segmented Lost / Found Toggle */}
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <button
+              onClick={() => setFilterType("all")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                filterType === "all"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              All ({items.length})
+            </button>
+            <button
+              onClick={() => setFilterType("lost")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                filterType === "lost"
+                  ? "bg-rose-50 text-rose-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-rose-600"
+              }`}
+            >
+              Lost ({items.filter((i) => (i.type || i.reportType) === "lost").length})
+            </button>
+            <button
+              onClick={() => setFilterType("found")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                filterType === "found"
+                  ? "bg-emerald-50 text-emerald-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-emerald-600"
+              }`}
+            >
+              Found ({items.filter((i) => (i.type || i.reportType) === "found").length})
+            </button>
+          </div>
+
+          {/* View Mode: Grid vs Sylhet Map */}
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 viewMode === "grid"
                   ? "bg-white text-slate-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -213,49 +258,27 @@ export default function RecentItemsList({
             <button
               type="button"
               onClick={() => setViewMode("map")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 viewMode === "map"
                   ? "bg-indigo-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <MapPin className="w-3.5 h-3.5" />
-              Sylhet Map
+              Map
             </button>
           </div>
 
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
+          {onRefresh && (
             <button
-              onClick={() => setFilterType("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                filterType === "all"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              onClick={onRefresh}
+              disabled={isLoading}
+              title="Refresh reports"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-2xs"
             >
-              All ({items.length})
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-indigo-600" : ""}`} />
             </button>
-            <button
-              onClick={() => setFilterType("lost")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                filterType === "lost"
-                  ? "bg-rose-50 text-rose-700 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-rose-600"
-              }`}
-            >
-              Lost ({items.filter((i) => (i.type || i.reportType) === "lost").length})
-            </button>
-            <button
-              onClick={() => setFilterType("found")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                filterType === "found"
-                  ? "bg-emerald-50 text-emerald-700 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-emerald-600"
-              }`}
-            >
-              Found ({items.filter((i) => (i.type || i.reportType) === "found").length})
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
@@ -283,37 +306,28 @@ export default function RecentItemsList({
         </div>
       )}
 
-      {/* Search and Category Quick-Filter Bar */}
-      <div className="mt-6 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search reports across Sylhet by title, keyword, brand..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
-            />
+      {/* Modern Category Quick-Filter Bar (Clean Pills, No Emojis, No Duplicate Dropdown) */}
+      <div className="mt-4 space-y-2.5">
+        {/* Active Hero/Filter Query Notice */}
+        {searchQuery && (
+          <div className="flex items-center justify-between p-2 px-3 bg-sky-50/80 border border-sky-200/80 rounded-xl text-xs text-sky-950">
+            <div className="flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 text-sky-600" />
+              <span>
+                Matching query: <strong className="font-bold">&ldquo;{searchQuery}&rdquo;</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white hover:bg-sky-100 text-sky-800 font-semibold border border-sky-300 transition cursor-pointer text-[11px]"
+            >
+              <X className="w-3 h-3" />
+              Clear Filter
+            </button>
           </div>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer"
-          >
-            <option value="all">All Categories</option>
-            <option value="electronics">Electronics</option>
-            <option value="id_cards">Student IDs &amp; Cards</option>
-            <option value="keys">Keys</option>
-            <option value="bags_wallets">Bags &amp; Wallets</option>
-            <option value="clothing">Clothing</option>
-            <option value="books_notes">Books &amp; Notes</option>
-            <option value="bottles_accessories">Accessories</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
+        )}
 
-        {/* Quick Category Filter Pills */}
         <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar">
           <div className="flex items-center gap-1.5 flex-wrap">
             {CATEGORY_PILLS.map((pill) => {
@@ -327,9 +341,9 @@ export default function RecentItemsList({
                 <button
                   key={pill.id}
                   onClick={() => setSelectedCategory(pill.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                     isSelected
-                      ? "bg-indigo-600 text-white shadow-xs"
+                      ? "bg-slate-950 text-white shadow-xs"
                       : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
                   }`}
                 >
@@ -437,14 +451,14 @@ export default function RecentItemsList({
                           <p className="text-xs font-bold text-slate-900 line-clamp-1">
                             {item.title}
                           </p>
-                          <span className="text-[10px] text-slate-600 block mt-0.5">
-                            Indexed via S-BERT text tokens
+                          <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                            Verified Description
                           </span>
                         </div>
                       </div>
                       <div className="text-[10px] text-slate-500 flex items-center justify-between pt-1 border-t border-black/5">
                         <span>Color: <strong>{item.primaryColor || "Standard"}</strong></span>
-                        <span className="text-indigo-700 font-semibold">Semantic Match Active</span>
+                        <span className="text-slate-700 font-semibold">Match Ready</span>
                       </div>
                     </div>
                   )}
@@ -526,15 +540,15 @@ export default function RecentItemsList({
                     </div>
                   </div>
 
-                  {/* Find AI Matches Button for Lost Items */}
+                  {/* Find Matches Button for Lost Items */}
                   {isLost && onFindMatches && (
                     <button
                       type="button"
                       onClick={() => onFindMatches(item)}
-                      className="mt-3 w-full py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50 hover:from-indigo-100 hover:to-violet-100 text-indigo-700 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-indigo-200/80 shadow-2xs cursor-pointer active:scale-98"
+                      className="mt-3 w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer active:scale-98"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
-                      Find AI Matches (5-Weight)
+                      <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+                      Check Matching Items
                     </button>
                   )}
 
