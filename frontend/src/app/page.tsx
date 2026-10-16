@@ -192,72 +192,51 @@ export default function Home() {
             {/* Left Column: Headline, Actions & Search (7 Cols) */}
             <div className="lg:col-span-7 text-left space-y-5">
               {/* Top Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-900/90 text-slate-200 border border-slate-700/80 backdrop-blur-md shadow-xs">
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-bold tracking-wide">FindIt Sylhet</span>
+                <span className="font-bold tracking-wide text-white">Sylhet Metropolitan Area</span>
                 <span className="text-slate-500">&bull;</span>
-                <span className="text-slate-300 font-medium">AI Lost &amp; Found</span>
+                <span className="text-slate-300 font-medium">Verified Recovery Network</span>
               </div>
 
-              {/* Bold, Catchy Animated Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
-                Lost something in <br />
+              {/* Mature, Authoritative Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-black tracking-tight text-white leading-[1.14]">
+                The intelligent lost &amp; found network for{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400 animate-gradient-text">
-                  Sylhet? Let AI find it.
+                  Sylhet.
                 </span>
               </h1>
 
               {/* Minimal Clean Subtitle */}
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-lg">
-                Search verified belongings or report an item across Sylhet metropolitan hubs.
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                Search verified belongings across university campuses, transit hubs, and city centers, or report an item for instant matching.
               </p>
 
-              {/* Compact Quick Action Buttons (+ I've lost / + I've found) */}
-              <div className="flex items-center gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={handleOpenLostReport}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 hover:text-white border border-rose-500/35 hover:border-rose-400 transition-all shadow-sm active:scale-95 cursor-pointer"
-                >
-                  <span className="text-base font-black leading-none">+</span>
-                  <span>I&apos;ve Lost</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleOpenFoundReport}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-white border border-emerald-500/35 hover:border-emerald-400 transition-all shadow-sm active:scale-95 cursor-pointer"
-                >
-                  <span className="text-base font-black leading-none">+</span>
-                  <span>I&apos;ve Found</span>
-                </button>
-              </div>
-
-              {/* All-in-One Hero Search Bar Widget */}
+              {/* Spacious Hero Search Bar Console (Approach A) */}
               <form
                 onSubmit={handleSearchSubmit}
-                className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2"
+                className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-2"
               >
                 {/* Search Input */}
                 <div className="relative flex-1 min-w-0">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
                     value={heroSearch}
                     onChange={(e) => setHeroSearch(e.target.value)}
-                    placeholder="What did you lose or find?"
-                    className="w-full pl-10 pr-3 py-2 bg-transparent rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-none transition"
+                    placeholder="Search by item name, brand, or location (e.g. wallet, SUST, Amberkhana)..."
+                    className="w-full pl-11 pr-4 py-2.5 bg-transparent rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-none transition"
                   />
                 </div>
 
                 {/* Category Select Dropdown */}
-                <div className="relative sm:border-l sm:border-slate-800 sm:pl-2">
+                <div className="relative sm:border-l sm:border-slate-800 sm:pl-2.5">
                   <select
                     value={heroCategory}
                     onChange={(e) => setHeroCategory(e.target.value)}
-                    className="w-full sm:w-auto appearance-none bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl px-3 py-2 pr-7 text-xs font-medium text-slate-200 focus:outline-none transition cursor-pointer"
+                    className="w-full sm:w-auto appearance-none bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl px-4 py-2.5 pr-8 text-xs font-semibold text-slate-200 focus:outline-none transition cursor-pointer"
                   >
-                    <option value="all">All categories</option>
+                    <option value="all">All Categories</option>
                     <option value="electronics">Electronics</option>
                     <option value="bags_wallets">Bags &amp; Wallets</option>
                     <option value="id_cards">ID Cards &amp; Docs</option>
@@ -267,57 +246,42 @@ export default function Home() {
                     <option value="bottles_accessories">Accessories</option>
                     <option value="other">Other Items</option>
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                </div>
-
-                {/* Lost / Found Filter Segmented Toggle */}
-                <div className="flex items-center p-1 bg-slate-950/80 rounded-xl border border-slate-800 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setFeedTypeFilter("all")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                      feedTypeFilter === "all"
-                        ? "bg-slate-800 text-white shadow-xs"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFeedTypeFilter("lost")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                      feedTypeFilter === "lost"
-                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
-                        : "text-slate-400 hover:text-rose-300"
-                    }`}
-                  >
-                    Lost
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFeedTypeFilter("found")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                      feedTypeFilter === "found"
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                        : "text-slate-400 hover:text-emerald-300"
-                    }`}
-                  >
-                    Found
-                  </button>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                 </div>
 
                 {/* Search Button */}
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs sm:text-sm shadow-md hover:shadow-sky-500/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md hover:shadow-sky-500/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                 >
-                  <span>Search</span>
+                  <Search className="w-4 h-4 text-slate-950" />
+                  <span>Search Items</span>
                 </button>
               </form>
+
+              {/* Clean Reporting Prompts Below Search Bar */}
+              <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-400 pt-1">
+                <span>Looking to submit a report?</span>
+                <button
+                  type="button"
+                  onClick={handleOpenLostReport}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold transition cursor-pointer active:scale-95 shadow-xs"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                  + Report Lost Item
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenFoundReport}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold transition cursor-pointer active:scale-95 shadow-xs"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  + Turn In Found Item
+                </button>
+              </div>
             </div>
 
-            {/* Right Column: Visual AI Showcase Card (5 Cols) */}
+            {/* Right Column: Visual Showcase Card (5 Cols) */}
             <div className="lg:col-span-5 relative">
               {/* Glow backdrop */}
               <div className="absolute -inset-2 bg-gradient-to-r from-sky-500/20 via-indigo-500/20 to-rose-500/20 rounded-3xl blur-xl" />
@@ -327,7 +291,7 @@ export default function Home() {
                 <div className="px-4 py-3 bg-slate-950 text-white flex items-center justify-between border-b border-slate-800">
                   <div className="flex items-center gap-2">
                     <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs font-bold tracking-wide">Live AI Match Demonstration</span>
+                    <span className="text-xs font-bold tracking-wide">Live Match Verification</span>
                   </div>
                   <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
                     Sylhet Hub
@@ -365,10 +329,10 @@ export default function Home() {
                     </span>
                   </div>
 
-                  {/* AI Feature Weights with Neon Glow */}
+                  {/* Feature Weights */}
                   <div className="space-y-1.5 pt-1 text-xs">
                     <div className="flex justify-between text-[11px] text-slate-400">
-                      <span>CLIP Vision Similarity</span>
+                      <span>Visual Image Match</span>
                       <span className="font-bold text-sky-400">98.2%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -379,7 +343,7 @@ export default function Home() {
                     </div>
 
                     <div className="flex justify-between text-[11px] text-slate-400">
-                      <span>S-BERT Semantic Text</span>
+                      <span>Semantic Description Match</span>
                       <span className="font-bold text-indigo-400">94.5%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -434,11 +398,11 @@ export default function Home() {
 
             <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-indigo-950/30 border border-indigo-500/30 hover:border-indigo-400/60 shadow-lg shadow-indigo-950/20 backdrop-blur-md flex items-center gap-3 transition group">
               <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-[0_0_10px_rgba(99,102,241,0.25)] flex items-center justify-center font-bold text-sm group-hover:scale-105 transition">
-                96%
+                96.4%
               </div>
               <div>
-                <p className="text-xs font-bold text-white">AI Precision</p>
-                <p className="text-[10px] text-slate-400">OpenCLIP + S-BERT</p>
+                <p className="text-xs font-bold text-white">Matching Precision</p>
+                <p className="text-[10px] text-slate-400">Multimodal Verified</p>
               </div>
             </div>
 
