@@ -25,9 +25,13 @@ import {
   Shield,
   ArrowRight,
   MapPin,
-  Clock,
-  Layers,
   CheckCircle2,
+  Lock,
+  Cpu,
+  TrendingUp,
+  X,
+  Share2,
+  Users,
 } from "lucide-react";
 
 export default function Home() {
@@ -102,7 +106,6 @@ export default function Home() {
   const handleReportCreated = (newReport: StoredItemReport) => {
     setItems((prev) => [newReport, ...prev]);
     setIsLive(true);
-    // Switch to feed so user immediately sees their report!
     setActiveTab("feed");
     setTimeout(() => {
       contentRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -159,8 +162,14 @@ export default function Home() {
     }, 80);
   };
 
+  const handleClearSearch = () => {
+    setHeroSearch("");
+    setHeroCategory("all");
+    setFeedTypeFilter("all");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100 selection:bg-indigo-500 selection:text-white">
       {/* Navigation Header */}
       <Navbar
         onOpenWeights={() => setIsWeightsOpen(true)}
@@ -172,132 +181,158 @@ export default function Home() {
         }}
       />
 
-      {/* Hero Section: 2-Column Split Modern Hero with Live Visual Showcase */}
-      <section className="relative overflow-hidden pt-8 pb-12 lg:pt-12 lg:pb-16 border-b border-slate-200/80 bg-gradient-to-b from-indigo-50/50 via-white to-slate-50">
-        {/* Subtle decorative glow */}
-        <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-indigo-200/20 blur-3xl rounded-full pointer-events-none" />
-        <div className="absolute top-1/2 right-10 w-[400px] h-[300px] bg-rose-200/20 blur-3xl rounded-full pointer-events-none" />
+      {/* Cinematic Animated Hero Section with Sylhet Skyline Backdrop */}
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-slate-800">
+        {/* Background Sylhet Cityscape with Dark Gradient Overlays */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/images/sylhet_city_hero.jpg"
+            alt="Sylhet City Skyline and Keane Bridge"
+            className="w-full h-full object-cover object-center opacity-30 transform scale-105 motion-safe:animate-pulse-glow"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/85 to-slate-950/90" />
+          <div className="absolute inset-0 bg-radial from-indigo-500/10 via-transparent to-transparent" />
+        </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Column: Headline, Actions & Search (7 Cols) */}
-            <div className="lg:col-span-7 text-left space-y-5">
-              {/* Top Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-indigo-700 shadow-2xs border border-indigo-100">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-bold tracking-wide">FindIt Sylhet</span>
-                <span className="text-slate-300">&bull;</span>
-                <span className="text-slate-600 font-medium">Smart AI Lost &amp; Found Platform</span>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            {/* Left Column: Headline, Trust Signals & Action Triggers (7 Cols) */}
+            <div className="lg:col-span-7 text-left space-y-6">
+              {/* Trust Badge */}
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 backdrop-blur-md shadow-lg shadow-indigo-950/50">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-bold tracking-wide">FindIt &bull; Sylhet Metropolitan</span>
+                <span className="text-indigo-400/50">|</span>
+                <span className="text-slate-300 font-medium">Public Lost &amp; Found AI Infrastructure</span>
               </div>
 
-              {/* Bold, Catchy Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 leading-[1.12]">
-                Lost Something in <span className="text-indigo-600">Sylhet?</span> <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-500">
+              {/* Bold Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
+                Lost Something in <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-400 to-rose-400">
+                  Sylhet City or Campus?
+                </span>
+                <br />
+                <span className="text-slate-200 text-2xl sm:text-4xl lg:text-4xl font-extrabold">
                   We&apos;ll Help You Find It.
                 </span>
               </h1>
 
-              {/* Engaging Subtitle */}
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
-                সিলেট শহর ও ক্যাম্পাসে হারানো বা পাওয়া যেকোনো জিনিস সহজে মিলিয়ে নেওয়ার প্ল্যাটফর্ম। 
-                ছবি তুলুন কিংবা বিবরণ দিন — আমাদের Multimodal AI নিমেষেই আপনার আইটেম খুঁজে দেবে।
+              {/* Multimodal Description */}
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                সিলেট মহানগরীর ১১টি প্রধান জোন (জিন্দাবাজার, আম্বরখানা, কদমতলী, রেলস্টেশন) এবং বিশ্ববিদ্যালয় ক্যাম্পাসে 
+                হারানো জিনিস খুঁজে পাওয়ার জন্য তৈরি এআই প্ল্যাটফর্ম। ছবি তুলুন অথবা বিবরণ দিন — আমাদের 
+                <strong> Multimodal AI (Vision + Text + GPS)</strong> মুহূর্তেই সঠিক মিল খুঁজে বের করবে।
               </p>
 
-              {/* Prominent Action Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+              {/* Primary Dual Action Cards: Lost vs Found */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 {/* I Lost Something Card */}
                 <div
                   onClick={handleOpenLostReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-white hover:bg-rose-50/50 border-2 border-rose-100 hover:border-rose-300 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="group cursor-pointer p-5 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-slate-900/90 hover:from-rose-900/50 hover:to-slate-800 border border-rose-500/30 hover:border-rose-400/70 shadow-xl shadow-rose-950/20 backdrop-blur-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center group-hover:scale-105 transition">
-                      <HelpCircle className="w-5 h-5" />
+                    <div className="w-11 h-11 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-500 group-hover:text-white transition duration-300">
+                      <HelpCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-bold text-rose-600 block">আমি কিছু হারিয়েছি</span>
-                      <h2 className="text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 block">
+                        আমি কিছু হারিয়েছি
+                      </span>
+                      <h2 className="text-lg font-black text-white group-hover:text-rose-300 transition">
                         I Lost Something
                       </h2>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2 line-clamp-2">
-                    মানিব্যাগ, ফোন, চাবি, ব্যাগ বা আইডি কার্ড হারিয়েছেন? রিপোর্ট করুন।
+                  <p className="text-xs text-slate-400 mt-2.5 line-clamp-2">
+                    সিএনজি, মার্কেট, ক্যাফে বা ক্যাম্পাসে মানিব্যাগ, ফোন, চাবি, বা আইডি কার্ড হারিয়েছেন? ৬০ সেকেন্ডে রিপোর্ট করুন।
                   </p>
-                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-rose-600 group-hover:translate-x-1 transition">
+                  <div className="mt-4 flex items-center gap-1.5 text-xs font-extrabold text-rose-400 group-hover:translate-x-1.5 transition">
                     <span>Report Lost Item</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-4 h-4" />
                   </div>
                 </div>
 
                 {/* I Found Something Card */}
                 <div
                   onClick={handleOpenFoundReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-white hover:bg-emerald-50/50 border-2 border-emerald-100 hover:border-emerald-300 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="group cursor-pointer p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-900/90 hover:from-emerald-900/50 hover:to-slate-800 border border-emerald-500/30 hover:border-emerald-400/70 shadow-xl shadow-emerald-950/20 backdrop-blur-md transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition">
-                      <Sparkles className="w-5 h-5" />
+                    <div className="w-11 h-11 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition duration-300">
+                      <Sparkles className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-bold text-emerald-600 block">আমি কিছু পেয়েছি</span>
-                      <h2 className="text-base font-extrabold text-slate-900 group-hover:text-emerald-700 transition">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block">
+                        আমি কিছু পেয়েছি
+                      </span>
+                      <h2 className="text-lg font-black text-white group-hover:text-emerald-300 transition">
                         I Found Something
                       </h2>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2 line-clamp-2">
-                    সিএনজি, ক্যাফে বা ক্যাম্পাসে কোনো জিনিস পেয়েছেন? জমা দিন।
+                  <p className="text-xs text-slate-400 mt-2.5 line-clamp-2">
+                    সিলেটের কোথাও কোনো জিনিস পেয়েছেন? একটি ছবি তুলে জমা দিন এবং প্রকৃত মালিককে ফিরিয়ে দিন।
                   </p>
-                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition">
+                  <div className="mt-4 flex items-center gap-1.5 text-xs font-extrabold text-emerald-400 group-hover:translate-x-1.5 transition">
                     <span>Report Found Item</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
-              {/* Quick Search Bar */}
+              {/* Integrated Hero Search Bar */}
               <form
                 onSubmit={handleSearchSubmit}
-                className="flex items-center gap-2 p-1.5 bg-white border border-slate-300 rounded-2xl shadow-xs focus-within:ring-2 focus-within:ring-indigo-500 transition"
+                className="relative flex items-center gap-2 p-1.5 bg-slate-950/80 border border-slate-700/80 rounded-2xl shadow-2xl focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition backdrop-blur-md"
               >
                 <div className="pl-3 text-slate-400">
-                  <Search className="w-4 h-4" />
+                  <Search className="w-5 h-5 text-indigo-400" />
                 </div>
                 <input
                   type="text"
                   value={heroSearch}
                   onChange={(e) => setHeroSearch(e.target.value)}
-                  placeholder="Search 37+ items in Sylhet (e.g., 'wallet in CNG', 'backpack', 'ID card')..."
-                  className="flex-1 bg-transparent px-2 py-1.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden"
+                  placeholder="Search 42+ items in Sylhet (e.g., 'wallet in CNG', 'navy backpack', 'ID card')..."
+                  className="flex-1 bg-transparent px-2 py-2 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-hidden"
                 />
+                {heroSearch && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="p-1 text-slate-400 hover:text-white transition"
+                    title="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition shadow-md shadow-indigo-600/30"
                 >
                   Search
                 </button>
               </form>
 
-              {/* Quick Filter Chips */}
-              <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
-                <span className="text-[11px] font-semibold text-slate-400 mr-1">Quick Filter:</span>
+              {/* Fast Filter Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
+                <span className="text-[11px] font-semibold text-slate-400 mr-1">Filter by category:</span>
                 {[
                   { id: "all", label: "All Items" },
                   { id: "bags_wallets", label: "👛 Bags & Wallets" },
                   { id: "electronics", label: "📱 Electronics" },
-                  { id: "id_cards", label: "🪪 Student IDs" },
+                  { id: "id_cards", label: "🪪 Student IDs / NID" },
                   { id: "keys", label: "🔑 Keys" },
                   { id: "books_notes", label: "📚 Books" },
                 ].map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryClick(cat.id)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
                       heroCategory === cat.id
-                        ? "bg-indigo-600 text-white shadow-2xs"
-                        : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/40 border border-indigo-400"
+                        : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700"
                     }`}
                   >
                     {cat.label}
@@ -306,215 +341,220 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column: Visual AI Showcase Card (5 Cols) */}
+            {/* Right Column: High-End Live Multimodal AI Demonstration Card (5 Cols) */}
             <div className="lg:col-span-5 relative">
-              {/* Glow backdrop */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500/15 via-violet-500/15 to-rose-500/15 rounded-3xl blur-xl" />
+              {/* Animated Floating Card */}
+              <div className="relative animate-float">
+                {/* Backdrop Glow */}
+                <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500/30 via-violet-500/30 to-rose-500/30 rounded-3xl blur-2xl opacity-75" />
 
-              <div className="relative rounded-3xl bg-white border border-slate-200 shadow-xl overflow-hidden text-left">
-                {/* Showcase Header */}
-                <div className="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs font-bold tracking-wide">Live AI Match Demonstration</span>
+                <div className="relative rounded-3xl bg-slate-900/95 border border-slate-700 shadow-2xl overflow-hidden text-left backdrop-blur-xl">
+                  {/* Top Live Bar */}
+                  <div className="px-4 py-3 bg-slate-950 text-white flex items-center justify-between border-b border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-bold tracking-wide text-slate-200">
+                        Live Multimodal AI Match Verification
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
+                      Sylhet Hub
+                    </span>
                   </div>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-500/40 text-indigo-200 border border-indigo-400/30">
-                    Sylhet Hub
-                  </span>
+
+                  {/* Real Photo Demonstration (Leather Wallet on CNG seat) */}
+                  <div className="relative h-52 w-full overflow-hidden bg-slate-950 group">
+                    <img
+                      src="/images/sylhet_cng_wallet.jpg"
+                      alt="Black Leather Wallet left in CNG in Sylhet"
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-700"
+                    />
+                    <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-600/90 text-white shadow-md backdrop-blur-sm flex items-center gap-1.5 border border-emerald-400/40">
+                      <Sparkles className="w-3.5 h-3.5" /> Found at Amberkhana CNG Stand
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3 p-2.5 rounded-xl bg-slate-950/85 backdrop-blur-md text-white text-xs flex items-center justify-between border border-slate-700/60">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        <span className="font-semibold truncate text-[11px] text-slate-200">
+                          Matched with Lost Report from Zindabazar Center
+                        </span>
+                      </div>
+                      <span className="font-mono text-emerald-400 font-extrabold text-xs shrink-0 ml-2">
+                        96.4% Match
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* AI Explanation & Breakdown Bars */}
+                  <div className="p-5 space-y-4 bg-slate-900/90">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-extrabold text-sm text-white">
+                          Black Leather Bifold Wallet
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Cross-modal OpenCLIP visual &amp; S-BERT semantic verification
+                        </p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        High Confidence
+                      </span>
+                    </div>
+
+                    {/* AI Feature Weights Demonstration */}
+                    <div className="space-y-2 pt-1 text-xs">
+                      <div>
+                        <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                          <span>CLIP Vision Embeddings (ViT-B-32)</span>
+                          <span className="font-bold text-indigo-400">98.2% Similarity</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full" style={{ width: "98%" }} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                          <span>S-BERT Semantic Text Vectors</span>
+                          <span className="font-bold text-violet-400">94.5% Similarity</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full" style={{ width: "94%" }} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Spatiotemporal Proximity (Amberkhana &harr; Zindabazar)</span>
+                          <span className="font-bold text-emerald-400">1.2 km &bull; 92.0%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full" style={{ width: "92%" }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Human Verification Notice */}
+                    <div className="pt-3 flex items-center justify-between border-t border-slate-800 text-[11px] text-slate-400">
+                      <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                        <Shield className="w-4 h-4 text-emerald-400" />
+                        Human Verification Protected
+                      </span>
+                      <button
+                        onClick={() => setActiveTab("feed")}
+                        className="font-bold text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1"
+                      >
+                        Explore Feed &rarr;
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Real Photo Preview */}
-                <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 group">
+                {/* Second Floating Badge for Realism */}
+                <div className="hidden sm:flex absolute -bottom-5 -left-5 p-3 rounded-2xl bg-slate-900/95 border border-slate-700 shadow-2xl items-center gap-3 text-xs max-w-xs backdrop-blur-xl animate-float-delayed">
                   <img
-                    src="/images/sylhet_cng_wallet.jpg"
-                    alt="Leather wallet left in CNG in Sylhet"
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+                    src="/images/sylhet_cafe_backpack.jpg"
+                    alt="Backpack"
+                    className="w-11 h-11 rounded-xl object-cover shrink-0 border border-slate-700"
                   />
-                  <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-600 text-white shadow-md flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Found in Sylhet
+                  <div className="overflow-hidden">
+                    <p className="font-bold text-white text-xs truncate">Navy Student Backpack</p>
+                    <p className="text-[11px] text-emerald-400 font-semibold truncate">
+                      Surma Riverfront Cafe &bull; Reunited &check;
+                    </p>
                   </div>
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 p-2 rounded-xl bg-slate-950/80 backdrop-blur-md text-white text-xs flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                      <span className="font-semibold truncate text-[11px]">Amberkhana CNG Stand</span>
-                    </div>
-                    <span className="font-mono text-emerald-400 font-extrabold text-xs shrink-0">96.4% Match</span>
-                  </div>
-                </div>
-
-                {/* Match Details & Feature Attribution */}
-                <div className="p-4 space-y-3 bg-white">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h2 className="font-black text-sm text-slate-900">Black Leather Bifold Wallet</h2>
-                      <p className="text-xs text-slate-500">Paired with Lost Report from Zindabazar Center</p>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                      High Confidence
-                    </span>
-                  </div>
-
-                  {/* AI Feature Weights */}
-                  <div className="space-y-1.5 pt-1 text-xs">
-                    <div className="flex justify-between text-[11px] text-slate-500">
-                      <span>CLIP Vision Similarity</span>
-                      <span className="font-bold text-indigo-600">98.2%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-600 rounded-full" style={{ width: "98%" }} />
-                    </div>
-
-                    <div className="flex justify-between text-[11px] text-slate-500">
-                      <span>S-BERT Semantic Text</span>
-                      <span className="font-bold text-violet-600">94.5%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-violet-600 rounded-full" style={{ width: "94%" }} />
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-between border-t border-slate-100 text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-                      <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                      Human Verification Gate
-                    </span>
-                    <button
-                      onClick={() => setActiveTab("feed")}
-                      className="font-bold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-0.5"
-                    >
-                      Browse Feed &rarr;
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating secondary badge */}
-              <div className="hidden sm:flex absolute -bottom-3 -left-4 p-2 rounded-2xl bg-white border border-slate-200 shadow-lg items-center gap-2.5 text-xs max-w-xs">
-                <img
-                  src="/images/sylhet_cafe_backpack.jpg"
-                  alt="Backpack"
-                  className="w-9 h-9 rounded-xl object-cover shrink-0"
-                />
-                <div className="overflow-hidden">
-                  <p className="font-bold text-slate-800 text-[11px] truncate">Navy Student Backpack</p>
-                  <p className="text-[10px] text-emerald-600 font-semibold truncate">Surma River Cafe &bull; Claimed</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 3-Step "How FindIt Works" Visual Ribbon */}
-          <div className="mt-12 pt-8 border-t border-slate-200/70 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">
-                  1
-                </span>
-                <h3 className="text-xs font-bold text-slate-900">Report in 60s</h3>
+          {/* 4 Trust Feature Cards */}
+          <div className="mt-16 pt-10 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+            <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60 backdrop-blur-sm">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-3 border border-indigo-500/30">
+                <Cpu className="w-5 h-5" />
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Take a photo or describe the item with Sylhet location (CNG, cafe, campus, station).
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Multimodal AI Matching</h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                OpenCLIP ViT-B-32 এবং Sentence Transformers দিয়ে ছবি ও বিবরণ একসাথে বিশ্লেষণ।
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-700 font-bold text-xs flex items-center justify-center">
-                  2
-                </span>
-                <h3 className="text-xs font-bold text-slate-900">Multimodal AI Match</h3>
+            <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60 backdrop-blur-sm">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 border border-emerald-500/30">
+                <Lock className="w-5 h-5" />
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                OpenCLIP vision vectors &amp; S-BERT semantic embeddings pair lost &amp; found items instantly.
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Privacy &amp; Ownership</h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                সিক্রেট ভেরিফিকেশন ডিটেইলস সাধারণ মানুষের কাছে গোপন রাখা হয়; শুধু মালিকই ক্লেইম করতে পারে।
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">
-                  3
-                </span>
-                <h3 className="text-xs font-bold text-slate-900">Verify &amp; Safely Claim</h3>
+            <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60 backdrop-blur-sm">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-3 border border-sky-500/30">
+                <MapPin className="w-5 h-5" />
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Secret verification questions (wallpaper, marks) confirm true ownership before return.
-              </p>
-            </div>
-          </div>
-
-          {/* Academic Supervisor & Specs Drawer */}
-          <div className="mt-6 pt-3 border-t border-slate-200/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500">
-            <div className="text-center sm:text-left">
-              <p className="font-semibold text-slate-700 text-xs">
-                Metropolitan University &bull; Dept. of CSE (Project CSE 300)
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Supervisor: Md Shamihul Islam Khan Limon &bull; Team: Farhana Nowshin &amp; Adrita Chakraborty
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">11 Sylhet City Hubs</h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                জিন্দাবাজার, আম্বরখানা, কদমতলী রেলওয়ে স্টেশন এবং সকল শিক্ষা প্রতিষ্ঠান ম্যাপে সংযুক্ত।
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsProposalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition"
-              >
-                <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                Project Specs &amp; Proposal
-              </button>
-              <button
-                onClick={() => setIsWeightsOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition"
-              >
-                <Sliders className="w-3.5 h-3.5 text-indigo-500" />
-                AI Weights
-              </button>
+            <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60 backdrop-blur-sm">
+              <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3 border border-rose-500/30">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Empirical Validation</h3>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                ৩৫০-জোড়া ক্যাম্পাসের তথ্যের ওপর গ্রিড সার্চ চালিয়ে অপটিমাইজ করা ৫-ফ্যাক্টর ওয়েটেড ফর্মুলা।
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Main Content Area with Modern Tab Control */}
-      <main ref={contentRef} className="flex-1 py-8 sm:py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <main ref={contentRef} className="flex-1 py-10 sm:py-14 bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           {/* Section Navigation Tabs */}
           <div className="flex items-center justify-center">
-            <div className="inline-flex p-1.5 bg-slate-200/80 rounded-2xl shadow-inner gap-1.5 text-xs font-bold text-slate-600">
+            <div className="inline-flex p-1.5 bg-slate-800/90 rounded-2xl border border-slate-700 shadow-xl gap-2 text-xs font-bold text-slate-300">
               <button
                 onClick={() => setActiveTab("feed")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition duration-200 ${
                   activeTab === "feed"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
+                    : "hover:text-white hover:bg-slate-700/50"
                 }`}
               >
-                <LayoutGrid className="w-4 h-4 text-indigo-600" />
+                <LayoutGrid className="w-4 h-4" />
                 <span>Browse Items &amp; Map</span>
-                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-indigo-50 text-[10px] text-indigo-600 font-extrabold border border-indigo-100">
+                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-indigo-950 text-[10px] text-indigo-300 font-extrabold border border-indigo-500/40">
                   {items.length}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("report")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition duration-200 ${
                   activeTab === "report"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
+                    : "hover:text-white hover:bg-slate-700/50"
                 }`}
               >
-                <PlusCircle className="w-4 h-4 text-emerald-600" />
+                <PlusCircle className="w-4 h-4 text-emerald-400" />
                 <span>Report an Item</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("admin")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition duration-200 ${
                   activeTab === "admin"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
+                    : "hover:text-white hover:bg-slate-700/50"
                 }`}
               >
-                <Shield className="w-4 h-4 text-purple-600" />
+                <Shield className="w-4 h-4 text-purple-400" />
                 <span>Admin &amp; Verification</span>
               </button>
             </div>
@@ -522,7 +562,7 @@ export default function Home() {
 
           {/* Tab 1: Live Feed and Map */}
           {activeTab === "feed" && (
-            <div id="recent-items" className="animate-in fade-in duration-200">
+            <div id="recent-items" className="animate-in fade-in duration-300">
               <RecentItemsList
                 items={items}
                 isLoading={isLoading}
@@ -540,56 +580,60 @@ export default function Home() {
 
           {/* Tab 2: Item Upload Form */}
           {activeTab === "report" && (
-            <div id="report-form" className="animate-in fade-in duration-200 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl">
+            <div id="report-form" className="animate-in fade-in duration-300 space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-800/80 border border-slate-700 rounded-2xl">
                 <div>
-                  <h2 className="text-sm font-bold text-indigo-900">
+                  <h2 className="text-sm font-bold text-white">
                     Submitting a {reportFormType === "lost" ? "Lost" : "Found"} Item Report
                   </h2>
-                  <p className="text-xs text-indigo-700">
-                    Provide clear details and a photo so our Multimodal AI can match it accurately.
+                  <p className="text-xs text-slate-400">
+                    Provide clear details and a photo so our Multimodal AI can match it accurately across Sylhet.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("feed")}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-700 hover:bg-slate-600 transition"
                 >
                   &larr; Back to Items Feed
                 </button>
               </div>
 
-              <ItemUploadForm
-                initialType={reportFormType}
-                onReportCreated={handleReportCreated}
-                onRequireAuth={() => {
-                  setAuthModalTab("login");
-                  setAuthModalOpen(true);
-                }}
-              />
+              <div className="bg-white rounded-3xl p-6 text-slate-900 shadow-2xl">
+                <ItemUploadForm
+                  initialType={reportFormType}
+                  onReportCreated={handleReportCreated}
+                  onRequireAuth={() => {
+                    setAuthModalTab("login");
+                    setAuthModalOpen(true);
+                  }}
+                />
+              </div>
             </div>
           )}
 
           {/* Tab 3: Admin & Verification Preview */}
           {activeTab === "admin" && (
-            <div id="admin-preview" className="animate-in fade-in duration-200 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-purple-50/70 border border-purple-100 rounded-2xl">
+            <div id="admin-preview" className="animate-in fade-in duration-300 space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-800/80 border border-slate-700 rounded-2xl">
                 <div>
-                  <h2 className="text-sm font-bold text-purple-900">
+                  <h2 className="text-sm font-bold text-white">
                     Explainability &amp; Admin Verification Portal
                   </h2>
-                  <p className="text-xs text-purple-700">
+                  <p className="text-xs text-slate-400">
                     Review incoming claims, inspect multimodal feature attributions, and manage safety oversight.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("feed")}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-700 hover:bg-slate-600 transition"
                 >
                   &larr; Back to Items Feed
                 </button>
               </div>
 
-              <AdminPreview />
+              <div className="bg-white rounded-3xl p-6 text-slate-900 shadow-2xl">
+                <AdminPreview />
+              </div>
             </div>
           )}
         </div>
@@ -631,7 +675,7 @@ export default function Home() {
         }}
       />
 
-      {/* University Footer */}
+      {/* University & City Footer */}
       <Footer onOpenProposal={() => setIsProposalOpen(true)} />
     </div>
   );
