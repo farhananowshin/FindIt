@@ -9,15 +9,17 @@ import WeightsModal from "../components/WeightsModal";
 import MatchesModal from "../components/MatchesModal";
 import AuthModal from "../components/AuthModal";
 import ClaimModal from "../components/ClaimModal";
+import ProposalModal from "../components/ProposalModal";
 import Footer from "../components/Footer";
 import { SAMPLE_CAMPUS_ITEMS } from "../data/sampleItems";
 import { StoredItemReport } from "../types/item";
 import { fetchItems } from "../services/api";
-import { Sliders } from "lucide-react";
+import { Sliders, FileText } from "lucide-react";
 
 export default function Home() {
   const [items, setItems] = useState<StoredItemReport[]>(SAMPLE_CAMPUS_ITEMS);
   const [isWeightsOpen, setIsWeightsOpen] = useState(false);
+  const [isProposalOpen, setIsProposalOpen] = useState(false);
   const [selectedLostItem, setSelectedLostItem] = useState<StoredItemReport | null>(null);
   const [claimItem, setClaimItem] = useState<StoredItemReport | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -89,6 +91,7 @@ export default function Home() {
       {/* Navigation Header */}
       <Navbar
         onOpenWeights={() => setIsWeightsOpen(true)}
+        onOpenProposal={() => setIsProposalOpen(true)}
         onNavigateSection={scrollToSection}
         onOpenAuth={(tab) => {
           setAuthModalTab(tab);
@@ -102,23 +105,25 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-indigo-200/25 blur-3xl rounded-full pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-indigo-700 shadow-sm border border-indigo-100 mb-6">
+          {/* Slogan & Course Badge from Proposal */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-indigo-700 shadow-sm border border-indigo-100 mb-6">
             <span className="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
-            <span>Next-Generation Multimodal AI Lost & Found</span>
+            <span className="font-bold text-sm tracking-wide">&ldquo;Lost it? FindIt.&rdquo;</span>
+            <span className="text-slate-300">|</span>
+            <span className="text-slate-600 font-medium">CSE 300 Project Proposal Implementation</span>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 max-w-4xl mx-auto leading-tight">
-            Recover What&apos;s Lost. <br className="hidden sm:inline" />
+          {/* Headline from Proposal Title */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 max-w-4xl mx-auto leading-tight">
+            An Explainable Multimodal Web-Based <br className="hidden sm:inline" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-500">
-              Connect What&apos;s Found.
+              Lost and Found Matching System
             </span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="mt-5 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            FindIt connects lost and found reports across Sylhet city, transit hubs (CNG &amp; Bus), and university campuses using explainable multimodal AI. By evaluating images (CLIP), semantic descriptions (Sentence Transformers), location, time, and physical attributes, we help items get returned quickly and securely.
+          {/* Subtitle from Proposal Section 1 & 3 */}
+          <p className="mt-5 text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+            A centralized web-based platform pairing lost and found reports using multimodal AI (OpenCLIP visual vectors + Sentence Transformers semantic text) combined with spatiotemporal reasoning and privacy-preserving ownership verification.
           </p>
 
           {/* Action CTAs */}
@@ -134,7 +139,14 @@ export default function Home() {
               className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 shadow-xs transition flex items-center justify-center gap-2"
             >
               <Sliders className="w-4 h-4 text-indigo-500" />
-              View 5-Weight AI Formula
+              5-Weight AI Formula
+            </button>
+            <button
+              onClick={() => setIsProposalOpen(true)}
+              className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/90 shadow-xs transition flex items-center justify-center gap-2"
+            >
+              <FileText className="w-4 h-4 text-indigo-600" />
+              Proposal Features (10/10)
             </button>
           </div>
 
@@ -199,6 +211,12 @@ export default function Home() {
       <WeightsModal
         isOpen={isWeightsOpen}
         onClose={() => setIsWeightsOpen(false)}
+      />
+
+      {/* Project Proposal & Features Modal */}
+      <ProposalModal
+        isOpen={isProposalOpen}
+        onClose={() => setIsProposalOpen(false)}
       />
 
       {/* Day 3 Explainable Multimodal Matches Modal */}

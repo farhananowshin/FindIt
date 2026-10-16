@@ -15,17 +15,19 @@ import {
   User as UserIcon,
   ClipboardList,
   Shield,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 
 interface NavbarProps {
   onOpenWeights?: () => void;
+  onOpenProposal?: () => void;
   onNavigateSection?: (sectionId: string) => void;
   onOpenAuth?: (tab: "login" | "register") => void;
 }
 
-export default function Navbar({ onOpenWeights, onNavigateSection, onOpenAuth }: NavbarProps) {
+export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSection, onOpenAuth }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
 
@@ -57,8 +59,8 @@ export default function Navbar({ onOpenWeights, onNavigateSection, onOpenAuth }:
                 <span className="text-xl font-bold tracking-tight text-slate-900">
                   Find<span className="text-indigo-600">It</span>
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  Sylhet &amp; Campus AI
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold italic bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  &ldquo;Lost it? FindIt.&rdquo;
                 </span>
               </div>
               <p className="hidden sm:block text-[11px] text-slate-500 font-medium">
@@ -69,6 +71,13 @@ export default function Navbar({ onOpenWeights, onNavigateSection, onOpenAuth }:
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+            <button
+              onClick={onOpenProposal}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 rounded-lg transition border border-indigo-200/80 shadow-2xs"
+            >
+              <FileText className="w-4 h-4 text-indigo-600" />
+              Proposal Features (10/10)
+            </button>
             <button
               onClick={() => scrollTo("report-form")}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition"
