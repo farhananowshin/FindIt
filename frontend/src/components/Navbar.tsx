@@ -58,7 +58,7 @@ export default function Navbar({ onOpenWeights, onNavigateSection, onOpenAuth }:
                   Find<span className="text-indigo-600">It</span>
                 </span>
                 <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  Campus AI
+                  Sylhet &amp; Campus AI
                 </span>
               </div>
               <p className="hidden sm:block text-[11px] text-slate-500 font-medium">

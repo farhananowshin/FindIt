@@ -118,7 +118,7 @@ export default function Home() {
 
           {/* Subtitle */}
           <p className="mt-5 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            FindIt pairs campus lost & found reports using explainable multimodal AI. By evaluating images (CLIP), semantic descriptions (Sentence Transformers), location, time, and physical attributes, we help items get returned quickly and accurately.
+            FindIt connects lost and found reports across Sylhet city, transit hubs (CNG &amp; Bus), and university campuses using explainable multimodal AI. By evaluating images (CLIP), semantic descriptions (Sentence Transformers), location, time, and physical attributes, we help items get returned quickly and securely.
           </p>
 
           {/* Action CTAs */}
