@@ -107,6 +107,12 @@ const ItemReportSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    submitterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+      default: null,
+    },
     submitterName: {
       type: String,
       required: [true, "Submitter name is required"],
@@ -145,9 +151,11 @@ const ItemReportSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret) {
-        // Double safeguard: ensure secretVerificationDetail is NEVER included in JSON output
-        delete ret.secretVerificationDetail;
+      transform: function (doc, ret, options) {
+        // Safeguard: omit secretVerificationDetail unless explicitly authorized for admin review
+        if (!options || !options.includeSecret) {
+          delete ret.secretVerificationDetail;
+        }
         return ret;
       },
     },

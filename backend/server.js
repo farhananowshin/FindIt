@@ -7,6 +7,8 @@ require("dotenv").config();
 
 const connectDB = require("./src/config/db");
 const itemRoutes = require("./src/routes/itemRoutes");
+const authRoutes = require("./src/routes/authRoutes");
+const claimRoutes = require("./src/routes/claimRoutes");
 
 // Initialize Express application
 const app = express();
@@ -73,11 +75,13 @@ app.get("/api/health", (req, res) => {
       readyState: dbState,
       name: mongoose.connection.name || "findit",
     },
-    version: "1.0.0 (Day 2)",
+    version: "1.0.0 (Day 4)",
   });
 });
 
-// Mount Item REST API Routes
+// Mount REST API Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/claims", claimRoutes);
 app.use("/api/items", itemRoutes);
 
 // 404 Handler for undefined routes

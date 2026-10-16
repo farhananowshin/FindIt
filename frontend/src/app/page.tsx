@@ -7,6 +7,8 @@ import RecentItemsList from "../components/RecentItemsList";
 import AdminPreview from "../components/AdminPreview";
 import WeightsModal from "../components/WeightsModal";
 import MatchesModal from "../components/MatchesModal";
+import AuthModal from "../components/AuthModal";
+import ClaimModal from "../components/ClaimModal";
 import Footer from "../components/Footer";
 import { SAMPLE_CAMPUS_ITEMS } from "../data/sampleItems";
 import { StoredItemReport } from "../types/item";
@@ -17,6 +19,9 @@ export default function Home() {
   const [items, setItems] = useState<StoredItemReport[]>(SAMPLE_CAMPUS_ITEMS);
   const [isWeightsOpen, setIsWeightsOpen] = useState(false);
   const [selectedLostItem, setSelectedLostItem] = useState<StoredItemReport | null>(null);
+  const [claimItem, setClaimItem] = useState<StoredItemReport | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -85,6 +90,10 @@ export default function Home() {
       <Navbar
         onOpenWeights={() => setIsWeightsOpen(true)}
         onNavigateSection={scrollToSection}
+        onOpenAuth={(tab) => {
+          setAuthModalTab(tab);
+          setAuthModalOpen(true);
+        }}
       />
 
       {/* Hero Section */}
@@ -162,7 +171,13 @@ export default function Home() {
       <main className="flex-1 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
           {/* Section 1: Item Upload Form (Connected to POST /api/items) */}
-          <ItemUploadForm onReportCreated={handleReportCreated} />
+          <ItemUploadForm
+            onReportCreated={handleReportCreated}
+            onRequireAuth={() => {
+              setAuthModalTab("login");
+              setAuthModalOpen(true);
+            }}
+          />
 
           {/* Section 2: Recent Campus Items Feed (Connected to GET /api/items) */}
           <RecentItemsList
@@ -172,6 +187,7 @@ export default function Home() {
             onRefresh={handleRefresh}
             isLive={isLive}
             onFindMatches={(item) => setSelectedLostItem(item)}
+            onClaimItem={(item) => setClaimItem(item)}
           />
 
           {/* Section 3: Explainability & Admin Verification Preview */}
@@ -190,6 +206,23 @@ export default function Home() {
         lostItem={selectedLostItem}
         isOpen={Boolean(selectedLostItem)}
         onClose={() => setSelectedLostItem(null)}
+      />
+
+      {/* Day 4 User Authentication Modal (Login / Register) */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultTab={authModalTab}
+      />
+
+      {/* Day 4 Confidential Ownership Claim Modal */}
+      <ClaimModal
+        item={claimItem}
+        isOpen={Boolean(claimItem)}
+        onClose={() => setClaimItem(null)}
+        onClaimSubmitted={() => {
+          handleRefresh();
+        }}
       />
 
       {/* University Footer */}

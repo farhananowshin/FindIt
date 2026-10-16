@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const ItemReport = require("../models/ItemReport");
 const upload = require("../middleware/upload");
+const { authenticateToken, requireRole } = require("../middleware/auth");
 
 /**
  * Helper: parse location from either nested object, flat fields, or JSON string.
@@ -30,10 +31,11 @@ function extractLocation(body) {
 /**
  * @route   POST /api/items
  * @desc    Create a new lost or found item report (Supports JSON & multipart/form-data with images)
- * @access  Public
+ * @access  Private (Authenticated users only)
  */
 router.post(
   "/",
+  authenticateToken,
   (req, res, next) => {
     // Multer middleware with custom error handling for size/type limits
     upload.array("images", 4)(req, res, (err) => {
@@ -93,10 +95,10 @@ router.post(
       // Normalize field names (supporting both frontend form conventions and standard schema names)
       const effectiveType = (type || reportType || "").toLowerCase();
       const effectiveVerificationDetail = (secretVerificationDetail || secretVerificationHint || "").trim();
-      const effectiveSubmitterName = (submitterName || reporterName || "").trim();
-      const effectiveStudentId = (submitterStudentId || studentId || "").trim();
-      const effectiveEmail = (submitterEmail || contactEmail || "").trim();
-      const effectivePhone = (submitterPhone || contactPhone || "").trim();
+      const effectiveSubmitterName = (req.user?.name || submitterName || reporterName || "").trim();
+      const effectiveStudentId = (req.user?.studentId || submitterStudentId || studentId || "").trim();
+      const effectiveEmail = (req.user?.email || submitterEmail || contactEmail || "").trim();
+      const effectivePhone = (req.user?.phone || submitterPhone || contactPhone || "").trim();
       const location = extractLocation(req.body);
 
       // Process uploaded images
@@ -136,6 +138,7 @@ router.post(
         dateTime: dateTime ? new Date(dateTime) : new Date(),
         imagePaths,
         imageUrls,
+        submitterId: req.user?._id || null, // Always attach authenticated user ID
         submitterName: effectiveSubmitterName,
         submitterStudentId: effectiveStudentId,
         submitterEmail: effectiveEmail,
@@ -273,6 +276,43 @@ router.get("/:id", async (req, res) => {
       success: false,
       message: "Failed to retrieve item report.",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+});
+
+/**
+ * @route   GET /api/items/:id/admin
+ * @desc    Fetch single item report with confidential secretVerificationDetail (Admin only)
+ * @access  Private (Admin only)
+ */
+router.get("/:id/admin", authenticateToken, requireRole(["admin"]), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid item ID format: "${id}". Must be a 24-character hex string.`,
+      });
+    }
+
+    const item = await ItemReport.findById(id).select("+secretVerificationDetail").lean();
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: `Item report with ID "${id}" was not found.`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: item,
+    });
+  } catch (error) {
+    console.error(`❌ Error fetching item ${req.params.id} for admin:`, error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve item report for admin review.",
     });
   }
 });

@@ -64,6 +64,7 @@ export interface StoredItemReport {
   description: string;
   uniqueMarks?: string;
   secretVerificationHint?: string;
+  secretVerificationDetail?: string;
   reporterName?: string;
   submitterName?: string;
   studentId?: string;
@@ -154,3 +155,50 @@ export interface MatchResponse {
   matches: MatchCandidate[];
   message?: string;
 }
+
+// ==========================================
+// Day 4: Authentication & Claims Interfaces
+// ==========================================
+
+export type UserRole = "student" | "admin";
+
+export interface UserProfile {
+  _id: string;
+  name: string;
+  email: string;
+  studentId?: string;
+  phone?: string;
+  role: UserRole;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message?: string;
+  token?: string;
+  user?: UserProfile;
+}
+
+export type ClaimStatus = "pending" | "approved" | "rejected";
+
+export interface Claim {
+  _id: string;
+  claimantId: UserProfile | string;
+  itemId: StoredItemReport | string;
+  secretVerificationAnswer: string;
+  proofDetails: string;
+  status: ClaimStatus;
+  reviewedBy?: UserProfile | string | null;
+  reviewedAt?: string | null;
+  reviewNotes?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateClaimPayload {
+  itemId: string;
+  secretVerificationAnswer: string;
+  proofDetails: string;
+}
+

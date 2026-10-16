@@ -11,6 +11,8 @@ import {
   AlertCircle,
   Database,
   Sparkles,
+  ShieldAlert,
+  CheckCircle2,
 } from "lucide-react";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
 
@@ -21,6 +23,7 @@ interface RecentItemsListProps {
   onRefresh?: () => void;
   isLive?: boolean;
   onFindMatches?: (item: StoredItemReport) => void;
+  onClaimItem?: (item: StoredItemReport) => void;
 }
 
 export default function RecentItemsList({
@@ -30,6 +33,7 @@ export default function RecentItemsList({
   onRefresh,
   isLive = false,
   onFindMatches,
+  onClaimItem,
 }: RecentItemsListProps) {
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -339,6 +343,25 @@ export default function RecentItemsList({
                     >
                       <Sparkles className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
                       Find AI Matches (5-Weight)
+                    </button>
+                  )}
+
+                  {/* Claim Button for Found Items */}
+                  {!isLost && item.status === "claimed" && (
+                    <div className="mt-3 w-full py-2 px-3 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      Claimed &amp; Ownership Verified
+                    </div>
+                  )}
+
+                  {!isLost && item.status !== "claimed" && onClaimItem && (
+                    <button
+                      type="button"
+                      onClick={() => onClaimItem(item)}
+                      className="mt-3 w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer active:scale-98"
+                    >
+                      <ShieldAlert className="w-3.5 h-3.5" />
+                      Claim This Item
                     </button>
                   )}
                 </div>

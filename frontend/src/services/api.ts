@@ -147,9 +147,15 @@ export async function fetchItems(filters?: {
 /**
  * Submit a new item report using FormData (supporting image files).
  */
-export async function submitItemReport(formData: FormData): Promise<StoredItemReport> {
+export async function submitItemReport(formData: FormData, token?: string): Promise<StoredItemReport> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}/api/items`, {
     method: "POST",
+    headers,
     body: formData,
   });
 
@@ -207,3 +213,172 @@ export async function fetchMatchesForItem(
 
   return json;
 }
+
+// ==========================================
+// Day 4: Authentication & Claims API Client
+// ==========================================
+
+import { UserProfile, AuthResponse, Claim, CreateClaimPayload, ClaimStatus } from "../types/item";
+
+/**
+ * Register a new student account.
+ */
+export async function registerUser(userData: {
+  name: string;
+  email: string;
+  password: string;
+  studentId?: string;
+  phone?: string;
+}): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Registration failed.");
+  }
+
+  return json;
+}
+
+/**
+ * Authenticate existing user with email and password.
+ */
+export async function loginUser(credentials: {
+  email: string;
+  password: string;
+}): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Invalid email or password.");
+  }
+
+  return json;
+}
+
+/**
+ * Fetch profile for the currently authenticated user.
+ */
+export async function fetchCurrentUser(token: string): Promise<UserProfile> {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to fetch user profile.");
+  }
+
+  return json.user;
+}
+
+/**
+ * Submit an ownership claim for a found item.
+ */
+export async function submitClaim(
+  payload: CreateClaimPayload,
+  token: string
+): Promise<{ success: boolean; message: string; data: Partial<Claim> }> {
+  const res = await fetch(`${API_BASE}/api/claims`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to submit ownership claim.");
+  }
+
+  return json;
+}
+
+/**
+ * Fetch all claims filed by the currently authenticated student.
+ */
+export async function fetchMyClaims(token: string): Promise<Claim[]> {
+  const res = await fetch(`${API_BASE}/api/claims/my-claims`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to retrieve your claims.");
+  }
+
+  return json.data || [];
+}
+
+/**
+ * Fetch all claims for admin review.
+ */
+export async function fetchAdminClaims(
+  token: string,
+  status?: string
+): Promise<{ total: number; data: Claim[] }> {
+  const query = status && status !== "all" ? `?status=${status}` : "";
+  const res = await fetch(`${API_BASE}/api/claims${query}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to fetch claims for administrative review.");
+  }
+
+  return { total: json.total || 0, data: json.data || [] };
+}
+
+/**
+ * Approve or reject a claim (Admin only).
+ */
+export async function updateClaimStatus(
+  claimId: string,
+  status: ClaimStatus,
+  reviewNotes: string,
+  token: string
+): Promise<{ success: boolean; message: string; data: { claim: Claim; itemStatus: string } }> {
+  const res = await fetch(`${API_BASE}/api/claims/${claimId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status, reviewNotes }),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to update claim review status.");
+  }
+
+  return json;
+}
+

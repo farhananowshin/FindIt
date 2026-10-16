@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, DragEvent, ChangeEvent } from "react";
+import React, { useState, useEffect, useRef, DragEvent, ChangeEvent } from "react";
 import {
   Upload,
   Image as ImageIcon,
@@ -27,12 +27,15 @@ import {
   StoredItemReport,
 } from "../types/item";
 import { submitItemReport } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 interface ItemUploadFormProps {
   onReportCreated?: (report: StoredItemReport) => void;
+  onRequireAuth?: () => void;
 }
 
-export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps) {
+export default function ItemUploadForm({ onReportCreated, onRequireAuth }: ItemUploadFormProps) {
+  const { user, token } = useAuth();
   // Form State
   const [reportType, setReportType] = useState<ReportType>("lost");
   const [title, setTitle] = useState("");
@@ -64,6 +67,16 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
   const [submittedReport, setSubmittedReport] = useState<StoredItemReport | null>(null);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [serverError, setServerError] = useState<string | null>(null);
+
+  // Auto-fill reporter details if user is logged in
+  useEffect(() => {
+    if (user) {
+      if (!reporterName && user.name) setReporterName(user.name);
+      if (!studentId && user.studentId) setStudentId(user.studentId);
+      if (!contactEmail && user.email) setContactEmail(user.email);
+      if (!contactPhone && user.phone) setContactPhone(user.phone);
+    }
+  }, [user]);
 
   // Image Upload Handlers
   const handleFiles = (files: FileList | null) => {
@@ -193,6 +206,14 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
       return;
     }
 
+    if (!token) {
+      setServerError("Authentication required: Please log in or register with your student account before submitting an item report.");
+      if (onRequireAuth) {
+        onRequireAuth();
+      }
+      return;
+    }
+
     setIsSubmitting(true);
     setServerError(null);
 
@@ -229,8 +250,8 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
           : "Indexing report in MongoDB..."
       );
 
-      // Submit to Express REST backend (POST /api/items)
-      const savedReport = await submitItemReport(formData);
+      // Submit to Express REST backend (POST /api/items) with JWT token
+      const savedReport = await submitItemReport(formData, token);
 
       setIsSubmitting(false);
       setSubmittedReport(savedReport);
@@ -801,6 +822,36 @@ export default function ItemUploadForm({ onReportCreated }: ItemUploadFormProps)
                 5. Reporter Contact & Verification
               </h3>
             </div>
+
+            {user ? (
+              <div className="mb-4 p-3.5 rounded-xl bg-indigo-50/80 border border-indigo-100 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs text-indigo-950 font-medium">
+                    Verified session: Submitting as <strong className="font-semibold">{user.name}</strong> ({user.email})
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-200/70 text-indigo-800">
+                  {user.role}
+                </span>
+              </div>
+            ) : (
+              <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start sm:items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+                  <span>You must be logged in with a campus account to register an item in the system.</span>
+                </div>
+                {onRequireAuth && (
+                  <button
+                    type="button"
+                    onClick={onRequireAuth}
+                    className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition shrink-0 shadow-xs"
+                  >
+                    Log In / Register
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Full Name */}
