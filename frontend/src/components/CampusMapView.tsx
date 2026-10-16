@@ -10,8 +10,8 @@ interface CampusMapViewProps {
   onClaimItem?: (item: StoredItemReport) => void;
 }
 
-// Metropolitan University, Bateshwar, Sylhet campus central coordinates
-const CAMPUS_CENTER: [number, number] = [24.8988, 91.9715];
+// Sylhet Metropolitan City & Campus central coordinates (Zindabazar / Surma to Bateshwar)
+const SYLHET_METRO_CENTER: [number, number] = [24.8960, 91.9050];
 
 export default function CampusMapView({
   items,
@@ -42,10 +42,10 @@ export default function CampusMapView({
         mapInstanceRef.current = null;
       }
 
-      // Initialize map
+      // Initialize map with Sylhet City center
       const map = L.map(mapContainerRef.current, {
-        center: CAMPUS_CENTER,
-        zoom: 16,
+        center: SYLHET_METRO_CENTER,
+        zoom: 13,
         scrollWheelZoom: true,
       });
 
@@ -54,7 +54,7 @@ export default function CampusMapView({
       // Add OpenStreetMap tile layer
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors | Metropolitan University FindIt',
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors | Sylhet FindIt AI',
         maxZoom: 19,
       }).addTo(map);
 
@@ -80,6 +80,7 @@ export default function CampusMapView({
 
       // Group items by location to jitter overlapping markers slightly
       const locationCounts: { [key: string]: number } = {};
+      const validPoints: [number, number][] = [];
 
       items.forEach((item) => {
         const itemType = item.type || item.reportType || "lost";
@@ -89,8 +90,8 @@ export default function CampusMapView({
           (l) => l.id === locId || l.name.toLowerCase().includes(locId.toLowerCase())
         ) || CAMPUS_LOCATIONS[CAMPUS_LOCATIONS.length - 1]; // default to 'other'
 
-        const baseLat = campusLoc.lat || CAMPUS_CENTER[0];
-        const baseLng = campusLoc.lng || CAMPUS_CENTER[1];
+        const baseLat = campusLoc.lat || SYLHET_METRO_CENTER[0];
+        const baseLng = campusLoc.lng || SYLHET_METRO_CENTER[1];
 
         // Apply a tiny deterministic jitter if multiple items share the same building coordinate
         const count = locationCounts[campusLoc.id] || 0;
@@ -99,6 +100,7 @@ export default function CampusMapView({
         const radius = count > 0 ? 0.00018 * Math.sqrt(count) : 0;
         const itemLat = baseLat + radius * Math.cos(angle);
         const itemLng = baseLng + radius * Math.sin(angle);
+        validPoints.push([itemLat, itemLng]);
 
         // Marker color and icon
         const markerBg = isLost ? "#ef4444" : "#10b981";
@@ -225,6 +227,12 @@ export default function CampusMapView({
         });
       });
 
+      // Auto-fit map bounds so all Sylhet city hubs and campus reports fit perfectly
+      if (validPoints.length > 0) {
+        const bounds = L.latLngBounds(validPoints);
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      }
+
       // Handle popup action button clicks
       map.on("popupopen", (e: any) => {
         const popupEl = e.popup.getElement();
@@ -268,11 +276,11 @@ export default function CampusMapView({
     if (!mapInstanceRef.current) return;
 
     if (buildingId === "all") {
-      mapInstanceRef.current.flyTo(CAMPUS_CENTER, 16, { duration: 1.2 });
+      mapInstanceRef.current.flyTo(SYLHET_METRO_CENTER, 13, { duration: 1.2 });
     } else {
       const loc = CAMPUS_LOCATIONS.find((l) => l.id === buildingId);
       if (loc && loc.lat && loc.lng) {
-        mapInstanceRef.current.flyTo([loc.lat, loc.lng], 18, { duration: 1.2 });
+        mapInstanceRef.current.flyTo([loc.lat, loc.lng], 16, { duration: 1.2 });
       }
     }
   };
@@ -290,26 +298,26 @@ export default function CampusMapView({
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-800">
-              Metropolitan University Campus Map View
+              Sylhet Metropolitan Area &amp; Campus Map
             </h3>
             <p className="text-xs text-slate-500">
-              Interactive OpenStreetMap visualization of lost and found campus reports
+              Interactive OpenStreetMap visualization of lost and found reports across Sylhet
             </p>
           </div>
         </div>
 
-        {/* Quick Building Selector */}
+        {/* Quick Hub Selector */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-500 font-medium hidden sm:inline">Jump to Building:</span>
+          <span className="text-slate-500 font-medium hidden sm:inline">Jump to Hub:</span>
           <select
             value={selectedBuilding}
             onChange={(e) => handlePanToBuilding(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
           >
-            <option value="all">📍 Full Campus View</option>
+            <option value="all">📍 Full Sylhet &amp; Campus View</option>
             {CAMPUS_LOCATIONS.map((loc) => (
               <option key={loc.id} value={loc.id}>
-                🏢 {loc.name}
+                📍 {loc.name}
               </option>
             ))}
           </select>
@@ -320,7 +328,7 @@ export default function CampusMapView({
       <div className="relative w-full h-[480px] sm:h-[540px] bg-slate-100">
         {!mounted ? (
           <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
-            Loading interactive campus map...
+            Loading interactive Sylhet map...
           </div>
         ) : (
           <div ref={mapContainerRef} className="w-full h-full z-0" />
@@ -340,20 +348,20 @@ export default function CampusMapView({
             <span className="font-medium text-slate-600">Found Items ({foundCount})</span>
           </div>
           <div className="flex items-center gap-1.5 text-indigo-600 border-l border-slate-200 pl-2">
-            <span className="text-[11px] font-semibold">🏢 Campus Buildings (11)</span>
+            <span className="text-[11px] font-semibold">📍 Sylhet City &amp; Campus Hubs ({CAMPUS_LOCATIONS.length})</span>
           </div>
         </div>
 
         {/* Tip Badge */}
         <div className="absolute top-4 right-4 z-[400] bg-white/90 backdrop-blur-xs px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-xs text-[11px] text-slate-600 flex items-center gap-1 hidden md:flex">
           <Info className="w-3.5 h-3.5 text-indigo-500" />
-          Click any pin to inspect item & take action
+          Click any pin to inspect item &amp; take action
         </div>
       </div>
 
       {/* Footer Info */}
       <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
-        <span>Campus coordinates: Bateshwar, Sylhet 3103, Bangladesh (24.8988° N, 91.9715° E)</span>
+        <span>Sylhet Metropolitan Area coverage (Amberkhana, Zindabazar, Surma Riverfront, Bateshwar MU)</span>
         <span className="font-semibold text-slate-600">
           Total Mapped: {items.length} Reports
         </span>

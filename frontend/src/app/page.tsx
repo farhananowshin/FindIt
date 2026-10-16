@@ -435,48 +435,54 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Content Area with Modern Tab Control */}
-      <main ref={contentRef} className="flex-1 py-8 sm:py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          {/* Section Navigation Tabs */}
-          <div className="flex items-center justify-center">
-            <div className="inline-flex p-1.5 bg-slate-200/80 rounded-2xl shadow-inner gap-1.5 text-xs font-bold text-slate-600">
+      {/* Main Content Area with Modern Floating Tab Control */}
+      <main ref={contentRef} className="flex-1 pb-16 pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          {/* Section Navigation Tabs: Sleek Floating Glassmorphic Dock */}
+          <div className="sticky top-20 z-30 flex items-center justify-center py-1">
+            <div className="inline-flex p-1.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 gap-1.5 text-xs font-bold text-slate-600">
               <button
                 onClick={() => setActiveTab("feed")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all cursor-pointer ${
                   activeTab === "feed"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "hover:text-slate-900 hover:bg-slate-100/80"
                 }`}
               >
-                <LayoutGrid className="w-4 h-4 text-indigo-600" />
-                <span>Browse Items &amp; Map</span>
-                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-indigo-50 text-[10px] text-indigo-600 font-extrabold border border-indigo-100">
+                <LayoutGrid className={`w-4 h-4 ${activeTab === "feed" ? "text-sky-400" : "text-slate-500"}`} />
+                <span>Sylhet Feed &amp; Map</span>
+                <span
+                  className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    activeTab === "feed"
+                      ? "bg-slate-800 text-sky-300 border-slate-700"
+                      : "bg-slate-100 text-slate-600 border-slate-200"
+                  }`}
+                >
                   {items.length}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("report")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all cursor-pointer ${
                   activeTab === "report"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "hover:text-slate-900 hover:bg-slate-100/80"
                 }`}
               >
-                <PlusCircle className="w-4 h-4 text-emerald-600" />
-                <span>Report an Item</span>
+                <PlusCircle className={`w-4 h-4 ${activeTab === "report" ? "text-white" : "text-emerald-600"}`} />
+                <span>+ Report an Item</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("admin")}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all cursor-pointer ${
                   activeTab === "admin"
-                    ? "bg-white text-indigo-700 shadow-sm"
-                    : "hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "hover:text-slate-900 hover:bg-slate-100/80"
                 }`}
               >
-                <Shield className="w-4 h-4 text-purple-600" />
+                <Shield className={`w-4 h-4 ${activeTab === "admin" ? "text-white" : "text-indigo-600"}`} />
                 <span>Admin &amp; Verification</span>
               </button>
             </div>

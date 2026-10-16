@@ -31,7 +31,7 @@ const CampusMapView = dynamic(() => import("./CampusMapView"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[480px] bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 text-sm animate-pulse border border-slate-200">
-      Loading Metropolitan University Campus Map...
+      Loading Sylhet &amp; Campus Interactive Map...
     </div>
   ),
 });
@@ -142,14 +142,25 @@ export default function RecentItemsList({
     }
   };
 
+  const CATEGORY_PILLS = [
+    { id: "all", label: "All Items" },
+    { id: "electronics", label: "💻 Electronics" },
+    { id: "bags_wallets", label: "💼 Wallets & Bags" },
+    { id: "id_cards", label: "💳 IDs & Cards" },
+    { id: "keys", label: "🔑 Keys" },
+    { id: "books_notes", label: "📚 Books" },
+    { id: "bottles_accessories", label: "☕ Accessories" },
+    { id: "clothing", label: "👕 Clothing" },
+  ];
+
   return (
-    <section id="recent-items" className="w-full max-w-6xl mx-auto mt-16 px-4 sm:px-6">
+    <section id="recent-items" className="w-full max-w-6xl mx-auto pt-2 px-4 sm:px-6">
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
-              Campus Feed
+              Sylhet Metropolitan Feed
             </span>
             {isLive ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -164,10 +175,10 @@ export default function RecentItemsList({
             )}
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
-            Recent Campus Lost & Found Reports
+            Recent Lost &amp; Found Reports in Sylhet
           </h2>
           <p className="text-sm text-slate-600 mt-1">
-            Browse live reports stored in MongoDB or use filters to find your belongings.
+            Browse live reports across Sylhet city hubs or filter by category and location.
           </p>
         </div>
 
@@ -178,19 +189,19 @@ export default function RecentItemsList({
               onClick={onRefresh}
               disabled={isLoading}
               title="Refresh reports from MongoDB"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-95 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-indigo-600" : ""}`} />
               Refresh
             </button>
           )}
 
-          {/* View Mode Segmented Control: Grid vs Campus Map */}
+          {/* View Mode Segmented Control: Grid vs Sylhet Map */}
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 viewMode === "grid"
                   ? "bg-white text-slate-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -202,21 +213,21 @@ export default function RecentItemsList({
             <button
               type="button"
               onClick={() => setViewMode("map")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 viewMode === "map"
                   ? "bg-indigo-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <MapPin className="w-3.5 h-3.5" />
-              Campus Map
+              Sylhet Map
             </button>
           </div>
 
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
             <button
               onClick={() => setFilterType("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 filterType === "all"
                   ? "bg-white text-slate-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -226,7 +237,7 @@ export default function RecentItemsList({
             </button>
             <button
               onClick={() => setFilterType("lost")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 filterType === "lost"
                   ? "bg-rose-50 text-rose-700 shadow-xs font-bold"
                   : "text-slate-600 hover:text-rose-600"
@@ -236,7 +247,7 @@ export default function RecentItemsList({
             </button>
             <button
               onClick={() => setFilterType("found")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 filterType === "found"
                   ? "bg-emerald-50 text-emerald-700 shadow-xs font-bold"
                   : "text-slate-600 hover:text-emerald-600"
@@ -272,33 +283,73 @@ export default function RecentItemsList({
         </div>
       )}
 
-      {/* Search and Secondary Filter Bar */}
-      <div className="mt-6 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by keywords, brand, or description..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+      {/* Search and Category Quick-Filter Bar */}
+      <div className="mt-6 space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search reports across Sylhet by title, keyword, brand..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
+            />
+          </div>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer"
+          >
+            <option value="all">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="id_cards">Student IDs &amp; Cards</option>
+            <option value="keys">Keys</option>
+            <option value="bags_wallets">Bags &amp; Wallets</option>
+            <option value="clothing">Clothing</option>
+            <option value="books_notes">Books &amp; Notes</option>
+            <option value="bottles_accessories">Accessories</option>
+            <option value="other">Other</option>
+          </select>
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="all">All Categories</option>
-          <option value="electronics">Electronics</option>
-          <option value="id_cards">Student IDs & Cards</option>
-          <option value="keys">Keys</option>
-          <option value="bags_wallets">Bags & Wallets</option>
-          <option value="clothing">Clothing</option>
-          <option value="books_notes">Books & Notes</option>
-          <option value="bottles_accessories">Accessories</option>
-          <option value="other">Other</option>
-        </select>
+
+        {/* Quick Category Filter Pills */}
+        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {CATEGORY_PILLS.map((pill) => {
+              const count =
+                pill.id === "all"
+                  ? items.length
+                  : items.filter((it) => it.category === pill.id).length;
+              const isSelected = selectedCategory === pill.id;
+
+              return (
+                <button
+                  key={pill.id}
+                  onClick={() => setSelectedCategory(pill.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    isSelected
+                      ? "bg-indigo-600 text-white shadow-xs"
+                      : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                  }`}
+                >
+                  <span>{pill.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="text-xs font-medium text-slate-500 shrink-0 hidden md:block">
+            Showing <strong className="text-slate-800">{filteredItems.length}</strong> reports
+          </span>
+        </div>
       </div>
 
       {/* Feed Content: Interactive Campus Map View OR Responsive Grid Cards */}
