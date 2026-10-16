@@ -144,16 +144,16 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onOpenAuth?.("login")}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white transition"
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/70 rounded-xl transition cursor-pointer"
                 >
-                  <LogIn className="w-3.5 h-3.5" />
-                  Log In
+                  <LogIn className="w-3.5 h-3.5 text-slate-400" />
+                  Sign In
                 </button>
                 <button
                   onClick={() => onOpenAuth?.("register")}
-                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/30 transition"
+                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-extrabold text-white bg-gradient-to-r from-sky-500 via-indigo-600 to-violet-600 hover:from-sky-400 hover:to-indigo-500 rounded-xl shadow-[0_0_12px_rgba(99,102,241,0.35)] hover:shadow-[0_0_18px_rgba(99,102,241,0.55)] border border-sky-400/30 active:scale-95 transition-all cursor-pointer"
                 >
-                  Register
+                  Create Account
                 </button>
               </div>
             )}

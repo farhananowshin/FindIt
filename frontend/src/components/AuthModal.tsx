@@ -1,7 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Lock, Mail, User, Hash, Phone, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
+import {
+  X,
+  Lock,
+  Mail,
+  User,
+  Hash,
+  Phone,
+  AlertCircle,
+  CheckCircle2,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+  MapPin,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 interface AuthModalProps {
@@ -98,231 +111,325 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all animate-fadeIn">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600">
-              <Lock className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md transition-all animate-fadeIn">
+      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-700/60 overflow-hidden grid grid-cols-1 md:grid-cols-12 text-left">
+        {/* Left Column: Animated AI Security Showcase (5 Cols on md) */}
+        <div className="hidden md:flex md:col-span-5 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6 flex-col justify-between text-white relative overflow-hidden border-r border-slate-800">
+          {/* Ambient Glows */}
+          <div className="absolute -top-12 -left-12 w-48 h-48 bg-sky-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Top Branding */}
+          <div className="relative z-10 space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Sylhet AI Portal
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
-                {tab === "login" ? "Sign In to FindIt" : "Create Student Account"}
-              </h3>
-              <p className="text-xs text-slate-500">Campus Identity & Ownership Verification</p>
+            <h4 className="text-xl font-black tracking-tight text-white mt-1">
+              Find<span className="text-sky-400">It</span> Security
+            </h4>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Sylhet Metropolitan Area Lost &amp; Found AI Infrastructure
+            </p>
+          </div>
+
+          {/* Centerpiece: Animated AI Security Scanner & Neural Mesh */}
+          <div className="relative z-10 py-6 text-center">
+            <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+              {/* Pulsing radar rings */}
+              <div className="absolute inset-0 rounded-full bg-sky-500/10 animate-ping duration-1000" />
+              <div className="absolute -inset-2 rounded-full border border-sky-400/25 animate-spin duration-7000" />
+              <div className="absolute -inset-4 rounded-full border border-indigo-500/15" />
+
+              {/* Glowing Shield Center */}
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                <ShieldCheck className="w-9 h-9 text-white animate-pulse" />
+              </div>
+            </div>
+
+            <p className="mt-3 text-xs font-bold text-slate-200">
+              Multimodal Verification Gate
+            </p>
+            <span className="text-[10px] text-slate-400 block mt-0.5">
+              OpenCLIP • S-BERT • Spatiotemporal
+            </span>
+          </div>
+
+          {/* Feature Badges */}
+          <div className="relative z-10 space-y-2 text-xs">
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900/70 border border-slate-800">
+              <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span className="text-slate-300 text-[11px]">Vision &amp; Semantic Embeddings</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900/70 border border-slate-800">
+              <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="text-slate-300 text-[11px]">Confidential Proof Verification</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900/70 border border-slate-800">
+              <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <span className="text-slate-300 text-[11px]">Transit Hubs &amp; Campus Coverage</span>
             </div>
           </div>
+        </div>
+
+        {/* Right Column: Interactive Form Panel (7 Cols on md) */}
+        <div className="md:col-span-7 flex flex-col justify-between p-6 sm:p-7 relative bg-white">
+          {/* Close Button */}
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition"
+            className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
-        </div>
 
-        {/* Tab Toggle */}
-        <div className="flex p-1.5 mx-6 mt-4 bg-slate-100 rounded-2xl">
-          <button
-            type="button"
-            onClick={() => handleTabChange("login")}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition ${
-              tab === "login"
-                ? "bg-white text-indigo-700 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Log In
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange("register")}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition ${
-              tab === "register"
-                ? "bg-white text-indigo-700 shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Register (Citizen / Student)
-          </button>
-        </div>
+          {/* Header */}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                {tab === "login" ? "Account Access" : "New Registration"}
+              </span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              {tab === "login" ? "Sign In to FindIt" : "Create FindIt Account"}
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Sylhet Metropolitan Area Identity &amp; Verification
+            </p>
 
-        {/* Notifications */}
-        <div className="px-6 pt-4">
+            {/* Tab Switcher */}
+            <div className="flex p-1 mt-4 bg-slate-100 rounded-2xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => handleTabChange("login")}
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition cursor-pointer ${
+                  tab === "login"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange("register")}
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition cursor-pointer ${
+                  tab === "register"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Create Account (Citizen / Student)
+              </button>
+            </div>
+          </div>
+
+          {/* Alerts */}
           {error && (
-            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+            <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
               <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
+            <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>{successMsg}</span>
             </div>
           )}
-        </div>
 
-        {/* Form Body */}
-        {tab === "login" ? (
-          <form onSubmit={handleLogin} className="p-6 space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@gmail.com or admin@campus.edu"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-100 transition flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Signing In...</span>
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleRegister} className="p-6 space-y-3.5">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Tanvir Ahmed"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+          {/* Forms */}
+          {tab === "login" ? (
+            <form onSubmit={handleLogin} className="mt-4 space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Student ID / NID (Optional)
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Email Address
                 </label>
                 <div className="relative">
-                  <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your.email@gmail.com or admin@campus.edu"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  "Sign In to FindIt"
+                )}
+              </button>
+
+              {/* 1-Click Quick Demo Login Credentials for Defense & Testing */}
+              <div className="pt-3 border-t border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                  1-Click Demo Credentials (Defense &amp; Testing)
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("admin@campus.edu");
+                      setPassword("admin123");
+                    }}
+                    className="py-1.5 px-2 rounded-xl border border-amber-500/30 bg-amber-50/70 hover:bg-amber-100/90 text-[11px] font-extrabold text-amber-900 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Zap className="w-3 h-3 text-amber-600" />
+                    ⚡ Fill Demo Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("student@campus.edu");
+                      setPassword("student123");
+                    }}
+                    className="py-1.5 px-2 rounded-xl border border-indigo-500/30 bg-indigo-50/70 hover:bg-indigo-100/90 text-[11px] font-extrabold text-indigo-900 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <User className="w-3 h-3 text-indigo-600" />
+                    🎓 Fill Demo Citizen
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister} className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    placeholder="e.g. 2026-CSE-012 or NID"
-                    className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Tanvir Ahmed"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Student ID / NID (Optional)
+                  </label>
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      placeholder="e.g. 2026-CSE or NID"
+                      className="w-full pl-9 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Phone (Optional)
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. 01711-XXXXXX"
+                      className="w-full pl-9 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Phone (Optional)
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Email Address
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="e.g. 01711-XXXXXX"
-                    className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="e.g. your.email@gmail.com"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
                   />
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. your.email@gmail.com"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                />
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Create Password (min 6 characters)
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Create Password (min 6 characters)
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                />
+              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 flex items-start gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                <span>Registration creates a verified <strong>Citizen / Student</strong> account across Sylhet Metropolitan Hubs.</span>
               </div>
-            </div>
 
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-start gap-2">
-              <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-              <span>Public registration creates <strong>Student</strong> accounts. Administrative access is configured via secure seed credentials.</span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-100 transition flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Registering Account...</span>
-                </>
-              ) : (
-                "Create Student Account"
-              )}
-            </button>
-          </form>
-        )}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Creating Account...</span>
+                  </>
+                ) : (
+                  "Create FindIt Account"
+                )}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
