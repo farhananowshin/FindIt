@@ -46,48 +46,48 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Branding */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-100">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20">
               <Compass className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xl font-black tracking-tight text-slate-900">
-                  Find<span className="text-indigo-600">It</span>
+                <span className="text-xl font-black tracking-tight text-white">
+                  Find<span className="text-indigo-400">It</span>
                 </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
                   Sylhet AI
                 </span>
               </div>
               <p className="hidden sm:block text-[10px] text-slate-400 font-medium">
-                Smart Lost &amp; Found Platform
+                Public Lost &amp; Found Platform
               </p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
             <button
               onClick={() => scrollTo("recent-items")}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
             >
               <Search className="w-4 h-4 text-slate-400" />
               Browse Items
             </button>
             <button
               onClick={onOpenWeights}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
             >
-              <Sparkles className="w-4 h-4 text-amber-500" />
+              <Sparkles className="w-4 h-4 text-amber-400" />
               AI Matching
             </button>
             <button
               onClick={onOpenProposal}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition"
               title="Metropolitan University CSE 300 Project Specs"
             >
               <FileText className="w-4 h-4 text-slate-400" />
@@ -96,9 +96,9 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
 
             <button
               onClick={() => scrollTo("report-form")}
-              className="flex items-center gap-1.5 ml-2 px-3.5 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 rounded-xl border border-indigo-200 transition"
+              className="flex items-center gap-1.5 ml-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/30 transition"
             >
-              <FilePlus2 className="w-3.5 h-3.5 text-indigo-600" />
+              <FilePlus2 className="w-3.5 h-3.5 text-white" />
               + Report Item
             </button>
 
@@ -131,14 +131,14 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
                 {/* Day 5 In-App Notification Bell */}
                 <NotificationBell />
 
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800">
-                  <UserIcon className="w-3.5 h-3.5 text-indigo-600" />
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200">
+                  <UserIcon className="w-3.5 h-3.5 text-indigo-400" />
                   <span className="max-w-[120px] truncate">{user.name}</span>
                   <span
                     className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${
                       user.role === "admin"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-indigo-100 text-indigo-700"
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                        : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
                     }`}
                   >
                     {user.role}
@@ -146,7 +146,7 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                  className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-xl transition"
                   title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -156,14 +156,14 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onOpenAuth?.("login")}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
                 >
-                  <LogIn className="w-3.5 h-3.5" />
+                  <LogIn className="w-3.5 h-3.5 text-slate-400" />
                   Log In
                 </button>
                 <button
                   onClick={() => onOpenAuth?.("register")}
-                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-sm transition"
+                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/30 transition"
                 >
                   Register
                 </button>
