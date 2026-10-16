@@ -251,54 +251,6 @@ export default function Home() {
                   <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition" />
                 </div>
               </div>
-
-              {/* Quick Search Bar */}
-              <form
-                onSubmit={handleSearchSubmit}
-                className="flex items-center gap-2 p-1.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl shadow-xl backdrop-blur-md focus-within:ring-2 focus-within:ring-sky-500 transition"
-              >
-                <div className="pl-3 text-slate-400">
-                  <Search className="w-4 h-4 text-sky-400" />
-                </div>
-                <input
-                  type="text"
-                  value={heroSearch}
-                  onChange={(e) => setHeroSearch(e.target.value)}
-                  placeholder="Search 42+ items in Sylhet (e.g., 'wallet in CNG', 'backpack', 'ID card')..."
-                  className="flex-1 bg-transparent px-2 py-1.5 text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-hidden"
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition shadow-md shadow-indigo-600/30"
-                >
-                  Search
-                </button>
-              </form>
-
-              {/* Quick Filter Chips */}
-              <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
-                <span className="text-[11px] font-semibold text-slate-400 mr-1">Quick Filter:</span>
-                {[
-                  { id: "all", label: "All Items" },
-                  { id: "bags_wallets", label: "👛 Bags & Wallets" },
-                  { id: "electronics", label: "📱 Electronics" },
-                  { id: "id_cards", label: "🪪 Student IDs" },
-                  { id: "keys", label: "🔑 Keys" },
-                  { id: "books_notes", label: "📚 Books" },
-                ].map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryClick(cat.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition ${
-                      heroCategory === cat.id
-                        ? "bg-sky-500 text-white shadow-sm"
-                        : "bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80"
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Right Column: Visual AI Showcase Card (5 Cols) */}
