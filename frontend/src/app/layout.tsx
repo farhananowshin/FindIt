@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FindIt — Explainable Multimodal Campus Lost & Found",
+  title: "FindIt — Explainable Multimodal Lost & Found System | Sylhet",
   description:
-    "AI-powered multimodal lost and found matching system for university campuses. Uses CLIP visual embeddings, Sentence Transformers, and spatiotemporal matching with human-in-the-loop admin verification.",
+    "AI-powered multimodal lost and found matching and verification system for Sylhet Metropolitan Area. Uses OpenCLIP visual embeddings, Sentence Transformers, and spatiotemporal matching with human-in-the-loop admin verification.",
 };
 
 import { AuthProvider } from "../context/AuthContext";
@@ -22,8 +22,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full scroll-smooth`}>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+    <html
+      lang="en"
+      className={`${inter.variable} h-full scroll-smooth`}
+      suppressHydrationWarning
+    >
+      <body
+        className="min-h-full flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-indigo-500 selection:text-white"
+        suppressHydrationWarning
+      >
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
