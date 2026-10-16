@@ -15,11 +15,8 @@ import {
   MapPin,
   ArrowRight,
   ArrowLeft,
-  Cpu,
   Eye,
   EyeOff,
-  Activity,
-  Layers,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -220,21 +217,21 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
         {/* LEFT FORM PANE: Sign In Form (Visible when overlay is on right) */}
         {/* ======================================================== */}
         <div
-          className={`w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between bg-slate-900 text-white transition-opacity duration-500 ${
-            !isLoginTab ? "md:opacity-40" : "opacity-100"
+          className={`w-full md:w-1/2 px-7 py-6 sm:px-9 sm:py-8 flex flex-col justify-between bg-slate-900 text-white transition-all duration-500 ${
+            !isLoginTab ? "md:opacity-0 md:pointer-events-none md:invisible" : "opacity-100 visible"
           } ${isLoginTab ? "block" : "hidden md:flex"}`}
         >
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                Sylhet Portal
+                Citizen &amp; Student Access
               </span>
             </div>
             <h3 className="text-2xl font-black text-white tracking-tight mt-1">
               Sign In to Find<span className="text-sky-400">It</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Access your reported items and confidential match verifications
+            <p className="text-xs text-slate-400 mt-1">
+              Enter your credentials to manage reported items and review verified matches.
             </p>
 
             {/* Mobile Tab Toggle */}
@@ -383,21 +380,21 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
         {/* RIGHT FORM PANE: Create Account Form (Visible when overlay is on left) */}
         {/* ======================================================== */}
         <div
-          className={`w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between bg-slate-900 text-white transition-opacity duration-500 ${
-            isLoginTab ? "md:opacity-40" : "opacity-100"
+          className={`w-full md:w-1/2 px-7 py-6 sm:px-9 sm:py-8 flex flex-col justify-between bg-slate-900 text-white transition-all duration-500 ${
+            isLoginTab ? "md:opacity-0 md:pointer-events-none md:invisible" : "opacity-100 visible"
           } ${!isLoginTab ? "block" : "hidden md:flex"}`}
         >
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                Citizen &amp; Student
+                New Registration
               </span>
             </div>
             <h3 className="text-2xl font-black text-white tracking-tight mt-1">
               Create Find<span className="text-sky-400">It</span> Account
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Sylhet Metropolitan Area Identity &amp; Verification
+            <p className="text-xs text-slate-400 mt-1">
+              Join Sylhet&apos;s verified network for lost and found recovery.
             </p>
 
             {/* Mobile Tab Toggle */}
@@ -572,10 +569,10 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
           }`}
         >
           <div
-            className={`w-full h-full p-8 flex flex-col justify-between text-white relative overflow-hidden border-x border-slate-700/80 shadow-2xl transition-colors duration-700 ${
+            className={`w-full h-full p-8 flex flex-col justify-between text-white relative overflow-hidden border-x border-slate-700/80 shadow-2xl transition-colors duration-700 bg-slate-950 ${
               isLoginTab
-                ? "bg-gradient-to-br from-slate-950 via-indigo-950/90 to-slate-950"
-                : "bg-gradient-to-br from-slate-950 via-teal-950/90 to-slate-950"
+                ? "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950"
+                : "bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950"
             }`}
           >
             {/* Live Interactive Neural Constellation Canvas Animation */}
@@ -600,7 +597,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               }`}
             />
 
-            {/* Top HUD Status Bar */}
+            {/* Top Status Bar */}
             <div className="relative z-10 flex items-center justify-between">
               <div
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border transition-colors ${
@@ -614,11 +611,11 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                     isLoginTab ? "bg-cyan-400" : "bg-emerald-400"
                   }`}
                 />
-                Sylhet Multimodal AI
+                Sylhet Metropolitan Network
               </div>
-              <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest bg-slate-900/70 px-2 py-0.5 rounded border border-slate-700/60">
-                <Activity className="w-3 h-3 text-cyan-400 animate-pulse" />
-                CSE 300
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Verified Portal</span>
               </div>
             </div>
 
@@ -675,7 +672,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 </div>
               </div>
 
-              {/* Multimodal AI EQ Visualizer Waves */}
+              {/* Dynamic Soundwave Signal Bars */}
               <div className="flex items-center justify-center gap-1.5 mt-3 mb-1">
                 {[0.6, 1.0, 0.4, 0.8, 0.5, 0.9, 0.3].map((heightRatio, i) => (
                   <div
@@ -684,14 +681,11 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                       isLoginTab ? "bg-cyan-400" : "bg-emerald-400"
                     }`}
                     style={{
-                      height: `${Math.round(heightRatio * 18)}px`,
+                      height: `${Math.round(heightRatio * 16)}px`,
                       animation: `cyberWave ${1 + (i % 3) * 0.4}s ease-in-out infinite alternate`,
                     }}
                   />
                 ))}
-                <span className="text-[10px] font-mono text-slate-400 ml-1.5 uppercase tracking-wider">
-                  CLIP &bull; S-BERT &bull; GEO
-                </span>
               </div>
 
               {/* Dynamic Overlay Text depending on Tab */}
@@ -702,7 +696,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                       New to Find<span className="text-sky-400">It</span> Sylhet?
                     </h4>
                     <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-                      Register as a citizen or student to report belongings and let AI multimodal pairing recover them safely.
+                      Create an account to report lost belongings, turn in found items, and get instantly matched across Sylhet metropolitan hubs.
                     </p>
                   </>
                 ) : (
@@ -711,7 +705,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                       Already Have an Account?
                     </h4>
                     <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-                      Welcome back! Sign in to inspect match candidates, view 5-weight similarity scores, and claim your belongings.
+                      Welcome back! Sign in to check the status of your reported items, review match alerts, and securely verify your ownership.
                     </p>
                   </>
                 )}
@@ -726,7 +720,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   onClick={() => handleTabChange("register")}
                   className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-lg group cursor-pointer active:scale-98"
                 >
-                  <span>Create Account (Citizen / Student)</span>
+                  <span>Create an Account</span>
                   <ArrowRight className="w-4 h-4 text-sky-400 group-hover:translate-x-1 transition" />
                 </button>
               ) : (
@@ -736,17 +730,17 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-lg group cursor-pointer active:scale-98"
                 >
                   <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition" />
-                  <span>Back to Sign In</span>
+                  <span>Sign In to Your Account</span>
                 </button>
               )}
 
-              {/* Telemetry Footer */}
-              <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-1 font-mono">
-                <span className="flex items-center gap-1">
-                  <Cpu className="w-3 h-3 text-sky-400" /> ViT-B/32 Multimodal
+              {/* Trust Footer */}
+              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-2 border-t border-slate-800/80 font-medium">
+                <span className="flex items-center gap-1.5 text-slate-400">
+                  <Lock className="w-3.5 h-3.5 text-sky-400" /> Private &amp; Secure
                 </span>
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-rose-400" /> 11 Sylhet Hubs
+                <span className="flex items-center gap-1.5 text-slate-400">
+                  <MapPin className="w-3.5 h-3.5 text-rose-400" /> Sylhet Metropolitan Area
                 </span>
               </div>
             </div>
