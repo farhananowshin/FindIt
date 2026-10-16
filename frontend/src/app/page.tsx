@@ -15,19 +15,19 @@ import { SAMPLE_CAMPUS_ITEMS } from "../data/sampleItems";
 import { StoredItemReport, ReportType } from "../types/item";
 import { fetchItems } from "../services/api";
 import {
+  Sliders,
+  FileText,
   Search,
   Sparkles,
+  HelpCircle,
   LayoutGrid,
   PlusCircle,
   Shield,
   ArrowRight,
   MapPin,
+  Clock,
+  Layers,
   CheckCircle2,
-  Lock,
-  Cpu,
-  TrendingUp,
-  X,
-  Compass,
 } from "lucide-react";
 
 export default function Home() {
@@ -46,10 +46,10 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"feed" | "report" | "admin">("feed");
   const [reportFormType, setReportFormType] = useState<ReportType>("lost");
 
-  // Hero search bar state matching clean layout
-  const [searchTab, setSearchTab] = useState<"lost" | "found">("lost");
-  const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [searchLocation, setSearchLocation] = useState<string>("");
+  // Hero search and category filter sync with feed
+  const [heroSearch, setHeroSearch] = useState("");
+  const [heroCategory, setHeroCategory] = useState("all");
+  const [feedTypeFilter, setFeedTypeFilter] = useState<"all" | "lost" | "found">("all");
 
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +102,7 @@ export default function Home() {
   const handleReportCreated = (newReport: StoredItemReport) => {
     setItems((prev) => [newReport, ...prev]);
     setIsLive(true);
+    // Switch to feed so user immediately sees their report!
     setActiveTab("feed");
     setTimeout(() => {
       contentRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -142,6 +143,14 @@ export default function Home() {
     }, 50);
   };
 
+  const handleCategoryClick = (cat: string) => {
+    setHeroCategory(cat);
+    setActiveTab("feed");
+    setTimeout(() => {
+      contentRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 80);
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setActiveTab("feed");
@@ -151,7 +160,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-sky-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-indigo-500 selection:text-white">
       {/* Navigation Header */}
       <Navbar
         onOpenWeights={() => setIsWeightsOpen(true)}
@@ -163,302 +172,349 @@ export default function Home() {
         }}
       />
 
-      {/* Cinematic Animated Hero Section with Authentic Sylhet Skyline Backdrop */}
-      <section className="relative overflow-hidden pt-10 pb-16 lg:pt-16 lg:pb-24 border-b border-slate-800/80">
-        {/* Real Sylhet Cityscape Skyline with Dark Vignette */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/images/sylhet_city_hero.jpg"
-            alt="Sylhet Keane Bridge Cityscape"
-            className="w-full h-full object-cover object-center opacity-40 transform scale-100 motion-safe:animate-pulse-glow"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/85" />
-          <div className="absolute inset-0 bg-radial from-transparent via-slate-950/50 to-slate-950" />
-        </div>
+      {/* Hero Section: 2-Column Split Modern Hero with Live Visual Showcase */}
+      <section className="relative overflow-hidden pt-8 pb-12 lg:pt-12 lg:pb-16 border-b border-slate-200/80 bg-gradient-to-b from-indigo-50/50 via-white to-slate-50">
+        {/* Subtle decorative glow */}
+        <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-indigo-200/20 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 right-10 w-[400px] h-[300px] bg-rose-200/20 blur-3xl rounded-full pointer-events-none" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Column: Clean Title, Tagline, Unified Search Bar (7 Cols) */}
-            <div className="lg:col-span-7 text-left space-y-6">
-              {/* Green Dot Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Lost &amp; Found platform for Sylhet</span>
+            {/* Left Column: Headline, Actions & Search (7 Cols) */}
+            <div className="lg:col-span-7 text-left space-y-5">
+              {/* Top Pill */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-indigo-700 shadow-2xs border border-indigo-100">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold tracking-wide">FindIt Sylhet</span>
+                <span className="text-slate-300">&bull;</span>
+                <span className="text-slate-600 font-medium">Smart AI Lost &amp; Found Platform</span>
               </div>
 
-              {/* Bold Minimalist Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
-                Lost something in <br />
-                Sylhet?{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300">
-                  Let AI help you
-                </span>
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-300">
-                  find it.
+              {/* Bold, Catchy Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 leading-[1.12]">
+                Lost Something in <span className="text-indigo-600">Sylhet?</span> <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-rose-500">
+                  We&apos;ll Help You Find It.
                 </span>
               </h1>
 
-              {/* Clear English Description + Minimal Bengali Tagline */}
-              <div className="space-y-2 max-w-xl">
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-                  Report lost or found belongings and let FindIt compare photos, descriptions,
-                  location and time to rank the most likely matches, with a clear explanation for each.
-                </p>
-                <p className="text-xs sm:text-sm text-slate-400 font-medium">
-                  হারানো জিনিস খুঁজুন, প্রমাণসহ ফিরে পান।
-                </p>
-              </div>
+              {/* Engaging Subtitle */}
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
+                সিলেট শহর ও ক্যাম্পাসে হারানো বা পাওয়া যেকোনো জিনিস সহজে মিলিয়ে নেওয়ার প্ল্যাটফর্ম। 
+                ছবি তুলুন কিংবা বিবরণ দিন — আমাদের Multimodal AI নিমেষেই আপনার আইটেম খুঁজে দেবে।
+              </p>
 
-              {/* Clean Unified Search Bar */}
-              <form
-                onSubmit={handleSearchSubmit}
-                className="p-2 bg-white rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-2 text-slate-900 border border-slate-200"
-              >
-                {/* Lost / Found Toggle inside Search Bar */}
-                <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setSearchTab("lost")}
-                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition ${
-                      searchTab === "lost"
-                        ? "bg-slate-900 text-white shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Lost
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchTab("found")}
-                    className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition ${
-                      searchTab === "found"
-                        ? "bg-slate-900 text-white shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Found
-                  </button>
+              {/* Prominent Action Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                {/* I Lost Something Card */}
+                <div
+                  onClick={handleOpenLostReport}
+                  className="group cursor-pointer p-4 rounded-2xl bg-white hover:bg-rose-50/50 border-2 border-rose-100 hover:border-rose-300 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center group-hover:scale-105 transition">
+                      <HelpCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold text-rose-600 block">আমি কিছু হারিয়েছি</span>
+                      <h2 className="text-base font-extrabold text-slate-900 group-hover:text-rose-700 transition">
+                        I Lost Something
+                      </h2>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2 line-clamp-2">
+                    মানিব্যাগ, ফোন, চাবি, ব্যাগ বা আইডি কার্ড হারিয়েছেন? রিপোর্ট করুন।
+                  </p>
+                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-rose-600 group-hover:translate-x-1 transition">
+                    <span>Report Lost Item</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </div>
 
-                {/* Categories Dropdown */}
-                <select
-                  value={searchCategory}
-                  onChange={(e) => setSearchCategory(e.target.value)}
-                  className="w-full sm:w-auto bg-transparent px-3 py-2 text-xs font-semibold text-slate-700 border-b sm:border-b-0 sm:border-r border-slate-200 focus:outline-hidden cursor-pointer"
+                {/* I Found Something Card */}
+                <div
+                  onClick={handleOpenFoundReport}
+                  className="group cursor-pointer p-4 rounded-2xl bg-white hover:bg-emerald-50/50 border-2 border-emerald-100 hover:border-emerald-300 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
                 >
-                  <option value="all">All categories</option>
-                  <option value="bags_wallets">Bags &amp; Wallets</option>
-                  <option value="electronics">Electronics (Phones, Laptops)</option>
-                  <option value="id_cards">Student IDs / Cards</option>
-                  <option value="keys">Keys</option>
-                  <option value="books_notes">Books &amp; Stationary</option>
-                  <option value="clothing">Clothing</option>
-                  <option value="other">Other Items</option>
-                </select>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold text-emerald-600 block">আমি কিছু পেয়েছি</span>
+                      <h2 className="text-base font-extrabold text-slate-900 group-hover:text-emerald-700 transition">
+                        I Found Something
+                      </h2>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2 line-clamp-2">
+                    সিএনজি, ক্যাফে বা ক্যাম্পাসে কোনো জিনিস পেয়েছেন? জমা দিন।
+                  </p>
+                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition">
+                    <span>Report Found Item</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              </div>
 
-                {/* Location / Keyword Input */}
+              {/* Quick Search Bar */}
+              <form
+                onSubmit={handleSearchSubmit}
+                className="flex items-center gap-2 p-1.5 bg-white border border-slate-300 rounded-2xl shadow-xs focus-within:ring-2 focus-within:ring-indigo-500 transition"
+              >
+                <div className="pl-3 text-slate-400">
+                  <Search className="w-4 h-4" />
+                </div>
                 <input
                   type="text"
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  placeholder="Location, e.g. Zindabazar, SUST, CNG..."
-                  className="w-full flex-1 bg-transparent px-3 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden"
+                  value={heroSearch}
+                  onChange={(e) => setHeroSearch(e.target.value)}
+                  placeholder="Search 37+ items in Sylhet (e.g., 'wallet in CNG', 'backpack', 'ID card')..."
+                  className="flex-1 bg-transparent px-2 py-1.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden"
                 />
-
-                {/* Search Button */}
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition shadow-md shadow-indigo-600/30 shrink-0"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition"
                 >
                   Search
                 </button>
               </form>
 
-              {/* Direct Links: Report a lost item / Report a found item */}
-              <div className="flex items-center gap-6 pt-1 text-xs font-bold">
-                <button
-                  onClick={handleOpenLostReport}
-                  className="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition group"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-sky-400 group-hover:scale-125 transition" />
-                  <span>Report a lost item</span>
-                </button>
-
-                <button
-                  onClick={handleOpenFoundReport}
-                  className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition group"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 group-hover:scale-125 transition" />
-                  <span>Report a found item</span>
-                </button>
+              {/* Quick Filter Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
+                <span className="text-[11px] font-semibold text-slate-400 mr-1">Quick Filter:</span>
+                {[
+                  { id: "all", label: "All Items" },
+                  { id: "bags_wallets", label: "👛 Bags & Wallets" },
+                  { id: "electronics", label: "📱 Electronics" },
+                  { id: "id_cards", label: "🪪 Student IDs" },
+                  { id: "keys", label: "🔑 Keys" },
+                  { id: "books_notes", label: "📚 Books" },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryClick(cat.id)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                      heroCategory === cat.id
+                        ? "bg-indigo-600 text-white shadow-2xs"
+                        : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Right Column: Clean 5-Factor Explainable Multimodal Match Card (5 Cols) */}
+            {/* Right Column: Visual AI Showcase Card (5 Cols) */}
             <div className="lg:col-span-5 relative">
-              <div className="rounded-3xl bg-slate-900/90 border border-slate-700/80 shadow-2xl p-6 text-left backdrop-blur-xl space-y-4">
-                {/* Header: Potential match & 91% Big Score */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-300">
-                    Potential match
+              {/* Glow backdrop */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500/15 via-violet-500/15 to-rose-500/15 rounded-3xl blur-xl" />
+
+              <div className="relative rounded-3xl bg-white border border-slate-200 shadow-xl overflow-hidden text-left">
+                {/* Showcase Header */}
+                <div className="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs font-bold tracking-wide">Live AI Match Demonstration</span>
+                  </div>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-500/40 text-indigo-200 border border-indigo-400/30">
+                    Sylhet Hub
                   </span>
-                  <span className="text-3xl font-black text-amber-400 tracking-tight">
-                    91%
-                  </span>
                 </div>
 
-                {/* Sub-cards comparing Lost vs Found Item */}
-                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-950/80 rounded-2xl border border-slate-800 text-xs">
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="w-2.5 h-1 rounded-full bg-sky-400" />
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Lost</span>
-                    </div>
-                    <p className="font-bold text-white text-xs truncate">Black wallet, Zindabazar</p>
+                {/* Real Photo Preview */}
+                <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 group">
+                  <img
+                    src="/images/sylhet_cng_wallet.jpg"
+                    alt="Leather wallet left in CNG in Sylhet"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+                  />
+                  <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-600 text-white shadow-md flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Found in Sylhet
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="w-2.5 h-1 rounded-full bg-amber-400" />
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Found</span>
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 p-2 rounded-xl bg-slate-950/80 backdrop-blur-md text-white text-xs flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span className="font-semibold truncate text-[11px]">Amberkhana CNG Stand</span>
                     </div>
-                    <p className="font-bold text-white text-xs truncate">Black leather wallet</p>
-                  </div>
-                </div>
-
-                {/* 5-Weight Multimodal Similarity Bars */}
-                <div className="space-y-3 pt-2 text-xs">
-                  {/* 1. Image similarity */}
-                  <div>
-                    <div className="flex justify-between text-[11px] text-slate-300 mb-1">
-                      <span>Image similarity</span>
-                      <span className="font-bold text-sky-400">94%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full" style={{ width: "94%" }} />
-                    </div>
-                  </div>
-
-                  {/* 2. Text similarity */}
-                  <div>
-                    <div className="flex justify-between text-[11px] text-slate-300 mb-1">
-                      <span>Text similarity</span>
-                      <span className="font-bold text-indigo-400">89%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" style={{ width: "89%" }} />
-                    </div>
-                  </div>
-
-                  {/* 3. Location */}
-                  <div>
-                    <div className="flex justify-between text-[11px] text-slate-300 mb-1">
-                      <span>Location</span>
-                      <span className="font-bold text-sky-400">96%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-sky-400 to-cyan-400 rounded-full" style={{ width: "96%" }} />
-                    </div>
-                  </div>
-
-                  {/* 4. Time */}
-                  <div>
-                    <div className="flex justify-between text-[11px] text-slate-300 mb-1">
-                      <span>Time</span>
-                      <span className="font-bold text-sky-400">90%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-sky-400 to-cyan-400 rounded-full" style={{ width: "90%" }} />
-                    </div>
-                  </div>
-
-                  {/* 5. Attributes */}
-                  <div>
-                    <div className="flex justify-between text-[11px] text-slate-300 mb-1">
-                      <span>Attributes</span>
-                      <span className="font-bold text-cyan-400">85%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full" style={{ width: "85%" }} />
-                    </div>
+                    <span className="font-mono text-emerald-400 font-extrabold text-xs shrink-0">96.4% Match</span>
                   </div>
                 </div>
 
-                {/* Subtext footnote */}
-                <p className="text-[10px] text-slate-500 pt-1 text-center">
-                  Sample illustration of the explainable match score.
-                </p>
+                {/* Match Details & Feature Attribution */}
+                <div className="p-4 space-y-3 bg-white">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="font-black text-sm text-slate-900">Black Leather Bifold Wallet</h2>
+                      <p className="text-xs text-slate-500">Paired with Lost Report from Zindabazar Center</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      High Confidence
+                    </span>
+                  </div>
+
+                  {/* AI Feature Weights */}
+                  <div className="space-y-1.5 pt-1 text-xs">
+                    <div className="flex justify-between text-[11px] text-slate-500">
+                      <span>CLIP Vision Similarity</span>
+                      <span className="font-bold text-indigo-600">98.2%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-600 rounded-full" style={{ width: "98%" }} />
+                    </div>
+
+                    <div className="flex justify-between text-[11px] text-slate-500">
+                      <span>S-BERT Semantic Text</span>
+                      <span className="font-bold text-violet-600">94.5%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-violet-600 rounded-full" style={{ width: "94%" }} />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between border-t border-slate-100 text-[11px] text-slate-500">
+                    <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                      <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                      Human Verification Gate
+                    </span>
+                    <button
+                      onClick={() => setActiveTab("feed")}
+                      className="font-bold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-0.5"
+                    >
+                      Browse Feed &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating secondary badge */}
+              <div className="hidden sm:flex absolute -bottom-3 -left-4 p-2 rounded-2xl bg-white border border-slate-200 shadow-lg items-center gap-2.5 text-xs max-w-xs">
+                <img
+                  src="/images/sylhet_cafe_backpack.jpg"
+                  alt="Backpack"
+                  className="w-9 h-9 rounded-xl object-cover shrink-0"
+                />
+                <div className="overflow-hidden">
+                  <p className="font-bold text-slate-800 text-[11px] truncate">Navy Student Backpack</p>
+                  <p className="text-[10px] text-emerald-600 font-semibold truncate">Surma River Cafe &bull; Claimed</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 4 Clean Feature Pillars */}
-          <div className="mt-14 pt-8 border-t border-slate-800/80 grid grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-            <div>
-              <h3 className="text-xs sm:text-sm font-extrabold text-white">Multimodal AI</h3>
-              <p className="text-xs text-slate-400 mt-1">Image + text matching</p>
+          {/* 3-Step "How FindIt Works" Visual Ribbon */}
+          <div className="mt-12 pt-8 border-t border-slate-200/70 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">
+                  1
+                </span>
+                <h3 className="text-xs font-bold text-slate-900">Report in 60s</h3>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Take a photo or describe the item with Sylhet location (CNG, cafe, campus, station).
+              </p>
             </div>
 
-            <div>
-              <h3 className="text-xs sm:text-sm font-extrabold text-white">Explainable</h3>
-              <p className="text-xs text-slate-400 mt-1">Score for every match</p>
+            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-700 font-bold text-xs flex items-center justify-center">
+                  2
+                </span>
+                <h3 className="text-xs font-bold text-slate-900">Multimodal AI Match</h3>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                OpenCLIP vision vectors &amp; S-BERT semantic embeddings pair lost &amp; found items instantly.
+              </p>
             </div>
 
-            <div>
-              <h3 className="text-xs sm:text-sm font-extrabold text-white">Private</h3>
-              <p className="text-xs text-slate-400 mt-1">Ownership verification</p>
+            <div className="p-3.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">
+                  3
+                </span>
+                <h3 className="text-xs font-bold text-slate-900">Verify &amp; Safely Claim</h3>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Secret verification questions (wallpaper, marks) confirm true ownership before return.
+              </p>
+            </div>
+          </div>
+
+          {/* Academic Supervisor & Specs Drawer */}
+          <div className="mt-6 pt-3 border-t border-slate-200/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500">
+            <div className="text-center sm:text-left">
+              <p className="font-semibold text-slate-700 text-xs">
+                Metropolitan University &bull; Dept. of CSE (Project CSE 300)
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Supervisor: Md Shamihul Islam Khan Limon &bull; Team: Farhana Nowshin &amp; Adrita Chakraborty
+              </p>
             </div>
 
-            <div>
-              <h3 className="text-xs sm:text-sm font-extrabold text-white">Reviewed</h3>
-              <p className="text-xs text-slate-400 mt-1">Admin-approved claims</p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsProposalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition"
+              >
+                <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                Project Specs &amp; Proposal
+              </button>
+              <button
+                onClick={() => setIsWeightsOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition"
+              >
+                <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                AI Weights
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content Area */}
-      <main ref={contentRef} className="flex-1 py-10 sm:py-14 bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      {/* Main Content Area with Modern Tab Control */}
+      <main ref={contentRef} className="flex-1 py-8 sm:py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Section Navigation Tabs */}
           <div className="flex items-center justify-center">
-            <div className="inline-flex p-1.5 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl gap-2 text-xs font-bold text-slate-300">
+            <div className="inline-flex p-1.5 bg-slate-200/80 rounded-2xl shadow-inner gap-1.5 text-xs font-bold text-slate-600">
               <button
                 onClick={() => setActiveTab("feed")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition duration-200 ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
                   activeTab === "feed"
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
-                    : "hover:text-white hover:bg-slate-800"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="w-4 h-4 text-indigo-600" />
                 <span>Browse Items &amp; Map</span>
-                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-indigo-950 text-[10px] text-indigo-300 font-extrabold border border-indigo-500/40">
+                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-indigo-50 text-[10px] text-indigo-600 font-extrabold border border-indigo-100">
                   {items.length}
                 </span>
               </button>
 
               <button
                 onClick={() => setActiveTab("report")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition duration-200 ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
                   activeTab === "report"
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
-                    : "hover:text-white hover:bg-slate-800"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <PlusCircle className="w-4 h-4 text-emerald-400" />
+                <PlusCircle className="w-4 h-4 text-emerald-600" />
                 <span>Report an Item</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("admin")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition duration-200 ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition ${
                   activeTab === "admin"
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40"
-                    : "hover:text-white hover:bg-slate-800"
+                    ? "bg-white text-indigo-700 shadow-sm"
+                    : "hover:text-slate-900 hover:bg-slate-200/50"
                 }`}
               >
-                <Shield className="w-4 h-4 text-purple-400" />
+                <Shield className="w-4 h-4 text-purple-600" />
                 <span>Admin &amp; Verification</span>
               </button>
             </div>
@@ -466,7 +522,7 @@ export default function Home() {
 
           {/* Tab 1: Live Feed and Map */}
           {activeTab === "feed" && (
-            <div id="recent-items" className="animate-in fade-in duration-300">
+            <div id="recent-items" className="animate-in fade-in duration-200">
               <RecentItemsList
                 items={items}
                 isLoading={isLoading}
@@ -475,69 +531,65 @@ export default function Home() {
                 isLive={isLive}
                 onFindMatches={(item) => setSelectedLostItem(item)}
                 onClaimItem={(item) => setClaimItem(item)}
-                externalSearch={searchLocation}
-                externalCategory={searchCategory}
-                externalType={searchTab}
+                externalSearch={heroSearch}
+                externalCategory={heroCategory}
+                externalType={feedTypeFilter}
               />
             </div>
           )}
 
           {/* Tab 2: Item Upload Form */}
           {activeTab === "report" && (
-            <div id="report-form" className="animate-in fade-in duration-300 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+            <div id="report-form" className="animate-in fade-in duration-200 space-y-4">
+              <div className="flex items-center justify-between p-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl">
                 <div>
-                  <h2 className="text-sm font-bold text-white">
+                  <h2 className="text-sm font-bold text-indigo-900">
                     Submitting a {reportFormType === "lost" ? "Lost" : "Found"} Item Report
                   </h2>
-                  <p className="text-xs text-slate-400">
-                    Provide clear details and a photo so our Multimodal AI can match it accurately across Sylhet.
+                  <p className="text-xs text-indigo-700">
+                    Provide clear details and a photo so our Multimodal AI can match it accurately.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("feed")}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition"
                 >
                   &larr; Back to Items Feed
                 </button>
               </div>
 
-              <div className="bg-white rounded-3xl p-6 text-slate-900 shadow-2xl">
-                <ItemUploadForm
-                  initialType={reportFormType}
-                  onReportCreated={handleReportCreated}
-                  onRequireAuth={() => {
-                    setAuthModalTab("login");
-                    setAuthModalOpen(true);
-                  }}
-                />
-              </div>
+              <ItemUploadForm
+                initialType={reportFormType}
+                onReportCreated={handleReportCreated}
+                onRequireAuth={() => {
+                  setAuthModalTab("login");
+                  setAuthModalOpen(true);
+                }}
+              />
             </div>
           )}
 
           {/* Tab 3: Admin & Verification Preview */}
           {activeTab === "admin" && (
-            <div id="admin-preview" className="animate-in fade-in duration-300 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+            <div id="admin-preview" className="animate-in fade-in duration-200 space-y-4">
+              <div className="flex items-center justify-between p-4 bg-purple-50/70 border border-purple-100 rounded-2xl">
                 <div>
-                  <h2 className="text-sm font-bold text-white">
+                  <h2 className="text-sm font-bold text-purple-900">
                     Explainability &amp; Admin Verification Portal
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-purple-700">
                     Review incoming claims, inspect multimodal feature attributions, and manage safety oversight.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("feed")}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition"
                 >
                   &larr; Back to Items Feed
                 </button>
               </div>
 
-              <div className="bg-white rounded-3xl p-6 text-slate-900 shadow-2xl">
-                <AdminPreview />
-              </div>
+              <AdminPreview />
             </div>
           )}
         </div>
@@ -579,7 +631,7 @@ export default function Home() {
         }}
       />
 
-      {/* University & City Footer */}
+      {/* University Footer */}
       <Footer onOpenProposal={() => setIsProposalOpen(true)} />
     </div>
   );
