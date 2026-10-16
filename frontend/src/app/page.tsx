@@ -344,7 +344,7 @@ export default function Home() {
                 />
                 <div className="overflow-hidden">
                   <p className="font-bold text-white text-[11px] truncate">Navy Student Backpack</p>
-                  <p className="text-[10px] text-emerald-400 font-semibold truncate">Surma River Cafe &bull; Claimed &check;</p>
+                  <p className="text-[10px] text-emerald-400 font-semibold truncate">Surma River Cafe &bull; Claimed ✓</p>
                 </div>
               </div>
             </div>
