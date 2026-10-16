@@ -50,54 +50,56 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Branding */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-md shadow-indigo-200">
-              <Compass className="w-6 h-6 animate-pulse" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-100">
+              <Compass className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-bold tracking-tight text-slate-900">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-black tracking-tight text-slate-900">
                   Find<span className="text-indigo-600">It</span>
                 </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold italic bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  &ldquo;Lost it? FindIt.&rdquo;
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  Sylhet AI
                 </span>
               </div>
-              <p className="hidden sm:block text-[11px] text-slate-500 font-medium">
-                Explainable Multimodal Lost &amp; Found
+              <p className="hidden sm:block text-[10px] text-slate-400 font-medium">
+                Smart Lost &amp; Found Platform
               </p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            <button
-              onClick={onOpenProposal}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 rounded-lg transition border border-indigo-200/80 shadow-2xs"
-            >
-              <FileText className="w-4 h-4 text-indigo-600" />
-              Proposal Features (10/10)
-            </button>
-            <button
-              onClick={() => scrollTo("report-form")}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition"
-            >
-              <FilePlus2 className="w-4 h-4 text-indigo-500" />
-              Report Item
-            </button>
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
             <button
               onClick={() => scrollTo("recent-items")}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
             >
-              <Search className="w-4 h-4 text-slate-500" />
+              <Search className="w-4 h-4 text-slate-400" />
               Browse Items
             </button>
             <button
               onClick={onOpenWeights}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
-              AI Match Logic
+              AI Matching
+            </button>
+            <button
+              onClick={onOpenProposal}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition"
+              title="Metropolitan University CSE 300 Project Specs"
+            >
+              <FileText className="w-4 h-4 text-slate-400" />
+              About Project
+            </button>
+
+            <button
+              onClick={() => scrollTo("report-form")}
+              className="flex items-center gap-1.5 ml-2 px-3.5 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 rounded-xl border border-indigo-200 transition"
+            >
+              <FilePlus2 className="w-3.5 h-3.5 text-indigo-600" />
+              + Report Item
             </button>
 
             {/* Student & Admin Protected Nav Links */}
