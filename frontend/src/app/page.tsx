@@ -174,15 +174,16 @@ export default function Home() {
 
       {/* Hero Section: 2-Column Split Modern Hero with Authentic Sylhet Skyline Backdrop */}
       <section className="relative overflow-hidden pt-10 pb-16 lg:pt-14 lg:pb-20 border-b border-slate-800 bg-slate-950">
-        {/* Real Sylhet Cityscape Skyline with Dark Vignette */}
+        {/* Real Sylhet Cityscape Skyline - Brighter and Clearer for Sky & River visibility */}
         <div className="absolute inset-0 z-0">
           <img
             src="/images/sylhet_city_hero.jpg"
             alt="Sylhet Keane Bridge Cityscape"
-            className="w-full h-full object-cover object-center opacity-45 transform scale-100 animate-sunset-glow"
+            className="w-full h-full object-cover object-center opacity-70 transform scale-100 animate-sunset-glow"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/80" />
-          <div className="absolute inset-0 bg-radial from-transparent via-slate-950/40 to-slate-950" />
+          {/* Subtle soft dark overlay so white text remains crisp while sky and river shine through */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/45 to-slate-950/40" />
+          <div className="absolute inset-0 bg-radial from-transparent via-slate-950/25 to-slate-950/60" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

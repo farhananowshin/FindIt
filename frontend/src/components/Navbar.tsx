@@ -85,14 +85,6 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
               <Sparkles className="w-4 h-4 text-amber-400" />
               AI Matching
             </button>
-            <button
-              onClick={onOpenProposal}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition"
-              title="Metropolitan University CSE 300 Project Specs"
-            >
-              <FileText className="w-4 h-4 text-slate-400" />
-              About Project
-            </button>
 
             <button
               onClick={() => scrollTo("report-form")}
