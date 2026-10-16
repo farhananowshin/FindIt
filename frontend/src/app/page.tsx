@@ -211,44 +211,44 @@ export default function Home() {
                 Report lost or found belongings across Sylhet. Our Multimodal AI compares photos, descriptions, and locations to find matches instantly.
               </p>
 
-              {/* Clean Action Cards: Minimal, Sleek, Uncluttered */}
+              {/* Clean Action Cards: Minimal, Sleek, Uncluttered with Distinct Border Accents */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                 {/* I Lost Something Card */}
                 <div
                   onClick={handleOpenLostReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-slate-900/80 hover:bg-rose-950/30 border border-slate-700/80 hover:border-rose-500/50 shadow-lg backdrop-blur-md transition-all flex items-center justify-between"
+                  className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/85 to-slate-900/90 hover:from-rose-950/60 hover:to-slate-900/95 border border-rose-500/40 hover:border-rose-400 shadow-lg shadow-rose-950/20 hover:shadow-rose-900/40 backdrop-blur-md transition-all duration-200 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center group-hover:scale-110 transition">
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.35)] flex items-center justify-center group-hover:scale-110 transition">
                       <HelpCircle className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className="text-base font-extrabold text-white group-hover:text-rose-300 transition">
+                      <h2 className="text-base font-extrabold text-white group-hover:text-rose-200 transition">
                         I Lost Something
                       </h2>
-                      <span className="text-xs text-slate-400 block">Report your lost item</span>
+                      <span className="text-xs text-rose-200/70 block">Report your lost item</span>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-rose-400 group-hover:translate-x-1 transition" />
+                  <ArrowRight className="w-4 h-4 text-rose-400 group-hover:translate-x-1.5 transition" />
                 </div>
 
                 {/* I Found Something Card */}
                 <div
                   onClick={handleOpenFoundReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-slate-900/80 hover:bg-emerald-950/30 border border-slate-700/80 hover:border-emerald-500/50 shadow-lg backdrop-blur-md transition-all flex items-center justify-between"
+                  className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-slate-900/85 to-slate-900/90 hover:from-emerald-950/60 hover:to-slate-900/95 border border-emerald-500/40 hover:border-emerald-400 shadow-lg shadow-emerald-950/20 hover:shadow-emerald-900/40 backdrop-blur-md transition-all duration-200 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 transition">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.35)] flex items-center justify-center group-hover:scale-110 transition">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className="text-base font-extrabold text-white group-hover:text-emerald-300 transition">
+                      <h2 className="text-base font-extrabold text-white group-hover:text-emerald-200 transition">
                         I Found Something
                       </h2>
-                      <span className="text-xs text-slate-400 block">Return a found item</span>
+                      <span className="text-xs text-emerald-200/70 block">Return a found item</span>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition" />
+                  <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1.5 transition" />
                 </div>
               </div>
             </div>
@@ -301,14 +301,17 @@ export default function Home() {
                     </span>
                   </div>
 
-                  {/* AI Feature Weights */}
+                  {/* AI Feature Weights with Neon Glow */}
                   <div className="space-y-1.5 pt-1 text-xs">
                     <div className="flex justify-between text-[11px] text-slate-400">
                       <span>CLIP Vision Similarity</span>
                       <span className="font-bold text-sky-400">98.2%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full" style={{ width: "98%" }} />
+                      <div
+                        className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.7)]"
+                        style={{ width: "98%" }}
+                      />
                     </div>
 
                     <div className="flex justify-between text-[11px] text-slate-400">
@@ -316,7 +319,10 @@ export default function Home() {
                       <span className="font-bold text-indigo-400">94.5%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" style={{ width: "94%" }} />
+                      <div
+                        className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.7)]"
+                        style={{ width: "94%" }}
+                      />
                     </div>
                   </div>
 
@@ -327,7 +333,7 @@ export default function Home() {
                     </span>
                     <button
                       onClick={() => setActiveTab("feed")}
-                      className="font-bold text-indigo-400 hover:text-indigo-300 transition flex items-center gap-0.5"
+                      className="font-bold text-indigo-400 hover:text-indigo-300 transition flex items-center gap-0.5 cursor-pointer"
                     >
                       Browse Feed &rarr;
                     </button>
@@ -350,10 +356,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Live Impact Metrics Bar */}
+          {/* Live Impact Metrics Bar: High-End Dashboard Cards with Tinted Borders */}
           <div className="mt-10 pt-6 border-t border-slate-800/80 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-sm">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-sky-950/30 border border-sky-500/30 hover:border-sky-400/60 shadow-lg shadow-sky-950/20 backdrop-blur-md flex items-center gap-3 transition group">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/40 shadow-[0_0_10px_rgba(56,189,248,0.25)] flex items-center justify-center font-bold text-sm group-hover:scale-105 transition">
                 42+
               </div>
               <div>
@@ -362,8 +368,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-sm">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-indigo-950/30 border border-indigo-500/30 hover:border-indigo-400/60 shadow-lg shadow-indigo-950/20 backdrop-blur-md flex items-center gap-3 transition group">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-[0_0_10px_rgba(99,102,241,0.25)] flex items-center justify-center font-bold text-sm group-hover:scale-105 transition">
                 96%
               </div>
               <div>
@@ -372,8 +378,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-sm">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-emerald-950/30 border border-emerald-500/30 hover:border-emerald-400/60 shadow-lg shadow-emerald-950/20 backdrop-blur-md flex items-center gap-3 transition group">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.25)] flex items-center justify-center font-bold text-sm group-hover:scale-105 transition">
                 11
               </div>
               <div>
@@ -382,8 +388,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-sm">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-rose-950/30 border border-rose-500/30 hover:border-rose-400/60 shadow-lg shadow-rose-950/20 backdrop-blur-md flex items-center gap-3 transition group">
+              <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.25)] flex items-center justify-center font-bold text-sm group-hover:scale-105 transition">
                 100%
               </div>
               <div>

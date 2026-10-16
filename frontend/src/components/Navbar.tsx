@@ -58,25 +58,25 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
               <span className="text-xl font-black tracking-tight text-white">
                 Find<span className="text-sky-400">It</span>
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-sky-300 border border-indigo-400/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-cyan-950/80 text-cyan-300 border border-cyan-400/40 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                 Sylhet AI
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2.5">
             <button
               onClick={() => scrollTo("recent-items")}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
             >
               <Search className="w-4 h-4 text-slate-400" />
               Browse Items
             </button>
             <button
               onClick={onOpenWeights}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-400" />
               AI Matching
@@ -84,7 +84,7 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
 
             <button
               onClick={() => scrollTo("report-form")}
-              className="flex items-center gap-1.5 ml-2 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/30 transition"
+              className="flex items-center gap-1.5 ml-2 px-4 py-2 text-xs font-extrabold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_22px_rgba(99,102,241,0.65)] transition-all cursor-pointer"
             >
               <FilePlus2 className="w-3.5 h-3.5 text-white" />
               + Report Item
