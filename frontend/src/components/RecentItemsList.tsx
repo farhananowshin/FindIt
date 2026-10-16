@@ -44,6 +44,9 @@ interface RecentItemsListProps {
   isLive?: boolean;
   onFindMatches?: (item: StoredItemReport) => void;
   onClaimItem?: (item: StoredItemReport) => void;
+  externalSearch?: string;
+  externalCategory?: string;
+  externalType?: "all" | "lost" | "found";
 }
 
 export default function RecentItemsList({
@@ -54,11 +57,27 @@ export default function RecentItemsList({
   isLive = false,
   onFindMatches,
   onClaimItem,
+  externalSearch,
+  externalCategory,
+  externalType,
 }: RecentItemsListProps) {
-  const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [filterType, setFilterType] = useState<"all" | "lost" | "found">(externalType || "all");
+  const [searchQuery, setSearchQuery] = useState(externalSearch || "");
+  const [selectedCategory, setSelectedCategory] = useState<string>(externalCategory || "all");
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+
+  // Synchronize if external filters change
+  React.useEffect(() => {
+    if (externalSearch !== undefined) setSearchQuery(externalSearch);
+  }, [externalSearch]);
+
+  React.useEffect(() => {
+    if (externalCategory !== undefined) setSelectedCategory(externalCategory);
+  }, [externalCategory]);
+
+  React.useEffect(() => {
+    if (externalType !== undefined) setFilterType(externalType);
+  }, [externalType]);
 
   const filteredItems = items.filter((item) => {
     const itemType = item.type || item.reportType;

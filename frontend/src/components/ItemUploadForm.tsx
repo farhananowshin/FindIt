@@ -32,12 +32,23 @@ import { useAuth } from "../context/AuthContext";
 interface ItemUploadFormProps {
   onReportCreated?: (report: StoredItemReport) => void;
   onRequireAuth?: () => void;
+  initialType?: ReportType;
 }
 
-export default function ItemUploadForm({ onReportCreated, onRequireAuth }: ItemUploadFormProps) {
+export default function ItemUploadForm({
+  onReportCreated,
+  onRequireAuth,
+  initialType = "lost",
+}: ItemUploadFormProps) {
   const { user, token } = useAuth();
   // Form State
-  const [reportType, setReportType] = useState<ReportType>("lost");
+  const [reportType, setReportType] = useState<ReportType>(initialType);
+
+  useEffect(() => {
+    if (initialType) {
+      setReportType(initialType);
+    }
+  }, [initialType]);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<ItemCategory>("electronics");
   const [brand, setBrand] = useState("");
