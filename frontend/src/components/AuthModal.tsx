@@ -202,12 +202,12 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md transition-all animate-fadeIn">
       {/* Outer Modal Container */}
-      <div className="relative w-full max-w-4xl min-h-[620px] bg-slate-900 rounded-3xl shadow-2xl border border-slate-700/80 overflow-hidden flex flex-col md:flex-row text-left">
+      <div className="relative w-full max-w-4xl min-h-[570px] sm:min-h-[580px] bg-slate-900 rounded-3xl shadow-2xl border border-slate-700/80 overflow-hidden flex flex-col md:flex-row text-left">
         
         {/* Global Modal Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-30 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-full transition cursor-pointer"
+          className="absolute top-4 right-4 z-40 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-full transition cursor-pointer"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
@@ -327,7 +327,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 via-indigo-600 to-violet-600 hover:from-sky-400 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(56,189,248,0.25)] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -344,10 +344,10 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             </form>
           </div>
 
-          {/* Quick 1-Click Demo Credentials */}
+          {/* Quick Demo Credentials */}
           <div className="pt-4 border-t border-slate-800/80 mt-4">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-              ⚡ 1-Click Demo Credentials (Defense &amp; Testing)
+              ⚡ Quick Demo Accounts
             </span>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -356,7 +356,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   setEmail("admin@campus.edu");
                   setPassword("admin123");
                 }}
-                className="py-1.5 px-2 rounded-xl border border-amber-500/30 bg-amber-950/40 hover:bg-amber-900/50 text-[11px] font-extrabold text-amber-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2 px-2 rounded-xl border border-amber-500/30 bg-amber-950/40 hover:bg-amber-900/50 text-[11px] font-extrabold text-amber-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Zap className="w-3 h-3 text-amber-400" />
                 Fill Demo Admin
@@ -367,7 +367,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   setEmail("student@campus.edu");
                   setPassword("student123");
                 }}
-                className="py-1.5 px-2 rounded-xl border border-indigo-500/30 bg-indigo-950/40 hover:bg-indigo-900/50 text-[11px] font-extrabold text-indigo-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2 px-2 rounded-xl border border-indigo-500/30 bg-indigo-950/40 hover:bg-indigo-900/50 text-[11px] font-extrabold text-indigo-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <User className="w-3 h-3 text-indigo-400" />
                 Fill Demo Citizen
@@ -597,8 +597,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               }`}
             />
 
-            {/* Top Status Bar */}
-            <div className="relative z-10 flex items-center justify-between">
+            {/* Top Status Bar with clearance for close button */}
+            <div className={`relative z-10 flex items-center justify-between ${isLoginTab ? "pr-8" : ""}`}>
               <div
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border transition-colors ${
                   isLoginTab
@@ -672,40 +672,30 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 </div>
               </div>
 
-              {/* Dynamic Soundwave Signal Bars */}
-              <div className="flex items-center justify-center gap-1.5 mt-3 mb-1">
-                {[0.6, 1.0, 0.4, 0.8, 0.5, 0.9, 0.3].map((heightRatio, i) => (
-                  <div
-                    key={i}
-                    className={`w-1 rounded-full transition-colors ${
-                      isLoginTab ? "bg-cyan-400" : "bg-emerald-400"
-                    }`}
-                    style={{
-                      height: `${Math.round(heightRatio * 16)}px`,
-                      animation: `cyberWave ${1 + (i % 3) * 0.4}s ease-in-out infinite alternate`,
-                    }}
-                  />
-                ))}
+              {/* Status Indicator Pill */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-slate-900/80 border border-slate-700/80 text-slate-300 mt-2 mb-1 shadow-inner">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Live Matching Network Active</span>
               </div>
 
               {/* Dynamic Overlay Text depending on Tab */}
-              <div className="mt-3 space-y-1.5 px-2">
+              <div className="mt-2 space-y-1.5 px-2">
                 {isLoginTab ? (
                   <>
                     <h4 className="text-xl font-black text-white tracking-tight">
-                      New to Find<span className="text-sky-400">It</span> Sylhet?
+                      New to Find<span className="text-sky-400">It</span>?
                     </h4>
                     <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-                      Create an account to report lost belongings, turn in found items, and get instantly matched across Sylhet metropolitan hubs.
+                      Create an account to report lost belongings, turn in found items, and get automatically matched across Sylhet.
                     </p>
                   </>
                 ) : (
                   <>
                     <h4 className="text-xl font-black text-white tracking-tight">
-                      Already Have an Account?
+                      Welcome Back!
                     </h4>
                     <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-                      Welcome back! Sign in to check the status of your reported items, review match alerts, and securely verify your ownership.
+                      Sign in to check the status of your reported items, review match alerts, and securely verify your ownership.
                     </p>
                   </>
                 )}
@@ -718,7 +708,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 <button
                   type="button"
                   onClick={() => handleTabChange("register")}
-                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-lg group cursor-pointer active:scale-98"
+                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-sky-400/40 text-white font-bold text-xs tracking-wide backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-md group cursor-pointer active:scale-98"
                 >
                   <span>Create an Account</span>
                   <ArrowRight className="w-4 h-4 text-sky-400 group-hover:translate-x-1 transition" />
@@ -727,7 +717,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 <button
                   type="button"
                   onClick={() => handleTabChange("login")}
-                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-extrabold text-xs backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-lg group cursor-pointer active:scale-98"
+                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-emerald-400/40 text-white font-bold text-xs tracking-wide backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-md group cursor-pointer active:scale-98"
                 >
                   <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition" />
                   <span>Sign In to Your Account</span>
