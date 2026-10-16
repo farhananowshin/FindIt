@@ -98,3 +98,39 @@ def find_active_found_candidates(exclude_id: Optional[str] = None) -> List[Dict[
     except Exception as e:
         logger.error(f"Error querying found candidates: {e}")
         return []
+
+def update_item_embeddings(
+    item_id: str,
+    image_emb: Optional[Any] = None,
+    text_emb: Optional[Any] = None,
+) -> bool:
+    """
+    Persists computed OpenCLIP/S-BERT dense vectors to MongoDB for fast cached retrieval.
+    Prevents redundant deep model re-inference on repeated queries.
+    """
+    try:
+        db = get_db()
+        update_fields = {}
+        if image_emb is not None:
+            update_fields["imageEmbedding"] = (
+                image_emb.tolist() if hasattr(image_emb, "tolist") else list(image_emb)
+            )
+        if text_emb is not None:
+            update_fields["textEmbedding"] = (
+                text_emb.tolist() if hasattr(text_emb, "tolist") else list(text_emb)
+            )
+
+        if not update_fields:
+            return False
+
+        query = {}
+        try:
+            query = {"_id": ObjectId(item_id)}
+        except (InvalidId, TypeError):
+            query = {"_id": item_id}
+
+        res = db[COLLECTION_NAME].update_one(query, {"$set": update_fields})
+        return res.modified_count > 0
+    except Exception as e:
+        logger.error(f"Error caching embeddings for item {item_id}: {e}")
+        return False

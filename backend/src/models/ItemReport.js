@@ -107,6 +107,16 @@ const ItemReportSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    imageEmbedding: {
+      type: [Number],
+      default: undefined,
+      select: false,
+    },
+    textEmbedding: {
+      type: [Number],
+      default: undefined,
+      select: false,
+    },
     submitterId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

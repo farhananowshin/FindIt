@@ -5,11 +5,18 @@ from fastapi import FastAPI, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import numpy as np
+
 from src.config import PORT, HOST, DEFAULT_TOP_K, MAX_TOP_K
 from src.models_loader import get_model_manager
 from src.embeddings import generate_image_embedding, generate_text_embedding
 from src.matcher import calculate_match
-from src.database import check_db_health, find_item_by_id, find_active_found_candidates
+from src.database import (
+    check_db_health,
+    find_item_by_id,
+    find_active_found_candidates,
+    update_item_embeddings,
+)
 
 # Configure structured logging
 logging.basicConfig(
@@ -119,6 +126,36 @@ def embed_report(request: EmbedRequest):
         },
     }
 
+class BatchEmbedRequest(BaseModel):
+    reports: List[EmbedRequest] = Field(..., max_length=50)
+
+@app.post("/api/batch-embed")
+def batch_embed_reports(request: BatchEmbedRequest):
+    """
+    Cost/Efficiency Guard: Batch generates dense embeddings for multiple reports in one request,
+    amortizing overhead and supporting bulk indexing.
+    """
+    results = []
+    for item in request.reports:
+        rep_dict = item.model_dump()
+        img_src = item.imagePath or item.imageUrl
+        t_emb = generate_text_embedding(rep_dict)
+        i_emb = generate_image_embedding(img_src) if img_src else None
+
+        results.append({
+            "title": item.title,
+            "textEmbeddingDimensions": len(t_emb) if t_emb is not None else 0,
+            "visualEmbeddingDimensions": len(i_emb) if i_emb is not None else 0,
+            "hasVisual": i_emb is not None,
+            "hasText": t_emb is not None,
+        })
+
+    return {
+        "success": True,
+        "processedCount": len(results),
+        "results": results,
+    }
+
 @app.post("/api/match")
 def match_lost_item(request: MatchRequest):
     """
@@ -157,17 +194,35 @@ def match_lost_item(request: MatchRequest):
             "message": "No active found items currently available in the campus registry to match against.",
         }
 
-    # 4. Generate embeddings for the Lost item
+    # 4. Retrieve or generate embeddings for the Lost item (with MongoDB persistent cache)
     lost_image_source = None
     if lost_item.get("imagePaths") and len(lost_item["imagePaths"]) > 0:
         lost_image_source = lost_item["imagePaths"][0]
     elif lost_item.get("imageUrls") and len(lost_item["imageUrls"]) > 0:
         lost_image_source = lost_item["imageUrls"][0]
 
-    lost_img_emb = generate_image_embedding(lost_image_source) if lost_image_source else None
-    lost_txt_emb = generate_text_embedding(lost_item)
+    # Check MongoDB cache
+    lost_img_emb = (
+        np.array(lost_item["imageEmbedding"], dtype=np.float32)
+        if lost_item.get("imageEmbedding")
+        else None
+    )
+    if lost_img_emb is None and lost_image_source:
+        lost_img_emb = generate_image_embedding(lost_image_source)
 
-    # 5. Evaluate similarity against each Found candidate
+    lost_txt_emb = (
+        np.array(lost_item["textEmbedding"], dtype=np.float32)
+        if lost_item.get("textEmbedding")
+        else None
+    )
+    if lost_txt_emb is None:
+        lost_txt_emb = generate_text_embedding(lost_item)
+
+    # Persist newly generated embeddings back to MongoDB
+    if lost_item.get("_id") and (lost_item.get("imageEmbedding") is None or lost_item.get("textEmbedding") is None):
+        update_item_embeddings(lost_item["_id"], lost_img_emb, lost_txt_emb)
+
+    # 5. Evaluate similarity against each Found candidate (with caching)
     ranked_results = []
 
     for found_item in found_candidates:
@@ -177,8 +232,26 @@ def match_lost_item(request: MatchRequest):
         elif found_item.get("imageUrls") and len(found_item["imageUrls"]) > 0:
             found_image_source = found_item["imageUrls"][0]
 
-        found_img_emb = generate_image_embedding(found_image_source) if found_image_source else None
-        found_txt_emb = generate_text_embedding(found_item)
+        # Check MongoDB cache for found candidate
+        found_img_emb = (
+            np.array(found_item["imageEmbedding"], dtype=np.float32)
+            if found_item.get("imageEmbedding")
+            else None
+        )
+        if found_img_emb is None and found_image_source:
+            found_img_emb = generate_image_embedding(found_image_source)
+
+        found_txt_emb = (
+            np.array(found_item["textEmbedding"], dtype=np.float32)
+            if found_item.get("textEmbedding")
+            else None
+        )
+        if found_txt_emb is None:
+            found_txt_emb = generate_text_embedding(found_item)
+
+        # Persist newly generated embeddings back to MongoDB
+        if found_item.get("_id") and (found_item.get("imageEmbedding") is None or found_item.get("textEmbedding") is None):
+            update_item_embeddings(found_item["_id"], found_img_emb, found_txt_emb)
 
         match_data = calculate_match(
             lost_item=lost_item,
@@ -201,11 +274,19 @@ def match_lost_item(request: MatchRequest):
             "imageUrls": found_item.get("imageUrls", []),
             "matchScore": match_data["matchScore"],
             "matchScoreNormalized": match_data["matchScoreNormalized"],
+            "subScores": match_data.get("subScores", {}),
             "scoreBreakdown": match_data["scoreBreakdown"],
             "effectiveWeights": match_data["effectiveWeights"],
             "availableModalities": match_data["availableModalities"],
             "unavailableModalities": match_data["unavailableModalities"],
             "explanation": match_data["explanation"],
+            "visualCues": match_data.get("visualCues", []),
+            "textualCues": match_data.get("textualCues", []),
+            "topKeywordsShared": match_data.get("topKeywordsShared", []),
+            "humanVerificationGuidance": match_data.get(
+                "humanVerificationGuidance",
+                "AI similarity is advisory only. Physical ownership must be authenticated by campus staff before release."
+            ),
             "status": found_item.get("status", "active"),
             "verificationNotice": "AI candidate match only. Physical ownership must be authenticated by campus security before release.",
         }

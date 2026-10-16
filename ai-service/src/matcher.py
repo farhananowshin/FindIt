@@ -183,6 +183,73 @@ def compute_attribute_similarity(item_a: Dict[str, Any], item_b: Dict[str, Any])
 
     return float(np.clip(score, 0.0, 1.0))
 
+def extract_shared_cues(
+    lost_item: Dict[str, Any],
+    found_item: Dict[str, Any],
+    scores: Dict[str, Optional[float]],
+) -> Dict[str, Any]:
+    """
+    Extracts explicit visual and textual cues, shared keywords, and attribute alignments
+    to provide academic transparency and explainable matching insight.
+    """
+    import re
+    stop_words = {
+        "the", "a", "an", "and", "or", "in", "on", "at", "to", "for", "with", "of",
+        "is", "it", "my", "this", "that", "lost", "found", "near", "from", "has", "have", "some", "was"
+    }
+
+    def get_keywords(item: Dict[str, Any]):
+        text = f"{item.get('title', '')} {item.get('description', '')} {item.get('brand', '')} {item.get('uniqueMarks', '')}".lower()
+        words = re.findall(r"\b[a-z0-9_-]{3,}\b", text)
+        return set(w for w in words if w not in stop_words)
+
+    kw_lost = get_keywords(lost_item)
+    kw_found = get_keywords(found_item)
+    shared_keywords = sorted(list(kw_lost.intersection(kw_found)))
+
+    # Textual cues
+    textual_cues = []
+    if shared_keywords:
+        textual_cues.append(f"Shared descriptive tokens: {', '.join(shared_keywords[:5])}")
+    brand_a = (lost_item.get("brand") or "").strip().lower()
+    brand_b = (found_item.get("brand") or "").strip().lower()
+    if brand_a and brand_b and brand_a == brand_b:
+        textual_cues.append(f"Identical brand match: {lost_item.get('brand')}")
+
+    s_txt = scores.get("textual")
+    if s_txt is not None:
+        if s_txt >= 0.80:
+            textual_cues.append(f"Dense S-BERT semantic similarity is high ({int(s_txt * 100)}%)")
+        elif s_txt >= 0.60:
+            textual_cues.append(f"Moderate contextual phrasing match ({int(s_txt * 100)}%)")
+
+    # Visual cues
+    visual_cues = []
+    s_img = scores.get("visual")
+    if s_img is not None:
+        if s_img >= 0.80:
+            visual_cues.append(f"OpenCLIP ViT-B/32 photo cosine alignment is high ({int(s_img * 100)}%)")
+        elif s_img >= 0.60:
+            visual_cues.append(f"Moderate visual shape and palette resemblance ({int(s_img * 100)}%)")
+        else:
+            visual_cues.append(f"Low visual alignment ({int(s_img * 100)}%) - angles, lighting or accessories vary")
+    else:
+        visual_cues.append("No reference photo available on one or both items; visual weight dynamically re-distributed to text and attributes")
+
+    # Attribute cues
+    attr_cues = []
+    if lost_item.get("category") == found_item.get("category"):
+        attr_cues.append(f"Category matched: {lost_item.get('category')}")
+    if (lost_item.get("primaryColor") or "").lower() == (found_item.get("primaryColor") or "").lower():
+        attr_cues.append(f"Color profile matched: {lost_item.get('primaryColor')}")
+
+    return {
+        "visualCues": visual_cues,
+        "textualCues": textual_cues,
+        "attributeCues": attr_cues,
+        "topKeywordsShared": shared_keywords[:8],
+    }
+
 def generate_plain_explanation(
     scores: Dict[str, Optional[float]],
     effective_weights: Dict[str, float],
@@ -309,9 +376,16 @@ def calculate_match(
         scores_dict, effective_weights, lost_item, found_item, match_score_pct
     )
 
+    cues = extract_shared_cues(lost_item, found_item, scores_dict)
+    sub_scores = {
+        k: (round(v * 100.0, 1) if v is not None else None)
+        for k, v in scores_dict.items()
+    }
+
     return {
         "matchScore": match_score_pct,
         "matchScoreNormalized": round(total_score, 4),
+        "subScores": sub_scores,
         "scoreBreakdown": {
             k: (round(v, 4) if v is not None else None) for k, v in scores_dict.items()
         },
@@ -320,5 +394,13 @@ def calculate_match(
         "availableModalities": available_modalities,
         "unavailableModalities": unavailable_modalities,
         "explanation": explanation,
+        "cues": cues,
+        "visualCues": cues["visualCues"],
+        "textualCues": cues["textualCues"],
+        "topKeywordsShared": cues["topKeywordsShared"],
+        "humanVerificationGuidance": (
+            "AI similarity is advisory only. Campus administrators must independently cross-examine "
+            "claimant proof and secret verification answers before approving physical transfer."
+        ),
         "status": "active",
     }

@@ -384,13 +384,73 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                       </div>
                     )}
 
-                    {/* Natural Language Explanation Box */}
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-start gap-2">
-                      <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-bold text-slate-900">Explainable AI Rationale: </span>
-                        <span>{match.explanation}</span>
+                    {/* Natural Language Explanation & Multimodal Cues Box */}
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold text-slate-900">Explainable AI Rationale: </span>
+                          <span className="leading-relaxed">{match.explanation}</span>
+                        </div>
                       </div>
+
+                      {/* Top Shared Keywords / Cues */}
+                      {match.topKeywordsShared && match.topKeywordsShared.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1 pl-6">
+                          <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1 mr-1">
+                            <Tag className="w-3 h-3 text-indigo-500" /> Key Shared Cues:
+                          </span>
+                          {match.topKeywordsShared.map((kw, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-medium"
+                            >
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Visual & Textual Cues Bullets */}
+                      {((match.visualCues && match.visualCues.length > 0) || (match.textualCues && match.textualCues.length > 0)) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 pl-6 text-[11px]">
+                          {match.visualCues && match.visualCues.length > 0 && (
+                            <div className="p-2 rounded-lg bg-white border border-slate-200 space-y-1">
+                              <span className="font-semibold text-slate-800 flex items-center gap-1">
+                                🖼️ Visual Evidence
+                              </span>
+                              <ul className="list-disc list-inside text-slate-600 space-y-0.5">
+                                {match.visualCues.map((vc, i) => (
+                                  <li key={i}>{vc}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {match.textualCues && match.textualCues.length > 0 && (
+                            <div className="p-2 rounded-lg bg-white border border-slate-200 space-y-1">
+                              <span className="font-semibold text-slate-800 flex items-center gap-1">
+                                📝 Semantic Text Evidence
+                              </span>
+                              <ul className="list-disc list-inside text-slate-600 space-y-0.5">
+                                {match.textualCues.map((tc, i) => (
+                                  <li key={i}>{tc}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Admin Human Verification Guidance */}
+                      {match.humanVerificationGuidance && (
+                        <div className="mt-2 pl-6 text-[11px] text-amber-800 bg-amber-50/80 p-2.5 rounded-lg border border-amber-200 flex items-start gap-2">
+                          <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-amber-900">Admin Verification Guidance: </span>
+                            <span>{match.humanVerificationGuidance}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

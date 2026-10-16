@@ -144,6 +144,11 @@ export interface MatchCandidate {
   availableModalities: string[];
   unavailableModalities: string[];
   explanation: string;
+  subScores?: { [key: string]: number | null };
+  visualCues?: string[];
+  textualCues?: string[];
+  topKeywordsShared?: string[];
+  humanVerificationGuidance?: string;
   status: string;
   verificationNotice: string;
 }
