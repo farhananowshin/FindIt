@@ -28,6 +28,7 @@ import {
   Clock,
   Layers,
   CheckCircle2,
+  ChevronDown,
 } from "lucide-react";
 
 export default function Home() {
@@ -208,49 +209,112 @@ export default function Home() {
 
               {/* Minimal Clean Subtitle */}
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-lg">
-                Report lost or found belongings across Sylhet. Our Multimodal AI compares photos, descriptions, and locations to find matches instantly.
+                Search verified belongings or report an item across Sylhet metropolitan hubs.
               </p>
 
-              {/* Clean Action Cards: Minimal, Sleek, Uncluttered with Distinct Border Accents */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-                {/* I Lost Something Card */}
-                <div
+              {/* Compact Quick Action Buttons (+ I've lost / + I've found) */}
+              <div className="flex items-center gap-2.5 pt-1">
+                <button
+                  type="button"
                   onClick={handleOpenLostReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/85 to-slate-900/90 hover:from-rose-950/60 hover:to-slate-900/95 border border-rose-500/40 hover:border-rose-400 shadow-lg shadow-rose-950/20 hover:shadow-rose-900/40 backdrop-blur-md transition-all duration-200 flex items-center justify-between"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 hover:text-white border border-rose-500/35 hover:border-rose-400 transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.35)] flex items-center justify-center group-hover:scale-110 transition">
-                      <HelpCircle className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-extrabold text-white group-hover:text-rose-200 transition">
-                        I Lost Something
-                      </h2>
-                      <span className="text-xs text-rose-200/70 block">Report your lost item</span>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-rose-400 group-hover:translate-x-1.5 transition" />
+                  <span className="text-base font-black leading-none">+</span>
+                  <span>I&apos;ve Lost</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleOpenFoundReport}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-white border border-emerald-500/35 hover:border-emerald-400 transition-all shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <span className="text-base font-black leading-none">+</span>
+                  <span>I&apos;ve Found</span>
+                </button>
+              </div>
+
+              {/* All-in-One Hero Search Bar Widget */}
+              <form
+                onSubmit={handleSearchSubmit}
+                className="p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2"
+              >
+                {/* Search Input */}
+                <div className="relative flex-1 min-w-0">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={heroSearch}
+                    onChange={(e) => setHeroSearch(e.target.value)}
+                    placeholder="What did you lose or find?"
+                    className="w-full pl-10 pr-3 py-2 bg-transparent rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-none transition"
+                  />
                 </div>
 
-                {/* I Found Something Card */}
-                <div
-                  onClick={handleOpenFoundReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-slate-900/85 to-slate-900/90 hover:from-emerald-950/60 hover:to-slate-900/95 border border-emerald-500/40 hover:border-emerald-400 shadow-lg shadow-emerald-950/20 hover:shadow-emerald-900/40 backdrop-blur-md transition-all duration-200 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.35)] flex items-center justify-center group-hover:scale-110 transition">
-                      <Sparkles className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-extrabold text-white group-hover:text-emerald-200 transition">
-                        I Found Something
-                      </h2>
-                      <span className="text-xs text-emerald-200/70 block">Return a found item</span>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1.5 transition" />
+                {/* Category Select Dropdown */}
+                <div className="relative sm:border-l sm:border-slate-800 sm:pl-2">
+                  <select
+                    value={heroCategory}
+                    onChange={(e) => setHeroCategory(e.target.value)}
+                    className="w-full sm:w-auto appearance-none bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl px-3 py-2 pr-7 text-xs font-medium text-slate-200 focus:outline-none transition cursor-pointer"
+                  >
+                    <option value="all">All categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="bags_wallets">Bags &amp; Wallets</option>
+                    <option value="id_cards">ID Cards &amp; Docs</option>
+                    <option value="keys">Keys</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="books_notes">Books &amp; Notes</option>
+                    <option value="bottles_accessories">Accessories</option>
+                    <option value="other">Other Items</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                 </div>
-              </div>
+
+                {/* Lost / Found Filter Segmented Toggle */}
+                <div className="flex items-center p-1 bg-slate-950/80 rounded-xl border border-slate-800 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setFeedTypeFilter("all")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      feedTypeFilter === "all"
+                        ? "bg-slate-800 text-white shadow-xs"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeedTypeFilter("lost")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      feedTypeFilter === "lost"
+                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                        : "text-slate-400 hover:text-rose-300"
+                    }`}
+                  >
+                    Lost
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeedTypeFilter("found")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      feedTypeFilter === "found"
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                        : "text-slate-400 hover:text-emerald-300"
+                    }`}
+                  >
+                    Found
+                  </button>
+                </div>
+
+                {/* Search Button */}
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs sm:text-sm shadow-md hover:shadow-sky-500/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <span>Search</span>
+                </button>
+              </form>
             </div>
 
             {/* Right Column: Visual AI Showcase Card (5 Cols) */}
