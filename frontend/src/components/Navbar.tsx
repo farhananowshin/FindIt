@@ -46,47 +46,50 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-slate-950/85 backdrop-blur-2xl">
+      {/* Specular hairline highlight along top border */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/30 to-transparent pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Branding */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 text-white shadow-lg shadow-sky-500/20 group-hover:scale-105 transition">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 border border-slate-700/80 text-sky-400 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] group-hover:border-sky-500/50 group-hover:text-sky-300 group-hover:scale-105 transition-all">
               <Compass className="w-5 h-5" />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-black tracking-tight text-white">
                 Find<span className="text-sky-400">It</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-cyan-950/80 text-cyan-300 border border-cyan-400/40 shadow-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                Sylhet AI
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-900/90 text-slate-300 border border-slate-800 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Sylhet Hubs
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2.5">
+          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
             <button
               onClick={() => scrollTo("recent-items")}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer"
             >
-              <Search className="w-4 h-4 text-slate-400" />
+              <Search className="w-3.5 h-3.5 text-slate-400" />
               Browse Items
             </button>
             <button
               onClick={onOpenWeights}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               AI Matching
             </button>
 
             <button
               onClick={() => scrollTo("report-form")}
-              className="flex items-center gap-1.5 ml-2 px-4 py-2 text-xs font-extrabold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_22px_rgba(99,102,241,0.65)] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 ml-1 px-3.5 py-1.5 text-xs font-bold text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-400/30 hover:border-sky-400/60 rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
             >
-              <FilePlus2 className="w-3.5 h-3.5 text-white" />
+              <FilePlus2 className="w-3.5 h-3.5 text-sky-400" />
               + Report Item
             </button>
 
@@ -94,9 +97,9 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
             {user && (
               <Link
                 href="/my-claims"
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition"
               >
-                <ClipboardList className="w-4 h-4 text-sky-400" />
+                <ClipboardList className="w-3.5 h-3.5 text-sky-400" />
                 My Claims
               </Link>
             )}
@@ -104,9 +107,9 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
             {user?.role === "admin" && (
               <Link
                 href="/admin"
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg transition border border-amber-500/30"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg transition border border-amber-500/30"
               >
-                <Shield className="w-4 h-4 text-amber-400" />
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
                 Admin Dashboard
               </Link>
             )}
@@ -116,7 +119,7 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
           <div className="hidden sm:flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-2">
-                {/* Day 5 In-App Notification Bell */}
+                {/* In-App Notification Bell */}
                 <NotificationBell />
 
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200">
@@ -134,7 +137,7 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-900 rounded-xl transition"
+                  className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-900 rounded-xl transition cursor-pointer"
                   title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -144,14 +147,14 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onOpenAuth?.("login")}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/70 rounded-xl transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition cursor-pointer"
                 >
                   <LogIn className="w-3.5 h-3.5 text-slate-400" />
                   Sign In
                 </button>
                 <button
                   onClick={() => onOpenAuth?.("register")}
-                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-extrabold text-white bg-gradient-to-r from-sky-500 via-indigo-600 to-violet-600 hover:from-sky-400 hover:to-indigo-500 rounded-xl shadow-[0_0_12px_rgba(99,102,241,0.35)] hover:shadow-[0_0_18px_rgba(99,102,241,0.55)] border border-sky-400/30 active:scale-95 transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-slate-950 bg-white hover:bg-slate-100 rounded-xl shadow-[0_2px_12px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.6)] active:scale-95 transition cursor-pointer"
                 >
                   Create Account
                 </button>
