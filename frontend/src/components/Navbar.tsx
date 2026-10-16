@@ -50,22 +50,18 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Branding */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 text-white shadow-md shadow-sky-500/20">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 text-white shadow-lg shadow-sky-500/20 group-hover:scale-105 transition">
               <Compass className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xl font-black tracking-tight text-white">
-                  Find<span className="text-sky-400">It</span>
-                </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  Sylhet AI
-                </span>
-              </div>
-              <p className="hidden sm:block text-[10px] text-slate-400 font-medium">
-                Smart Lost &amp; Found Platform
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-black tracking-tight text-white">
+                Find<span className="text-sky-400">It</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-sky-300 border border-indigo-400/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Sylhet AI
+              </span>
             </div>
           </Link>
 

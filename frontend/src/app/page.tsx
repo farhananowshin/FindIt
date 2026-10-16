@@ -350,8 +350,51 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Live Impact Metrics Bar */}
+          <div className="mt-10 pt-6 border-t border-slate-800/80 grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-sm">
+                42+
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">Active Reports</p>
+                <p className="text-[10px] text-slate-400">Across Sylhet City</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-sm">
+                96%
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">AI Precision</p>
+                <p className="text-[10px] text-slate-400">OpenCLIP + S-BERT</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-sm">
+                11
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">Sylhet Hubs</p>
+                <p className="text-[10px] text-slate-400">Transit &amp; Campus</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-sm">
+                100%
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">Private Recovery</p>
+                <p className="text-[10px] text-slate-400">Verified Ownership</p>
+              </div>
+            </div>
+          </div>
+
           {/* 3-Step "How FindIt Works" Visual Ribbon */}
-          <div className="mt-12 pt-8 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+          <div className="mt-4 pt-4 border-t border-slate-800/60 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/80 shadow-lg backdrop-blur-md">
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold text-xs flex items-center justify-center border border-indigo-500/30">
