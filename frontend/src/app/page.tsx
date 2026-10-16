@@ -632,7 +632,7 @@ export default function Home() {
       />
 
       {/* University Footer */}
-      <Footer />
+      <Footer onOpenProposal={() => setIsProposalOpen(true)} />
     </div>
   );
 }
