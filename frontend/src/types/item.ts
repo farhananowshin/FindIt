@@ -14,6 +14,8 @@ export interface CampusLocation {
   id: string;
   name: string;
   zone: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface UploadedImage {
@@ -82,17 +84,17 @@ export interface StoredItemReport {
 }
 
 export const CAMPUS_LOCATIONS: CampusLocation[] = [
-  { id: "lib_main", name: "Central University Library", zone: "Academic Core" },
-  { id: "sci_eng", name: "Science & Engineering Complex", zone: "North Campus" },
-  { id: "stu_union", name: "Student Union & Activity Center", zone: "Central Campus" },
-  { id: "dining_hall", name: "Campus Cafeteria & Dining Hall", zone: "Central Campus" },
-  { id: "sports_rec", name: "Sports & Recreation Center", zone: "South Campus" },
-  { id: "dorm_east", name: "East Campus Residence Halls", zone: "Residential East" },
-  { id: "dorm_west", name: "West Campus Residence Halls", zone: "Residential West" },
-  { id: "auditorium", name: "Grand Auditorium & Hall A-C", zone: "Arts & Humanities" },
-  { id: "admin_bldg", name: "Administration & Registrar Building", zone: "Central Campus" },
-  { id: "bus_stop", name: "Campus Shuttle Terminal / Bus Stop", zone: "Transit" },
-  { id: "other", name: "Other Campus Location", zone: "Campus Perimeter" },
+  { id: "lib_main", name: "Central University Library", zone: "Academic Core", lat: 24.8988, lng: 91.9715 },
+  { id: "sci_eng", name: "Science & Engineering Complex", zone: "North Campus", lat: 24.8995, lng: 91.9710 },
+  { id: "stu_union", name: "Student Union & Activity Center", zone: "Central Campus", lat: 24.8985, lng: 91.9720 },
+  { id: "dining_hall", name: "Campus Cafeteria & Dining Hall", zone: "Central Campus", lat: 24.8980, lng: 91.9718 },
+  { id: "sports_rec", name: "Sports & Recreation Center", zone: "South Campus", lat: 24.8975, lng: 91.9708 },
+  { id: "dorm_east", name: "East Campus Residence Halls", zone: "Residential East", lat: 24.8990, lng: 91.9730 },
+  { id: "dorm_west", name: "West Campus Residence Halls", zone: "Residential West", lat: 24.8992, lng: 91.9700 },
+  { id: "auditorium", name: "Grand Auditorium & Hall A-C", zone: "Arts & Humanities", lat: 24.8982, lng: 91.9725 },
+  { id: "admin_bldg", name: "Administration & Registrar Building", zone: "Central Campus", lat: 24.8987, lng: 91.9705 },
+  { id: "bus_stop", name: "Campus Shuttle Terminal / Bus Stop", zone: "Transit", lat: 24.8978, lng: 91.9735 },
+  { id: "other", name: "Other Campus Location", zone: "Campus Perimeter", lat: 24.8985, lng: 91.9712 },
 ];
 
 export const ITEM_CATEGORIES: { id: ItemCategory; label: string; icon: string }[] = [

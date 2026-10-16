@@ -167,6 +167,23 @@ When the FastAPI AI microservice is offline, restarting, or unreachable:
 
 ---
 
+## 🗺️ Feature 10: Location-Based Interactive Map (Leaflet & OpenStreetMap)
+
+FindIt integrates an interactive campus map specifically centered on **Metropolitan University, Bangladesh** (Bateshwar, Sylhet: `24.8988° N, 91.9715° E`):
+- **Zero Third-Party API Keys**: Powered by Leaflet and OpenStreetMap tiles directly without requiring Google Maps or billing accounts.
+- **Color-Coded Custom Map Pins**:
+  - 🔴 **Red Pins**: Active Lost item reports.
+  - 🟢 **Emerald Pins**: Active Found item reports.
+  - 🏢 **11 Campus Landmarks**: Interactive rings marking the Central Library, Science & Engineering Complex, Student Union, Cafeteria, Sports Center, and Residence Halls.
+- **Pin Popups & Direct Action Triggers**:
+  - Clicking any pin displays a clean card with the item thumbnail, title, category, campus building, and specific location.
+  - Lost items include a **"Find AI Matches"** shortcut button.
+  - Found items include a **"Claim This Item"** shortcut button.
+- **Segmented Feed View Toggle**:
+  - The campus feed header features a toggle between **Grid View** (default) and **Campus Map View**, preserving full search and category filtering in both modes.
+
+---
+
 ## 🚀 Quick Start Guide (3-Terminal Setup)
 
 ### Prerequisites

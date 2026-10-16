@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Search,
   MapPin,
@@ -13,8 +14,18 @@ import {
   Sparkles,
   ShieldAlert,
   CheckCircle2,
+  LayoutGrid,
 } from "lucide-react";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
+
+const CampusMapView = dynamic(() => import("./CampusMapView"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[480px] bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 text-sm animate-pulse border border-slate-200">
+      Loading Metropolitan University Campus Map...
+    </div>
+  ),
+});
 
 interface RecentItemsListProps {
   items: StoredItemReport[];
@@ -38,6 +49,7 @@ export default function RecentItemsList({
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
   const filteredItems = items.filter((item) => {
     const itemType = item.type || item.reportType;
@@ -102,6 +114,34 @@ export default function RecentItemsList({
               Refresh
             </button>
           )}
+
+          {/* View Mode Segmented Control: Grid vs Campus Map */}
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                viewMode === "grid"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Grid
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("map")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                viewMode === "map"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              Campus Map
+            </button>
+          </div>
 
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
             <button
@@ -191,8 +231,16 @@ export default function RecentItemsList({
         </select>
       </div>
 
-      {/* Loading Skeleton */}
-      {isLoading && items.length === 0 ? (
+      {/* Feed Content: Interactive Campus Map View OR Responsive Grid Cards */}
+      {viewMode === "map" ? (
+        <div className="mt-6">
+          <CampusMapView
+            items={filteredItems}
+            onFindMatches={onFindMatches}
+            onClaimItem={onClaimItem}
+          />
+        </div>
+      ) : isLoading && items.length === 0 ? (
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3].map((n) => (
             <div key={n} className="rounded-2xl border border-slate-200 bg-white p-4 animate-pulse space-y-3">
