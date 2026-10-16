@@ -389,34 +389,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Academic Supervisor & Specs Drawer */}
-          <div className="mt-6 pt-3 border-t border-slate-200/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500">
-            <div className="text-center sm:text-left">
-              <p className="font-semibold text-slate-700 text-xs">
-                Metropolitan University &bull; Dept. of CSE (Project CSE 300)
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Supervisor: Md Shamihul Islam Khan Limon &bull; Team: Farhana Nowshin &amp; Adrita Chakraborty
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsProposalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition"
-              >
-                <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                Project Specs &amp; Proposal
-              </button>
-              <button
-                onClick={() => setIsWeightsOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition"
-              >
-                <Sliders className="w-3.5 h-3.5 text-indigo-500" />
-                AI Weights
-              </button>
-            </div>
-          </div>
         </div>
       </section>
 
