@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   Sparkles,
@@ -30,39 +30,34 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<MatchResponse | null>(null);
 
+  const loadMatches = useCallback(() => {
+    if (!lostItem) return;
+    const itemId = lostItem._id || lostItem.id;
+    if (!itemId) return;
+
+    setLoading(true);
+    setError(null);
+
+    fetchMatchesForItem(itemId)
+      .then((data) => {
+        setMatchData(data);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : "Failed to load matches.";
+        setError(message);
+        setLoading(false);
+      });
+  }, [lostItem]);
+
   useEffect(() => {
     if (!isOpen || !lostItem) {
       setMatchData(null);
       setError(null);
       return;
     }
-
-    const itemId = lostItem._id || lostItem.id;
-    if (!itemId) return;
-
-    let ignore = false;
-    setLoading(true);
-    setError(null);
-
-    fetchMatchesForItem(itemId)
-      .then((data) => {
-        if (!ignore) {
-          setMatchData(data);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!ignore) {
-          const message = err instanceof Error ? err.message : "Failed to load matches.";
-          setError(message);
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [isOpen, lostItem]);
+    loadMatches();
+  }, [isOpen, lostItem, loadMatches]);
 
   if (!isOpen || !lostItem) return null;
 
@@ -147,18 +142,38 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
             </div>
           )}
 
-          {/* Error State */}
+          {/* Error State / AI Offline Graceful Degradation */}
           {error && !loading && (
-            <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-2">
-              <div className="flex items-center gap-2 font-bold text-sm text-rose-700">
-                <AlertCircle className="w-5 h-5" />
-                Could Not Retrieve Matches
+            <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 text-xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 font-bold text-sm text-amber-800">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                  <span>Multimodal AI Matching Temporarily Unavailable</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadMatches}
+                  className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-2xs"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Retry AI Service</span>
+                </button>
               </div>
-              <p className="leading-relaxed">{error}</p>
-              <div className="p-3 bg-white/80 rounded-xl border border-rose-200 font-mono text-[11px] text-slate-700">
-                💡 <strong>Troubleshooting:</strong> Ensure the FastAPI microservice is running on port 8001:
-                <br />
-                <code>cd ai-service &amp;&amp; uvicorn main:app --reload --port 8001</code>
+
+              <p className="leading-relaxed text-amber-900">
+                {error}
+              </p>
+
+              <div className="p-3.5 bg-white/90 rounded-xl border border-amber-200 text-[11px] text-slate-700 space-y-1">
+                <p className="font-semibold text-slate-900">
+                  🛡️ Graceful Service Degradation:
+                </p>
+                <p className="leading-relaxed">
+                  Campus item browsing, lost/found reporting, student claims, and administrative review remain 100% operational. Only automated neural similarity rankings are paused until the AI service re-establishes connection.
+                </p>
+                <p className="font-mono text-[10px] text-slate-500 pt-1">
+                  Start service: <code>cd ai-service &amp;&amp; .venv\Scripts\activate &amp;&amp; uvicorn main:app --port 8001 --reload</code>
+                </p>
               </div>
             </div>
           )}

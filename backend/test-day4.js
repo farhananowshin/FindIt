@@ -93,8 +93,8 @@ async function runDay4Tests() {
     const healthRes = await request("GET", "/api/health");
     assert(healthRes.statusCode === 200, "Healthcheck returns HTTP 200 OK");
     assert(
-      healthRes.data && healthRes.data.version && healthRes.data.version.includes("Day 4"),
-      "API version reports Day 4",
+      healthRes.data && healthRes.data.version && (healthRes.data.version.includes("Day 4") || healthRes.data.version.includes("Day 5")),
+      "API version reports valid milestone",
       JSON.stringify(healthRes.data)
     );
 

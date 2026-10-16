@@ -239,11 +239,14 @@ def calculate_match(
     found_img_emb: Optional[np.ndarray] = None,
     lost_txt_emb: Optional[np.ndarray] = None,
     found_txt_emb: Optional[np.ndarray] = None,
+    weights: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
     """
     Executes the 5-factor explainable matching algorithm between a Lost and Found item.
-    Supports missing modality weight re-normalization.
+    Supports missing modality weight re-normalization and custom weight evaluation.
     """
+    active_weights = weights or INITIAL_WEIGHTS
+
     # 1. Visual Similarity (0.40)
     s_img = cosine_similarity(lost_img_emb, found_img_emb)
 
@@ -288,14 +291,14 @@ def calculate_match(
         }
 
     # Sum of available base weights
-    sum_available_weights = sum(INITIAL_WEIGHTS[m] for m in available_modalities)
+    sum_available_weights = sum(active_weights[m] for m in available_modalities)
 
     effective_weights = {}
     total_score = 0.0
 
     for m in available_modalities:
         # Re-normalize weights so sum(effective_weights) == 1.00
-        norm_w = INITIAL_WEIGHTS[m] / sum_available_weights
+        norm_w = active_weights[m] / sum_available_weights
         effective_weights[m] = round(norm_w, 4)
         total_score += norm_w * scores_dict[m]
 
@@ -313,7 +316,7 @@ def calculate_match(
             k: (round(v, 4) if v is not None else None) for k, v in scores_dict.items()
         },
         "effectiveWeights": effective_weights,
-        "initialWeights": INITIAL_WEIGHTS,
+        "initialWeights": active_weights,
         "availableModalities": available_modalities,
         "unavailableModalities": unavailable_modalities,
         "explanation": explanation,

@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
 const ItemReport = require("../models/ItemReport");
+const Notification = require("../models/Notification");
 const upload = require("../middleware/upload");
 const { authenticateToken, requireRole } = require("../middleware/auth");
 
@@ -368,6 +369,44 @@ router.get("/:id/matches", async (req, res) => {
           success: false,
           message: aiResponse.detail || "AI matching service encountered an error.",
         });
+      }
+
+      // Check for High-Confidence AI Match Alerts (threshold >= 70%)
+      if (item.submitterId && Array.isArray(aiResponse.matches)) {
+        const HIGH_CONFIDENCE_THRESHOLD = 70.0;
+        const highMatches = aiResponse.matches.filter(
+          (m) => (m.matchScore || (m.matchScoreNormalized * 100)) >= HIGH_CONFIDENCE_THRESHOLD
+        );
+
+        for (const candidate of highMatches) {
+          try {
+            const candidateId = candidate.itemId;
+            // Prevent duplicate notifications for this lost item + found item candidate
+            const existingNotification = await Notification.findOne({
+              userId: item.submitterId,
+              type: "match_alert",
+              relatedItemId: candidateId,
+            });
+
+            if (!existingNotification) {
+              await Notification.create({
+                userId: item.submitterId,
+                type: "match_alert",
+                title: "High-Confidence AI Match Identified",
+                message: `Multimodal AI found a ${candidate.matchScore}% match for your lost item "${item.title}". Review found candidate report.`,
+                relatedItemId: candidateId,
+                matchScore: candidate.matchScore,
+                metadata: {
+                  sourceItemId: item._id,
+                  candidateItemId: candidateId,
+                  matchScore: candidate.matchScore,
+                },
+              });
+            }
+          } catch (notifErr) {
+            console.warn("⚠️ Non-blocking error generating match notification:", notifErr.message);
+          }
+        }
       }
 
       return res.status(200).json(aiResponse);

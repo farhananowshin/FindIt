@@ -202,3 +202,33 @@ export interface CreateClaimPayload {
   proofDetails: string;
 }
 
+// ==========================================
+// Day 5: Notification Interfaces
+// ==========================================
+
+export type NotificationType = "match_alert" | "claim_approved" | "claim_rejected" | "system";
+
+export interface NotificationItem {
+  _id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  relatedItemId?: StoredItemReport | string | null;
+  relatedClaimId?: Claim | string | null;
+  matchScore?: number | null;
+  isRead: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface NotificationsResponse {
+  success: boolean;
+  total: number;
+  unreadCount: number;
+  page: number;
+  limit: number;
+  data: NotificationItem[];
+}
+

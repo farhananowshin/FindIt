@@ -9,6 +9,7 @@ const connectDB = require("./src/config/db");
 const itemRoutes = require("./src/routes/itemRoutes");
 const authRoutes = require("./src/routes/authRoutes");
 const claimRoutes = require("./src/routes/claimRoutes");
+const notificationRoutes = require("./src/routes/notificationRoutes");
 
 // Initialize Express application
 const app = express();
@@ -75,7 +76,7 @@ app.get("/api/health", (req, res) => {
       readyState: dbState,
       name: mongoose.connection.name || "findit",
     },
-    version: "1.0.0 (Day 4)",
+    version: "1.0.0 (Day 5 - Final)",
   });
 });
 
@@ -83,6 +84,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/claims", claimRoutes);
 app.use("/api/items", itemRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // 404 Handler for undefined routes
 app.use((req, res, next) => {

@@ -218,7 +218,7 @@ export async function fetchMatchesForItem(
 // Day 4: Authentication & Claims API Client
 // ==========================================
 
-import { UserProfile, AuthResponse, Claim, CreateClaimPayload, ClaimStatus } from "../types/item";
+import { UserProfile, AuthResponse, Claim, CreateClaimPayload, ClaimStatus, NotificationItem, NotificationsResponse } from "../types/item";
 
 /**
  * Register a new student account.
@@ -377,6 +377,80 @@ export async function updateClaimStatus(
   const json = await res.json();
   if (!res.ok || !json.success) {
     throw new Error(json.message || "Failed to update claim review status.");
+  }
+
+  return json;
+}
+
+// ==========================================
+// Day 5: Notifications API Client
+// ==========================================
+
+/**
+ * Fetch notifications for the authenticated user.
+ */
+export async function fetchNotifications(
+  token: string,
+  unreadOnly = false
+): Promise<NotificationsResponse> {
+  const query = unreadOnly ? "?unreadOnly=true" : "";
+  const res = await fetch(`${API_BASE}/api/notifications${query}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to fetch notifications.");
+  }
+
+  return json;
+}
+
+/**
+ * Mark a single notification as read.
+ */
+export async function markNotificationAsRead(
+  notificationId: string,
+  token: string
+): Promise<{ success: boolean; unreadCount: number; data: NotificationItem }> {
+  const res = await fetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+    },
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to mark notification as read.");
+  }
+
+  return json;
+}
+
+/**
+ * Mark all unread notifications as read.
+ */
+export async function markAllNotificationsAsRead(
+  token: string
+): Promise<{ success: boolean; unreadCount: number }> {
+  const res = await fetch(`${API_BASE}/api/notifications/read-all`, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Accept": "application/json",
+    },
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to mark all notifications as read.");
   }
 
   return json;

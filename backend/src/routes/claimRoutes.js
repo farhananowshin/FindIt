@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Claim = require("../models/Claim");
 const ItemReport = require("../models/ItemReport");
+const Notification = require("../models/Notification");
 const { authenticateToken, requireRole } = require("../middleware/auth");
 
 const router = express.Router();
@@ -267,6 +268,12 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
       await item.save();
 
       // Concurrency safeguard: Automatically reject any other pending claims for this item
+      const otherPendingClaims = await Claim.find({
+        itemId: item._id,
+        _id: { $ne: claim._id },
+        status: "pending",
+      }).select("_id claimantId");
+
       await Claim.updateMany(
         {
           itemId: item._id,
@@ -280,6 +287,37 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
           reviewNotes: "Item ownership was verified and claimed by another claimant.",
         }
       );
+
+      // Trigger Notification for Approved Claimant
+      try {
+        await Notification.create({
+          userId: claim.claimantId,
+          type: "claim_approved",
+          title: "Ownership Claim Approved!",
+          message: `Your ownership claim for item "${item.title}" was approved by campus staff. Instructions: ${claim.reviewNotes}`,
+          relatedItemId: item._id,
+          relatedClaimId: claim._id,
+          metadata: {
+            claimId: claim._id,
+            itemId: item._id,
+            reviewNotes: claim.reviewNotes,
+          },
+        });
+
+        // Notify other claimants whose claims were closed
+        for (const otherClaim of otherPendingClaims) {
+          await Notification.create({
+            userId: otherClaim.claimantId,
+            type: "claim_rejected",
+            title: "Ownership Claim Closed",
+            message: `The item "${item.title}" was claimed and verified by another claimant.`,
+            relatedItemId: item._id,
+            relatedClaimId: otherClaim._id,
+          });
+        }
+      } catch (notifErr) {
+        console.warn("⚠️ Non-blocking error generating claim approval notification:", notifErr.message);
+      }
     } else {
       // Rejection: Update claim only; leave item status 'active' so other legitimate claims can be submitted
       claim.status = "rejected";
@@ -287,6 +325,25 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
       claim.reviewedAt = new Date();
       claim.reviewNotes = (reviewNotes || "").trim() || "Claim rejected. Evidence did not match verified item attributes.";
       await claim.save();
+
+      // Trigger Notification for Rejected Claimant
+      try {
+        await Notification.create({
+          userId: claim.claimantId,
+          type: "claim_rejected",
+          title: "Ownership Claim Update",
+          message: `Your ownership claim for item "${item.title}" was reviewed and not approved. Note: ${claim.reviewNotes}`,
+          relatedItemId: item._id,
+          relatedClaimId: claim._id,
+          metadata: {
+            claimId: claim._id,
+            itemId: item._id,
+            reviewNotes: claim.reviewNotes,
+          },
+        });
+      } catch (notifErr) {
+        console.warn("⚠️ Non-blocking error generating claim rejection notification:", notifErr.message);
+      }
     }
 
     return res.status(200).json({
