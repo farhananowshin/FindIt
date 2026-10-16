@@ -194,78 +194,60 @@ export default function Home() {
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="font-bold tracking-wide">FindIt Sylhet</span>
                 <span className="text-slate-500">&bull;</span>
-                <span className="text-slate-300 font-medium">Smart AI Lost &amp; Found Platform</span>
+                <span className="text-slate-300 font-medium">AI Lost &amp; Found</span>
               </div>
 
-              {/* Bold, Catchy Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-white leading-[1.12]">
+              {/* Bold, Catchy Animated Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
                 Lost something in <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300">
-                  Sylhet? Let AI help you find it.
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400 animate-gradient-text">
+                  Sylhet? Let AI find it.
                 </span>
               </h1>
 
-              {/* Engaging Subtitle */}
-              <div className="space-y-1.5 max-w-xl">
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                  Report lost or found belongings across Sylhet and let FindIt compare photos, descriptions,
-                  location and time to rank the most likely matches, with a clear explanation for each.
-                </p>
-                <p className="text-xs text-slate-400 font-medium">
-                  হারানো জিনিস খুঁজুন, প্রমাণসহ ফিরে পান।
-                </p>
-              </div>
+              {/* Minimal Clean Subtitle */}
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-lg">
+                Report lost or found belongings across Sylhet. Our Multimodal AI compares photos, descriptions, and locations to find matches instantly.
+              </p>
 
-              {/* Prominent Action Cards */}
+              {/* Clean Action Cards: Minimal, Sleek, Uncluttered */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                 {/* I Lost Something Card */}
                 <div
                   onClick={handleOpenLostReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-slate-900/80 hover:bg-rose-950/40 border border-slate-700/80 hover:border-rose-500/50 shadow-lg shadow-black/20 backdrop-blur-md transition-all flex flex-col justify-between"
+                  className="group cursor-pointer p-4 rounded-2xl bg-slate-900/80 hover:bg-rose-950/30 border border-slate-700/80 hover:border-rose-500/50 shadow-lg backdrop-blur-md transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center group-hover:scale-110 transition">
                       <HelpCircle className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-bold text-rose-400 block">আমি কিছু হারিয়েছি</span>
                       <h2 className="text-base font-extrabold text-white group-hover:text-rose-300 transition">
                         I Lost Something
                       </h2>
+                      <span className="text-xs text-slate-400 block">Report your lost item</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-2">
-                    মানিব্যাগ, ফোন, চাবি, ব্যাগ বা আইডি কার্ড হারিয়েছেন? রিপোর্ট করুন।
-                  </p>
-                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-rose-400 group-hover:translate-x-1 transition">
-                    <span>Report Lost Item</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
+                  <ArrowRight className="w-4 h-4 text-rose-400 group-hover:translate-x-1 transition" />
                 </div>
 
                 {/* I Found Something Card */}
                 <div
                   onClick={handleOpenFoundReport}
-                  className="group cursor-pointer p-4 rounded-2xl bg-slate-900/80 hover:bg-emerald-950/40 border border-slate-700/80 hover:border-emerald-500/50 shadow-lg shadow-black/20 backdrop-blur-md transition-all flex flex-col justify-between"
+                  className="group cursor-pointer p-4 rounded-2xl bg-slate-900/80 hover:bg-emerald-950/30 border border-slate-700/80 hover:border-emerald-500/50 shadow-lg backdrop-blur-md transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 transition">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-bold text-emerald-400 block">আমি কিছু পেয়েছি</span>
                       <h2 className="text-base font-extrabold text-white group-hover:text-emerald-300 transition">
                         I Found Something
                       </h2>
+                      <span className="text-xs text-slate-400 block">Return a found item</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-2">
-                    সিএনজি, ক্যাফে বা ক্যাম্পাসে কোনো জিনিস পেয়েছেন? জমা দিন।
-                  </p>
-                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition">
-                    <span>Report Found Item</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
+                  <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition" />
                 </div>
               </div>
 

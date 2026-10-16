@@ -44,10 +44,28 @@
   }
 }
 
+/* Gradient shimmer for headlines */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .animate-sunset-glow {
   animation: sunsetGlow 6s ease-in-out infinite;
 }
 
 .animate-subtle-float {
   animation: subtleFloat 4s ease-in-out infinite;
+}
+
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradientShift 4s ease infinite;
 }
