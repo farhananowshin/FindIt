@@ -42,7 +42,7 @@ export default function ClaimModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
-      setError("You must be logged in as a student to file an ownership claim.");
+      setError("You must be logged in to your account to file an ownership claim.");
       return;
     }
 
@@ -99,7 +99,7 @@ export default function ClaimModal({
                 Submit Ownership Claim
               </h3>
               <p className="text-xs text-[#A9B0AA]">
-                Human-in-the-Loop Campus Security Verification
+                Human-in-the-Loop Admin & Desk Ownership Verification
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function ClaimModal({
             <div className="space-y-1">
               <span className="font-bold text-[#F3F4EF]">Confidential Ownership Proof</span>
               <p className="leading-relaxed text-[11px]">
-                Your answers and evidence are <strong>strictly confidential</strong> and visible only to campus administrators. Our multimodal AI matching service helps locate candidate pairs, but <strong>never unilaterally confirms ownership</strong>. Physical verification at the campus security desk is required.
+                Your answers and evidence are <strong>strictly confidential</strong> and visible only to authorized review administrators. Our multimodal AI matching service helps locate candidate pairs, but <strong>never unilaterally confirms ownership</strong>. Physical verification at the designated claim desk is required.
               </p>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function ClaimModal({
                 Claim Submitted Successfully!
               </h4>
               <p className="text-xs text-[#A9B0AA] max-w-sm mx-auto">
-                Campus security staff have received your private evidence. You can monitor the review outcome under <strong>My Claims</strong> in the navigation bar.
+                Review administrators have received your private evidence. You can monitor the review outcome under <strong>My Claims</strong> in the navigation bar.
               </p>
               <div className="pt-2">
                 <button

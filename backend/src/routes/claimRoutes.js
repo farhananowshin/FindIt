@@ -262,7 +262,7 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
       claim.status = "approved";
       claim.reviewedBy = req.user._id;
       claim.reviewedAt = new Date();
-      claim.reviewNotes = (reviewNotes || "").trim() || "Claim approved by campus administrator.";
+      claim.reviewNotes = (reviewNotes || "").trim() || "Claim approved by verification administrator.";
       await claim.save();
 
       // Update item status to 'claimed'
@@ -296,7 +296,7 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
           userId: claim.claimantId,
           type: "claim_approved",
           title: "Ownership Claim Approved!",
-          message: `Your ownership claim for item "${item.title}" was approved by campus staff. Instructions: ${claim.reviewNotes}`,
+          message: `Your ownership claim for item "${item.title}" was approved. Instructions: ${claim.reviewNotes}`,
           relatedItemId: item._id,
           relatedClaimId: claim._id,
           metadata: {

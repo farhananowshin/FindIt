@@ -165,10 +165,10 @@ async function sendClaimStatusEmail({ to, recipientName, itemTitle, status, revi
 
   const contentHtml = `
     <h2 style="color: #FFFFFF; font-size: 18px; margin-top: 0; margin-bottom: 12px;">
-      Hello ${recipientName || "Student"},
+      Hello ${recipientName || "Citizen"},
     </h2>
     <p>
-      Your ownership claim for the item <strong>"${itemTitle}"</strong> has been reviewed by the campus administrator.
+      Your ownership claim for the item <strong>"${itemTitle}"</strong> has been reviewed by the verification desk.
     </p>
 
     <div style="background-color: #1E2420; border-left: 4px solid ${statusColor}; padding: 16px; border-radius: 6px; margin: 20px 0;">
@@ -176,13 +176,13 @@ async function sendClaimStatusEmail({ to, recipientName, itemTitle, status, revi
         Review Decision: ${badgeText}
       </div>
       <div style="font-size: 13px; color: #E5E7EB;">
-        ${reviewNotes || (isApproved ? "Please bring your student ID card to the campus security office to collect your item." : "Ownership proof could not be verified.")}
+        ${reviewNotes || (isApproved ? "Please bring your ID card (NID / Student ID) to the designated verification desk to collect your item." : "Ownership proof could not be verified.")}
       </div>
     </div>
 
     ${isApproved ? `
     <p style="font-size: 13px; color: #9CA3AF;">
-      <strong>Next Step:</strong> Visit the designated campus security office during operational hours (9:00 AM – 5:00 PM) with your Metropolitan University ID card.
+      <strong>Next Step:</strong> Visit the designated verification desk during operational hours with your identification card (NID or Student ID).
     </p>
     ` : ""}
   `;

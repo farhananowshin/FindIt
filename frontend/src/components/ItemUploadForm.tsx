@@ -219,7 +219,7 @@ export default function ItemUploadForm({
     }
 
     if (!token) {
-      setServerError("Authentication required: Please log in or register with your student account before submitting an item report.");
+      setServerError("Authentication required: Please log in or register your account before submitting an item report.");
       if (onRequireAuth) {
         onRequireAuth();
       }
@@ -884,16 +884,16 @@ export default function ItemUploadForm({
                 )}
               </div>
 
-              {/* Student / Staff ID */}
+              {/* Student / Citizen ID */}
               <div>
                 <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
-                  University Student / Staff ID
+                  National ID (NID) / Student ID (Optional)
                 </label>
                 <input
                   type="text"
                   value={studentId}
                   onChange={(e) => setStudentId(e.target.value)}
-                  placeholder="e.g., U-2024-8192"
+                  placeholder="e.g. 2026-CSE / NID No."
                   className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
               </div>
@@ -901,7 +901,7 @@ export default function ItemUploadForm({
               {/* Email */}
               <div>
                 <label htmlFor="contactEmail" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
-                  Campus / Personal Email <span className="text-[#45B58A]">*</span>
+                  Contact Email <span className="text-[#45B58A]">*</span>
                 </label>
                 <input
                   id="contactEmail"

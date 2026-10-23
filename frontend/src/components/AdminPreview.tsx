@@ -48,7 +48,7 @@ export default function AdminPreview() {
                     Admin Hand-off Verifier
                   </div>
                   <p className="text-xs text-[#A9B0AA] leading-relaxed">
-                    Inspects secret verification questions, serial numbers, student IDs, and authorizes physical release from the security desk.
+                    Inspects secret verification questions, serial numbers, NID/Student credentials, and authorizes physical release from the verification desk.
                   </p>
                 </div>
               </div>

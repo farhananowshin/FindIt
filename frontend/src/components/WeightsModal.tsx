@@ -146,7 +146,7 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
             <div className="text-xs">
               <span className="font-semibold text-[#F3F4EF]">Human-in-the-Loop Safeguard:</span>
               <p className="mt-0.5 leading-relaxed">
-                The AI system ranks candidates and explains why they match. By design, <strong>the AI will NEVER automatically confirm ownership or release an item</strong>. Final release requires manual review by campus administrators.
+                The AI system ranks candidates and explains why they match. By design, <strong>the AI will NEVER automatically confirm ownership or release an item</strong>. Final release requires manual review by authorized verification administrators.
               </p>
             </div>
           </div>
