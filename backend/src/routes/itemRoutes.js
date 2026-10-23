@@ -5,6 +5,8 @@ const ItemReport = require("../models/ItemReport");
 const Notification = require("../models/Notification");
 const upload = require("../middleware/upload");
 const { authenticateToken, requireRole } = require("../middleware/auth");
+const storageService = require("../services/storageService");
+const emailService = require("../services/emailService");
 
 /**
  * Helper: parse location from either nested object, flat fields, or JSON string.
@@ -102,17 +104,17 @@ router.post(
       const effectivePhone = (req.user?.phone || submitterPhone || contactPhone || "").trim();
       const location = extractLocation(req.body);
 
-      // Process uploaded images
+      // Process uploaded images (Cloudinary remote storage with graceful local disk fallback)
       const imagePaths = [];
       const imageUrls = [];
       const protocol = req.protocol;
       const host = req.get("host");
 
-      if (req.files && Array.isArray(req.files)) {
-        req.files.forEach((file) => {
-          imagePaths.push(`uploads/${file.filename}`);
-          // Publicly accessible URL served by Express
-          imageUrls.push(`${protocol}://${host}/uploads/${file.filename}`);
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const uploadResults = await storageService.uploadMultipleFiles(req.files, { protocol, host });
+        uploadResults.forEach((resItem) => {
+          imagePaths.push(resItem.path);
+          imageUrls.push(resItem.url);
         });
       }
 
@@ -149,6 +151,21 @@ router.post(
 
       const newItem = new ItemReport(itemData);
       const savedItem = await newItem.save();
+
+      // Dispatch automated email notification in background (non-blocking)
+      if (effectiveEmail) {
+        emailService
+          .sendReportConfirmationEmail({
+            to: effectiveEmail,
+            recipientName: effectiveSubmitterName || "Citizen",
+            itemTitle: savedItem.title,
+            type: savedItem.type,
+            viewLink: `${process.env.FRONTEND_URL || "http://localhost:3000"}/explore`,
+          })
+          .catch((err) => {
+            console.warn("⚠️ Non-blocking email delivery notice:", err.message);
+          });
+      }
 
       // Ensure secret verification detail is removed from response payload
       const responsePayload = savedItem.toObject();

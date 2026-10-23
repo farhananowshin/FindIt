@@ -3,7 +3,9 @@ const mongoose = require("mongoose");
 const Claim = require("../models/Claim");
 const ItemReport = require("../models/ItemReport");
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 const { authenticateToken, requireRole } = require("../middleware/auth");
+const emailService = require("../services/emailService");
 
 const router = express.Router();
 
@@ -345,6 +347,26 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
         console.warn("⚠️ Non-blocking error generating claim rejection notification:", notifErr.message);
       }
     }
+
+    // Dispatch automated email notification to claimant in background (non-blocking)
+    User.findById(claim.claimantId)
+      .then((claimant) => {
+        if (claimant && claimant.email) {
+          emailService
+            .sendClaimStatusEmail({
+              to: claimant.email,
+              recipientName: claimant.name || "Student",
+              itemTitle: item.title,
+              status: targetStatus,
+              reviewNotes: claim.reviewNotes,
+              viewLink: `${process.env.FRONTEND_URL || "http://localhost:3000"}/my-claims`,
+            })
+            .catch((err) => {
+              console.warn("⚠️ Non-blocking claim email delivery notice:", err.message);
+            });
+        }
+      })
+      .catch(() => {});
 
     return res.status(200).json({
       success: true,
