@@ -282,6 +282,27 @@ export async function loginUser(credentials: {
 }
 
 /**
+ * Authenticate or register a user via Google Sign-In.
+ */
+export async function googleLoginUser(payload?: {
+  email?: string;
+  name?: string;
+}): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE}/api/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Google sign-in failed.");
+  }
+
+  return json;
+}
+
+/**
  * Fetch profile for the currently authenticated user.
  */
 export async function fetchCurrentUser(token: string): Promise<UserProfile> {

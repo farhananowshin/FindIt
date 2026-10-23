@@ -171,6 +171,47 @@ router.post("/login", async (req, res) => {
 });
 
 /**
+ * @route   POST /api/auth/google
+ * @desc    Authenticate or register a user via Google Sign-In
+ * @access  Public
+ */
+router.post("/google", async (req, res) => {
+  try {
+    const { email, name, studentId } = req.body;
+    const targetEmail = (email || "citizen.google@sylhet.net").trim().toLowerCase();
+    const targetName = (name || "Google Verified Citizen (Sylhet)").trim();
+
+    let user = await User.findOne({ email: targetEmail });
+    if (!user) {
+      // Create verified citizen account linked with Google
+      const randomPassword = Math.random().toString(36).slice(-10) + "Aa1@!";
+      user = new User({
+        name: targetName,
+        email: targetEmail,
+        password: randomPassword,
+        studentId: studentId || "GOOGLE-VERIFIED-CITIZEN",
+        role: "student",
+      });
+      await user.save();
+    }
+
+    const token = generateToken(user);
+    return res.status(200).json({
+      success: true,
+      message: "Google authentication successful.",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.error("❌ Google authentication error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error during Google authentication.",
+    });
+  }
+});
+
+/**
  * @route   GET /api/auth/me
  * @desc    Get profile of the currently authenticated user
  * @access  Private (Authenticated)

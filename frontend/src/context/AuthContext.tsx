@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { UserProfile, AuthResponse } from "../types/item";
-import { fetchCurrentUser, loginUser, registerUser } from "../services/api";
+import { fetchCurrentUser, loginUser, registerUser, googleLoginUser } from "../services/api";
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -16,6 +16,7 @@ interface AuthContextType {
     studentId?: string;
     phone?: string;
   }) => Promise<void>;
+  googleLogin: (payload?: { email?: string; name?: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -83,6 +84,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const googleLogin = async (payload?: { email?: string; name?: string }) => {
+    const res: AuthResponse = await googleLoginUser(payload);
+    if (res.token && res.user) {
+      localStorage.setItem(TOKEN_KEY, res.token);
+      setToken(res.token);
+      setUser(res.user);
+    }
+  };
+
   const logout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKEN_KEY);
@@ -99,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         register,
+        googleLogin,
         logout,
       }}
     >
