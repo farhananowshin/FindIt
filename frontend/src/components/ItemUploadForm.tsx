@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, DragEvent, ChangeEvent } from "react";
+import React, { useState, useRef, DragEvent, ChangeEvent } from "react";
 import {
   Upload,
   Image as ImageIcon,
@@ -43,12 +43,11 @@ export default function ItemUploadForm({
   const { user, token } = useAuth();
   // Form State
   const [reportType, setReportType] = useState<ReportType>(initialType);
-
-  useEffect(() => {
-    if (initialType) {
-      setReportType(initialType);
-    }
-  }, [initialType]);
+  const [prevInitialType, setPrevInitialType] = useState(initialType);
+  if (initialType !== prevInitialType) {
+    setPrevInitialType(initialType);
+    setReportType(initialType);
+  }
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<ItemCategory>("electronics");
   const [brand, setBrand] = useState("");
@@ -60,11 +59,23 @@ export default function ItemUploadForm({
   const [description, setDescription] = useState("");
   const [uniqueMarks, setUniqueMarks] = useState("");
   const [secretVerificationHint, setSecretVerificationHint] = useState("");
-  const [reporterName, setReporterName] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
+  const [reporterName, setReporterName] = useState(user?.name || "");
+  const [studentId, setStudentId] = useState(user?.studentId || "");
+  const [contactEmail, setContactEmail] = useState(user?.email || "");
+  const [contactPhone, setContactPhone] = useState(user?.phone || "");
   const [consentPrivacy, setConsentPrivacy] = useState(true);
+
+  // Sync user details when user state changes
+  const [prevUser, setPrevUser] = useState(user);
+  if (user !== prevUser) {
+    setPrevUser(user);
+    if (user) {
+      if (!reporterName && user.name) setReporterName(user.name);
+      if (!studentId && user.studentId) setStudentId(user.studentId);
+      if (!contactEmail && user.email) setContactEmail(user.email);
+      if (!contactPhone && user.phone) setContactPhone(user.phone);
+    }
+  }
 
   // Uploaded images state
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -78,16 +89,6 @@ export default function ItemUploadForm({
   const [submittedReport, setSubmittedReport] = useState<StoredItemReport | null>(null);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [serverError, setServerError] = useState<string | null>(null);
-
-  // Auto-fill reporter details if user is logged in
-  useEffect(() => {
-    if (user) {
-      if (!reporterName && user.name) setReporterName(user.name);
-      if (!studentId && user.studentId) setStudentId(user.studentId);
-      if (!contactEmail && user.email) setContactEmail(user.email);
-      if (!contactPhone && user.phone) setContactPhone(user.phone);
-    }
-  }, [user]);
 
   // Image Upload Handlers
   const handleFiles = (files: FileList | null) => {
@@ -306,60 +307,55 @@ export default function ItemUploadForm({
     setFormErrors({});
   };
 
-  // Theme accents depending on Lost vs Found
+  // Theme accents
   const isLost = reportType === "lost";
   const theme = {
-    badge: isLost ? "bg-rose-100 text-rose-800 border-rose-200" : "bg-emerald-100 text-emerald-800 border-emerald-200",
-    gradientHeader: isLost
-      ? "from-rose-600 via-rose-500 to-amber-500"
-      : "from-emerald-600 via-teal-600 to-cyan-600",
-    ringFocus: isLost ? "focus:ring-rose-500 focus:border-rose-500" : "focus:ring-emerald-500 focus:border-emerald-500",
-    buttonPrimary: isLost
-      ? "bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white shadow-rose-200"
-      : "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-emerald-200",
+    badge: isLost ? "bg-[#171A18] text-[#F3F4EF] border-[#383E39]" : "bg-[#45B58A]/15 text-[#45B58A] border-[#45B58A]/30",
+    ringFocus: "focus:ring-1 focus:ring-[#45B58A] focus:border-[#45B58A]",
+    buttonPrimary: "bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold shadow-md",
   };
 
   return (
-    <div id="report-form" className="w-full max-w-4xl mx-auto">
+    <div id="report-form" className="w-full max-w-4xl mx-auto text-[#F3F4EF]">
       {/* Success Modal / Receipt */}
       {submittedReport && (
-        <div className="mb-8 p-6 sm:p-8 rounded-2xl bg-white border-2 border-emerald-500 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="mb-8 p-6 sm:p-8 rounded-3xl bg-[#252B27] border border-[#45B58A] shadow-xl animate-in fade-in zoom-in-95 duration-200">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
+            <div className="p-3 bg-[#171A18] text-[#45B58A] border border-[#383E39] rounded-2xl">
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#45B58A]/15 text-[#45B58A] border border-[#45B58A]/30">
                     Report Registered Successfully
                   </span>
-                  <h3 className="text-2xl font-bold text-slate-900 mt-1">
+                  <h3 className="text-2xl font-bold text-[#F3F4EF] mt-1">
                     {submittedReport.reportType === "lost" ? "Lost Item Report" : "Found Item Report"} #{submittedReport.id}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-500 block">System Tracking Code</span>
-                  <span className="text-sm font-mono font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+                  <span className="text-xs text-[#A9B0AA] block">System Tracking Code</span>
+                  <span className="text-sm font-mono font-bold text-[#45B58A] bg-[#171A18] px-2.5 py-1 rounded-md border border-[#383E39]">
                     {submittedReport.id}
                   </span>
                 </div>
               </div>
 
-              <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="mt-4 p-4 rounded-xl bg-[#171A18] border border-[#383E39] grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                 <div>
-                  <span className="text-xs text-slate-500 block font-medium">Item Title</span>
-                  <p className="font-semibold text-slate-800">{submittedReport.title}</p>
+                  <span className="text-xs text-[#A9B0AA] block font-medium">Item Title</span>
+                  <p className="font-semibold text-[#F3F4EF]">{submittedReport.title}</p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block font-medium">Category</span>
-                  <p className="font-semibold text-slate-800 capitalize">
+                  <span className="text-xs text-[#A9B0AA] block font-medium">Category</span>
+                  <p className="font-semibold text-[#F3F4EF] capitalize">
                     {submittedReport.category.replace("_", " ")}
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-500 block font-medium">Sylhet Location Hub</span>
-                  <p className="font-semibold text-slate-800">
+                  <span className="text-xs text-[#A9B0AA] block font-medium">Sylhet Location Hub</span>
+                  <p className="font-semibold text-[#F3F4EF]">
                     {CAMPUS_LOCATIONS.find((l) => l.id === submittedReport.campusLocation)?.name ||
                       submittedReport.campusLocation}
                   </p>
@@ -367,11 +363,11 @@ export default function ItemUploadForm({
               </div>
 
               {/* Multimodal embeddings preview */}
-              <div className="mt-4 p-3.5 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+              <div className="mt-4 p-3.5 rounded-xl bg-[#171A18] border border-[#383E39] text-xs text-[#A9B0AA] flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-[#45B58A] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold">AI Multimodal Pipeline Status:</span>
-                  <p className="mt-0.5 text-indigo-800">
+                  <span className="font-semibold text-[#F3F4EF]">AI Multimodal Pipeline Status:</span>
+                  <p className="mt-0.5 text-[#A9B0AA]">
                     {submittedReport.images.length > 0
                       ? `Successfully extracted OpenCLIP 512-dim visual embeddings from ${submittedReport.images.length} photo(s) & Sentence Transformer tokens from description.`
                       : "No photos provided. Activated zero-shot text-only semantic matching pipeline (re-weighted to text description + attributes)."}
@@ -384,13 +380,13 @@ export default function ItemUploadForm({
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-5 py-2.5 rounded-xl font-medium text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl font-medium text-sm text-[#A9B0AA] bg-[#171A18] border border-[#383E39] hover:text-[#F3F4EF] hover:bg-[#383E39] transition cursor-pointer"
                 >
                   Submit Another Report
                 </button>
                 <a
                   href="#recent-items"
-                  className="px-5 py-2.5 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 transition inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl font-medium text-sm text-[#171A18] bg-[#45B58A] hover:bg-[#3ca37c] font-bold shadow-md transition inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   View Sylhet Feed
                   <ArrowRight className="w-4 h-4" />
@@ -402,19 +398,19 @@ export default function ItemUploadForm({
       )}
 
       {/* Main Upload Form Container */}
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
+      <div className="bg-[#252B27] rounded-3xl shadow-2xl border border-[#383E39] overflow-hidden text-[#F3F4EF]">
         {/* Banner with Lost vs Found Toggle */}
-        <div className={`p-6 sm:p-8 bg-gradient-to-r ${theme.gradientHeader} text-white transition-colors duration-300`}>
+        <div className="p-6 sm:p-8 bg-[#1E2320] border-b border-[#383E39] text-[#F3F4EF]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md text-white border border-white/30">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#171A18] text-[#45B58A] border border-[#383E39]">
                 <Sparkles className="w-3.5 h-3.5" />
                 Sylhet Multimodal AI Intake
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-2 text-[#F3F4EF]">
                 {isLost ? "Report a Lost Item" : "Report a Found Item"}
               </h2>
-              <p className="text-sm text-white/90 mt-1 max-w-xl">
+              <p className="text-sm text-[#A9B0AA] mt-1 max-w-xl">
                 {isLost
                   ? "Describe what you lost. Our multimodal AI compares your photos and descriptions against all found items across Sylhet."
                   : "Found something in Sylhet? Register it here to help the rightful owner find and safely claim it."}
@@ -422,14 +418,14 @@ export default function ItemUploadForm({
             </div>
 
             {/* Type Switcher Buttons */}
-            <div className="bg-black/20 p-1.5 rounded-2xl backdrop-blur-md flex items-center border border-white/20 self-start sm:self-center">
+            <div className="bg-[#171A18] p-1.5 rounded-2xl flex items-center border border-[#383E39] self-start sm:self-center">
               <button
                 type="button"
                 onClick={() => setReportType("lost")}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                   isLost
-                    ? "bg-white text-rose-700 shadow-md scale-102"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
+                    ? "bg-[#252B27] text-[#F3F4EF] border border-[#383E39] shadow-sm"
+                    : "text-[#A9B0AA] hover:text-[#F3F4EF]"
                 }`}
               >
                 🔍 I Lost Something
@@ -439,8 +435,8 @@ export default function ItemUploadForm({
                 onClick={() => setReportType("found")}
                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                   !isLost
-                    ? "bg-white text-emerald-700 shadow-md scale-102"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
+                    ? "bg-[#45B58A] text-[#171A18] shadow-sm font-bold"
+                    : "text-[#A9B0AA] hover:text-[#F3F4EF]"
                 }`}
               >
                 🎁 I Found Something
@@ -453,9 +449,9 @@ export default function ItemUploadForm({
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8">
           {/* Section 1: Item Basic Info */}
           <div>
-            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-slate-200">
-              <Tag className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
+              <Tag className="w-5 h-5 text-[#45B58A]" />
+              <h3 className="text-base font-bold text-[#F3F4EF]">
                 1. Item Classification & Basic Details
               </h3>
             </div>
@@ -463,8 +459,8 @@ export default function ItemUploadForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Item Title */}
               <div className="sm:col-span-2">
-                <label htmlFor="title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Item Title / Headline <span className="text-rose-500">*</span>
+                <label htmlFor="title" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Item Title / Headline <span className="text-[#45B58A]">*</span>
                 </label>
                 <input
                   id="title"
@@ -477,11 +473,11 @@ export default function ItemUploadForm({
                       : "e.g., Set of keys with blue Subaru fob and gym tag"
                   }
                   className={`w-full px-4 py-2.5 rounded-xl border ${
-                    formErrors.title ? "border-rose-400 bg-rose-50/30" : "border-slate-300 bg-white"
-                  } text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                    formErrors.title ? "border-rose-500/80 bg-rose-950/20" : "border-[#383E39] bg-[#171A18]"
+                  } text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]`}
                 />
                 {formErrors.title && (
-                  <p className="mt-1 text-xs text-rose-600 flex items-center gap-1">
+                  <p className="mt-1 text-xs text-rose-400 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {formErrors.title}
                   </p>
@@ -490,16 +486,16 @@ export default function ItemUploadForm({
 
               {/* Category */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Category <span className="text-rose-500">*</span>
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Category <span className="text-[#45B58A]">*</span>
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as ItemCategory)}
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] focus:outline-none focus:border-[#45B58A]"
                 >
                   {ITEM_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
+                    <option key={cat.id} value={cat.id} className="bg-[#171A18] text-[#F3F4EF]">
                       {cat.label}
                     </option>
                   ))}
@@ -508,7 +504,7 @@ export default function ItemUploadForm({
 
               {/* Brand / Model */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
                   Brand / Manufacturer
                 </label>
                 <input
@@ -516,22 +512,22 @@ export default function ItemUploadForm({
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="e.g., Apple, Dell, Nike, Hydro Flask, Sony"
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
               </div>
 
               {/* Primary Color */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
                   Primary Color
                 </label>
                 <select
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] focus:outline-none focus:border-[#45B58A]"
                 >
                   {COMMON_COLORS.map((c) => (
-                    <option key={c.name} value={c.name}>
+                    <option key={c.name} value={c.name} className="bg-[#171A18] text-[#F3F4EF]">
                       {c.name}
                     </option>
                   ))}
@@ -540,17 +536,17 @@ export default function ItemUploadForm({
 
               {/* Secondary Color */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
                   Secondary / Accent Color
                 </label>
                 <select
                   value={secondaryColor}
                   onChange={(e) => setSecondaryColor(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] focus:outline-none focus:border-[#45B58A]"
                 >
-                  <option value="None">None / Single Tone</option>
+                  <option value="None" className="bg-[#171A18] text-[#F3F4EF]">None / Single Tone</option>
                   {COMMON_COLORS.map((c) => (
-                    <option key={c.name} value={c.name}>
+                    <option key={c.name} value={c.name} className="bg-[#171A18] text-[#F3F4EF]">
                       {c.name}
                     </option>
                   ))}
@@ -561,14 +557,14 @@ export default function ItemUploadForm({
 
           {/* Section 2: Multimodal Image Upload */}
           <div>
-            <div className="flex items-center justify-between pb-2 mb-4 border-b border-slate-200">
+            <div className="flex items-center justify-between pb-2 mb-4 border-b border-[#383E39]">
               <div className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-bold text-slate-900">
+                <ImageIcon className="w-5 h-5 text-[#45B58A]" />
+                <h3 className="text-base font-bold text-[#F3F4EF]">
                   2. Visual Image Upload (OpenCLIP Matching)
                 </h3>
               </div>
-              <span className="text-xs text-slate-500 font-medium">Up to 4 images (5MB max each)</span>
+              <span className="text-xs text-[#A9B0AA] font-medium">Up to 4 images (5MB max each)</span>
             </div>
 
             {/* Drag & Drop Zone */}
@@ -579,8 +575,8 @@ export default function ItemUploadForm({
               onClick={() => fileInputRef.current?.click()}
               className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200 ${
                 isDragging
-                  ? "border-indigo-600 bg-indigo-50/60 scale-[1.01]"
-                  : "border-slate-300 hover:border-indigo-400 bg-slate-50/50 hover:bg-slate-50"
+                  ? "border-[#45B58A] bg-[#171A18] scale-[1.01]"
+                  : "border-[#383E39] hover:border-[#45B58A]/70 bg-[#171A18]/60 hover:bg-[#171A18]"
               }`}
             >
               <input
@@ -593,14 +589,14 @@ export default function ItemUploadForm({
               />
 
               <div className="flex flex-col items-center justify-center gap-3">
-                <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 text-indigo-600">
+                <div className="p-3 bg-[#252B27] rounded-2xl border border-[#383E39] text-[#45B58A]">
                   <Upload className="w-6 h-6 animate-bounce" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    <span className="text-indigo-600 underline">Click to upload photos</span> or drag and drop
+                  <p className="text-sm font-semibold text-[#F3F4EF]">
+                    <span className="text-[#45B58A] underline">Click to upload photos</span> or drag and drop
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-[#A9B0AA] mt-1">
                     Supports JPG, PNG, and WebP (up to 5MB each)
                   </p>
                 </div>
@@ -609,8 +605,8 @@ export default function ItemUploadForm({
 
             {/* Upload Error Banner */}
             {uploadError && (
-              <div className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="mt-3 p-3 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
                 {uploadError}
               </div>
             )}
@@ -618,14 +614,14 @@ export default function ItemUploadForm({
             {/* Image Previews */}
             {images.length > 0 && (
               <div className="mt-4">
-                <span className="text-xs font-semibold text-slate-700 block mb-2">
+                <span className="text-xs font-semibold text-[#A9B0AA] block mb-2">
                   Uploaded Images ({images.length}/4):
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {images.map((img) => (
                     <div
                       key={img.id}
-                      className="group relative rounded-xl border border-slate-200 overflow-hidden bg-white shadow-xs"
+                      className="group relative rounded-xl border border-[#383E39] overflow-hidden bg-[#171A18] shadow-xs"
                     >
                       <img
                         src={img.previewUrl}
@@ -638,12 +634,12 @@ export default function ItemUploadForm({
                           e.stopPropagation();
                           removeImage(img.id);
                         }}
-                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-slate-900/80 text-white hover:bg-rose-600 transition"
+                        className="absolute top-1.5 right-1.5 p-1 rounded-full bg-[#171A18]/80 text-[#F3F4EF] hover:bg-rose-600 transition"
                         title="Remove photo"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
-                      <div className="p-1.5 bg-white border-t border-slate-100 text-[10px] text-slate-600 truncate">
+                      <div className="p-1.5 bg-[#252B27] border-t border-[#383E39] text-[10px] text-[#A9B0AA] truncate">
                         {img.name} ({(img.size / 1024).toFixed(0)} KB)
                       </div>
                     </div>
@@ -653,19 +649,19 @@ export default function ItemUploadForm({
             )}
 
             {/* Explainable AI Notice for Missing Images */}
-            <div className="mt-3 p-3 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
-              <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+            <div className="mt-3 p-3 rounded-xl bg-[#171A18] border border-[#383E39] text-xs text-[#A9B0AA] flex items-start gap-2">
+              <Info className="w-4 h-4 text-[#45B58A] shrink-0 mt-0.5" />
               <p>
-                <strong>Multimodal AI Notice:</strong> Don&apos;t have a photo? No problem! The system will dynamically distribute visual weight to your semantic text description and categorical tags (Feature #8: Text-only matching fallback).
+                <strong className="text-[#F3F4EF]">Multimodal AI Notice:</strong> Don&apos;t have a photo? No problem! The system will dynamically distribute visual weight to your semantic text description and categorical tags.
               </p>
             </div>
           </div>
 
           {/* Section 3: Spatiotemporal Details */}
           <div>
-            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-slate-200">
-              <MapPin className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
+              <MapPin className="w-5 h-5 text-[#45B58A]" />
+              <h3 className="text-base font-bold text-[#F3F4EF]">
                 3. Sylhet Location &amp; Time Proximity
               </h3>
             </div>
@@ -673,16 +669,16 @@ export default function ItemUploadForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Sylhet Hub / Campus Zone */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Sylhet Area / Transit Hub / Campus <span className="text-rose-500">*</span>
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Sylhet Area / Transit Hub / Campus <span className="text-[#45B58A]">*</span>
                 </label>
                 <select
                   value={campusLocation}
                   onChange={(e) => setCampusLocation(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] focus:outline-none focus:border-[#45B58A]"
                 >
                   {CAMPUS_LOCATIONS.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
+                    <option key={loc.id} value={loc.id} className="bg-[#171A18] text-[#F3F4EF]">
                       {loc.name} ({loc.zone})
                     </option>
                   ))}
@@ -691,8 +687,8 @@ export default function ItemUploadForm({
 
               {/* Exact Spot / Landmark */}
               <div>
-                <label htmlFor="specificLocation" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Exact Spot / Landmark / Room <span className="text-rose-500">*</span>
+                <label htmlFor="specificLocation" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Exact Spot / Landmark / Room <span className="text-[#45B58A]">*</span>
                 </label>
                 <input
                   id="specificLocation"
@@ -701,11 +697,11 @@ export default function ItemUploadForm({
                   onChange={(e) => setSpecificLocation(e.target.value)}
                   placeholder="e.g., 2nd Floor Quiet Study, Desk 24 or Cafeteria Booth"
                   className={`w-full px-4 py-2.5 rounded-xl border ${
-                    formErrors.specificLocation ? "border-rose-400 bg-rose-50/30" : "border-slate-300 bg-white"
-                  } text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                    formErrors.specificLocation ? "border-rose-500/80 bg-rose-950/20" : "border-[#383E39] bg-[#171A18]"
+                  } text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]`}
                 />
                 {formErrors.specificLocation && (
-                  <p className="mt-1 text-xs text-rose-600 flex items-center gap-1">
+                  <p className="mt-1 text-xs text-rose-400 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {formErrors.specificLocation}
                   </p>
@@ -715,28 +711,28 @@ export default function ItemUploadForm({
               {/* Date & Time */}
               <div className="sm:col-span-2">
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                    {isLost ? "Date & Time Last Seen" : "Date & Time Found"} <span className="text-rose-500">*</span>
+                  <label className="text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider">
+                    {isLost ? "Date & Time Last Seen" : "Date & Time Found"} <span className="text-[#45B58A]">*</span>
                   </label>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => setQuickTime("now")}
-                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#171A18] border border-[#383E39] text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] transition"
                     >
                       Now
                     </button>
                     <button
                       type="button"
                       onClick={() => setQuickTime("today")}
-                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#171A18] border border-[#383E39] text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] transition"
                     >
                       Today
                     </button>
                     <button
                       type="button"
                       onClick={() => setQuickTime("yesterday")}
-                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#171A18] border border-[#383E39] text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] transition"
                     >
                       Yesterday
                     </button>
@@ -747,7 +743,7 @@ export default function ItemUploadForm({
                     type="datetime-local"
                     value={dateTime}
                     onChange={(e) => setDateTime(e.target.value)}
-                    className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] focus:outline-none focus:border-[#45B58A]"
                   />
                 </div>
               </div>
@@ -756,9 +752,9 @@ export default function ItemUploadForm({
 
           {/* Section 4: Detailed Description & Verification Attributes */}
           <div>
-            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-slate-200">
-              <FileText className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
+              <FileText className="w-5 h-5 text-[#45B58A]" />
+              <h3 className="text-base font-bold text-[#F3F4EF]">
                 4. Semantic Description & Explainable Attributes
               </h3>
             </div>
@@ -766,21 +762,21 @@ export default function ItemUploadForm({
             <div className="space-y-4">
               {/* Detailed Description */}
               <div>
-                <label htmlFor="description" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Full Semantic Description <span className="text-rose-500">*</span>
+                <label htmlFor="description" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Full Semantic Description <span className="text-[#45B58A]">*</span>
                 </label>
                 <textarea
                   id="description"
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the item in natural language. Mention materials, size, condition, contents, or any context. (Sentence Transformers will vectorize this text for semantic matching)."
+                  placeholder="Describe the item in natural language. Mention materials, size, condition, contents, or any context."
                   className={`w-full px-4 py-2.5 rounded-xl border ${
-                    formErrors.description ? "border-rose-400 bg-rose-50/30" : "border-slate-300 bg-white"
-                  } text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                    formErrors.description ? "border-rose-500/80 bg-rose-950/20" : "border-[#383E39] bg-[#171A18]"
+                  } text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]`}
                 />
                 {formErrors.description && (
-                  <p className="mt-1 text-xs text-rose-600 flex items-center gap-1">
+                  <p className="mt-1 text-xs text-rose-400 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {formErrors.description}
                   </p>
@@ -789,7 +785,7 @@ export default function ItemUploadForm({
 
               {/* Unique Marks */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
                   Distinguishing Features & Marks
                 </label>
                 <input
@@ -797,19 +793,19 @@ export default function ItemUploadForm({
                   value={uniqueMarks}
                   onChange={(e) => setUniqueMarks(e.target.value)}
                   placeholder="e.g., Scratch on bottom-left, GitHub sticker on lid, broken zipper pull"
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
               </div>
 
               {/* Secret Verification Hint */}
-              <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-200/80">
+              <div className="p-4 rounded-2xl bg-[#171A18] border border-[#383E39]">
                 <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4 text-indigo-600" />
-                  <label className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
+                  <Shield className="w-4 h-4 text-[#45B58A]" />
+                  <label className="text-xs font-bold text-[#F3F4EF] uppercase tracking-wider">
                     Secret Verification Detail (Admin Anti-Fraud Safeguard)
                   </label>
                 </div>
-                <p className="text-xs text-indigo-700/90 mb-2">
+                <p className="text-xs text-[#A9B0AA] mb-2">
                   {isLost
                     ? "Provide a private detail only the true owner would know (e.g. lock screen photo, interior pocket contents, engraving initials)."
                     : "If the found item contains hidden details (e.g., specific student name card, distinct keychain), note what a claimer must identify."}
@@ -819,7 +815,7 @@ export default function ItemUploadForm({
                   value={secretVerificationHint}
                   onChange={(e) => setSecretVerificationHint(e.target.value)}
                   placeholder="e.g., Phone wallpaper is a golden retriever named Max; 3 silver coins in front pocket"
-                  className={`w-full px-4 py-2.5 rounded-xl border border-indigo-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#252B27] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
               </div>
             </div>
@@ -827,36 +823,36 @@ export default function ItemUploadForm({
 
           {/* Section 5: Submitter Contact Information */}
           <div>
-            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-slate-200">
-              <User className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
+              <User className="w-5 h-5 text-[#45B58A]" />
+              <h3 className="text-base font-bold text-[#F3F4EF]">
                 5. Reporter Contact & Verification
               </h3>
             </div>
 
             {user ? (
-              <div className="mb-4 p-3.5 rounded-xl bg-indigo-50/80 border border-indigo-100 flex items-center justify-between">
+              <div className="mb-4 p-3.5 rounded-xl bg-[#171A18] border border-[#383E39] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs text-indigo-950 font-medium">
-                    Verified session: Submitting as <strong className="font-semibold">{user.name}</strong> ({user.email})
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#45B58A] animate-pulse" />
+                  <span className="text-xs text-[#A9B0AA]">
+                    Verified session: Submitting as <strong className="text-[#F3F4EF]">{user.name}</strong> ({user.email})
                   </span>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-200/70 text-indigo-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#45B58A]/15 text-[#45B58A] border border-[#45B58A]/30">
                   {user.role}
                 </span>
               </div>
             ) : (
-              <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="mb-4 p-3.5 rounded-xl bg-[#171A18] border border-[#383E39] text-[#A9B0AA] text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start sm:items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+                  <AlertCircle className="w-4 h-4 text-[#45B58A] shrink-0 mt-0.5 sm:mt-0" />
                   <span>You must be logged in with a campus account to register an item in the system.</span>
                 </div>
                 {onRequireAuth && (
                   <button
                     type="button"
                     onClick={onRequireAuth}
-                    className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition shrink-0 shadow-xs"
+                    className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-xs transition shrink-0"
                   >
                     Log In / Register
                   </button>
@@ -867,8 +863,8 @@ export default function ItemUploadForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Full Name */}
               <div>
-                <label htmlFor="reporterName" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Your Full Name <span className="text-rose-500">*</span>
+                <label htmlFor="reporterName" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Your Full Name <span className="text-[#45B58A]">*</span>
                 </label>
                 <input
                   id="reporterName"
@@ -877,11 +873,11 @@ export default function ItemUploadForm({
                   onChange={(e) => setReporterName(e.target.value)}
                   placeholder="e.g., Alex Johnson"
                   className={`w-full px-4 py-2.5 rounded-xl border ${
-                    formErrors.reporterName ? "border-rose-400 bg-rose-50/30" : "border-slate-300 bg-white"
-                  } text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                    formErrors.reporterName ? "border-rose-500/80 bg-rose-950/20" : "border-[#383E39] bg-[#171A18]"
+                  } text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]`}
                 />
                 {formErrors.reporterName && (
-                  <p className="mt-1 text-xs text-rose-600 flex items-center gap-1">
+                  <p className="mt-1 text-xs text-rose-400 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {formErrors.reporterName}
                   </p>
@@ -890,7 +886,7 @@ export default function ItemUploadForm({
 
               {/* Student / Staff ID */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
                   University Student / Staff ID
                 </label>
                 <input
@@ -898,14 +894,14 @@ export default function ItemUploadForm({
                   value={studentId}
                   onChange={(e) => setStudentId(e.target.value)}
                   placeholder="e.g., U-2024-8192"
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label htmlFor="contactEmail" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Campus / Personal Email <span className="text-rose-500">*</span>
+                <label htmlFor="contactEmail" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
+                  Campus / Personal Email <span className="text-[#45B58A]">*</span>
                 </label>
                 <input
                   id="contactEmail"
@@ -914,11 +910,11 @@ export default function ItemUploadForm({
                   onChange={(e) => setContactEmail(e.target.value)}
                   placeholder="alex.johnson@university.edu"
                   className={`w-full px-4 py-2.5 rounded-xl border ${
-                    formErrors.contactEmail ? "border-rose-400 bg-rose-50/30" : "border-slate-300 bg-white"
-                  } text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                    formErrors.contactEmail ? "border-rose-500/80 bg-rose-950/20" : "border-[#383E39] bg-[#171A18]"
+                  } text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]`}
                 />
                 {formErrors.contactEmail && (
-                  <p className="mt-1 text-xs text-rose-600 flex items-center gap-1">
+                  <p className="mt-1 text-xs text-rose-400 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {formErrors.contactEmail}
                   </p>
@@ -927,7 +923,7 @@ export default function ItemUploadForm({
 
               {/* Phone */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
                   Phone Number
                 </label>
                 <input
@@ -935,7 +931,7 @@ export default function ItemUploadForm({
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="+1 (555) 019-2834"
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 ${theme.ringFocus}`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
               </div>
 
@@ -946,9 +942,9 @@ export default function ItemUploadForm({
                     type="checkbox"
                     checked={consentPrivacy}
                     onChange={(e) => setConsentPrivacy(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="mt-1 h-4 w-4 rounded border-[#383E39] bg-[#171A18] text-[#45B58A] focus:ring-[#45B58A]"
                   />
-                  <span className="text-xs text-slate-600 leading-relaxed">
+                  <span className="text-xs text-[#A9B0AA] leading-relaxed">
                     I understand that submitted data will be processed by the campus multimodal matching system and stored in the secure university repository. Contact details remain confidential until an administrator validates a genuine match.
                   </span>
                 </label>
@@ -958,12 +954,12 @@ export default function ItemUploadForm({
 
           {/* Server Error Alert */}
           {serverError && (
-            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold">Backend / Database Error:</span>
                 <p className="mt-0.5">{serverError}</p>
-                <p className="mt-1 text-[11px] text-rose-600">
+                <p className="mt-1 text-[11px] text-rose-400">
                   Tip: Ensure the Express backend is running on port 5000 (`npm run dev` in the backend folder) and MongoDB is active.
                 </p>
               </div>
@@ -971,9 +967,9 @@ export default function ItemUploadForm({
           )}
 
           {/* Submission Bar */}
-          <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Sparkles className="w-4 h-4 text-amber-500" />
+          <div className="pt-4 border-t border-[#383E39] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs text-[#A9B0AA]">
+              <Sparkles className="w-4 h-4 text-[#45B58A]" />
               <span>Initial match weights: 0.40 Img, 0.25 Txt, 0.15 Loc, 0.10 Time, 0.10 Attr</span>
             </div>
 
@@ -981,14 +977,14 @@ export default function ItemUploadForm({
               <button
                 type="button"
                 onClick={resetForm}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-sm font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] transition cursor-pointer"
               >
                 Clear
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !consentPrivacy}
-                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${theme.buttonPrimary}`}
+                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${theme.buttonPrimary} cursor-pointer`}
               >
                 {isSubmitting ? (
                   <>

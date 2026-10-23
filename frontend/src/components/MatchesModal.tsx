@@ -4,16 +4,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   Sparkles,
-  MapPin,
-  Clock,
   Tag,
   ImageIcon,
   AlertCircle,
   ShieldCheck,
   RefreshCw,
   Info,
-  CheckCircle,
-  ExternalLink,
   Sliders,
 } from "lucide-react";
 import { StoredItemReport, MatchResponse, MatchCandidate, CAMPUS_LOCATIONS } from "../types/item";
@@ -29,6 +25,15 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [matchData, setMatchData] = useState<MatchResponse | null>(null);
+
+  const currentLostItemId = isOpen && lostItem ? (lostItem._id || lostItem.id || null) : null;
+  const [prevLostItemId, setPrevLostItemId] = useState<string | null>(null);
+  if (currentLostItemId !== prevLostItemId) {
+    setPrevLostItemId(currentLostItemId);
+    setMatchData(null);
+    setError(null);
+    setLoading(Boolean(currentLostItemId));
+  }
 
   const loadMatches = useCallback(() => {
     if (!lostItem) return;
@@ -51,13 +56,30 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
   }, [lostItem]);
 
   useEffect(() => {
-    if (!isOpen || !lostItem) {
-      setMatchData(null);
-      setError(null);
-      return;
-    }
-    loadMatches();
-  }, [isOpen, lostItem, loadMatches]);
+    if (!isOpen || !lostItem) return;
+    const itemId = lostItem._id || lostItem.id;
+    if (!itemId) return;
+
+    let isMounted = true;
+    fetchMatchesForItem(itemId)
+      .then((data) => {
+        if (isMounted) {
+          setMatchData(data);
+          setLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          const message = err instanceof Error ? err.message : "Failed to load matches.";
+          setError(message);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, lostItem]);
 
   if (!isOpen || !lostItem) return null;
 
@@ -66,76 +88,74 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-emerald-700 bg-emerald-50 border-emerald-200";
-    if (score >= 60) return "text-indigo-700 bg-indigo-50 border-indigo-200";
-    if (score >= 40) return "text-amber-700 bg-amber-50 border-amber-200";
-    return "text-slate-700 bg-slate-50 border-slate-200";
+    if (score >= 80) return "text-[#45B58A] bg-[#45B58A]/10 border-[#45B58A]/40";
+    if (score >= 60) return "text-[#45B58A] bg-[#45B58A]/10 border-[#45B58A]/20";
+    return "text-[#A9B0AA] bg-[#252B27] border-[#383E39]";
   };
 
   const getBarColor = (score: number) => {
-    if (score >= 0.8) return "bg-emerald-500";
-    if (score >= 0.6) return "bg-indigo-500";
-    if (score >= 0.4) return "bg-amber-500";
-    return "bg-slate-400";
+    if (score >= 0.7) return "bg-[#45B58A]";
+    if (score >= 0.4) return "bg-[#45B58A]/80";
+    return "bg-[#383E39]";
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#171A18]/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl bg-[#252B27] rounded-3xl shadow-2xl border border-[#383E39] overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#383E39] bg-[#171A18]">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl">
+            <div className="p-2.5 bg-[#45B58A]/10 text-[#45B58A] border border-[#45B58A]/20 rounded-xl">
               <Sparkles className="w-5 h-5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-lg font-bold text-[#F3F4EF]">
                   Multimodal AI Match Results
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  Day 3 AI Engine
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#45B58A]/10 text-[#45B58A] border border-[#45B58A]/30">
+                  Multimodal Matcher
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                Evaluating candidate Found reports using OpenCLIP (ViT-B-32) & S-BERT
+              <p className="text-xs text-[#A9B0AA]">
+                Evaluating candidate Found reports using OpenCLIP (ViT-B/32) &amp; S-BERT
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition"
+            className="p-2 rounded-xl text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Source Lost Item Brief Summary */}
-        <div className="px-6 py-3 bg-indigo-50/40 border-b border-indigo-100/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-6 py-3 bg-[#171A18]/80 border-b border-[#383E39] flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-bold uppercase tracking-wider text-rose-700 bg-rose-100 px-2 py-0.5 rounded text-[11px]">
+            <span className="font-bold uppercase tracking-wider text-[#F3F4EF] bg-[#383E39] px-2 py-0.5 rounded text-[11px]">
               Target Lost Item
             </span>
-            <span className="font-bold text-slate-800">{lostItem.title}</span>
-            <span className="text-slate-400 font-mono">({lostItem._id || lostItem.id})</span>
+            <span className="font-semibold text-[#F3F4EF]">{lostItem.title}</span>
+            <span className="text-[#A9B0AA] font-mono">({lostItem._id || lostItem.id})</span>
           </div>
-          <div className="flex items-center gap-3 text-slate-600">
+          <div className="flex items-center gap-3 text-[#A9B0AA]">
             <span><strong>Category:</strong> {lostItem.category.replace("_", " ")}</span>
             <span><strong>Location:</strong> {getLocationName(lostItem.campusLocation)}</span>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="px-6 py-6 overflow-y-auto space-y-6 flex-1">
+        <div className="px-6 py-6 overflow-y-auto space-y-6 flex-1 bg-[#252B27]">
           {/* Loading State */}
           {loading && (
             <div className="py-16 text-center space-y-4">
-              <RefreshCw className="w-10 h-10 text-indigo-600 animate-spin mx-auto" />
+              <RefreshCw className="w-10 h-10 text-[#45B58A] animate-spin mx-auto" />
               <div>
-                <h4 className="text-base font-bold text-slate-800">
+                <h4 className="text-base font-bold text-[#F3F4EF]">
                   Computing Multimodal AI Similarities...
                 </h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                <p className="text-xs text-[#A9B0AA] mt-1 max-w-md mx-auto">
                   Generating OpenCLIP visual embeddings (512-dim) and Sentence Transformers semantic vectors (384-dim) for eligible found items.
                 </p>
               </div>
@@ -144,35 +164,32 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
 
           {/* Error State / AI Offline Graceful Degradation */}
           {error && !loading && (
-            <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 text-xs space-y-3">
+            <div className="p-6 rounded-2xl bg-[#171A18] border border-[#383E39] text-[#A9B0AA] text-xs space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2 font-bold text-sm text-amber-800">
-                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-                  <span>Multimodal AI Matching Temporarily Unavailable</span>
+                <div className="flex items-center gap-2 font-bold text-sm text-[#F3F4EF]">
+                  <AlertCircle className="w-5 h-5 text-[#45B58A] shrink-0" />
+                  <span>Multimodal AI Matching Unavailable</span>
                 </div>
                 <button
                   type="button"
                   onClick={loadMatches}
-                  className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-2xs"
+                  className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-xs transition flex items-center gap-1.5"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Retry AI Service</span>
                 </button>
               </div>
 
-              <p className="leading-relaxed text-amber-900">
+              <p className="leading-relaxed text-[#A9B0AA]">
                 {error}
               </p>
 
-              <div className="p-3.5 bg-white/90 rounded-xl border border-amber-200 text-[11px] text-slate-700 space-y-1">
-                <p className="font-semibold text-slate-900">
-                  🛡️ Graceful Service Degradation:
+              <div className="p-3.5 bg-[#252B27] rounded-xl border border-[#383E39] text-[11px] text-[#A9B0AA] space-y-1">
+                <p className="font-semibold text-[#F3F4EF]">
+                  Graceful Service Degradation:
                 </p>
                 <p className="leading-relaxed">
-                  Campus item browsing, lost/found reporting, student claims, and administrative review remain 100% operational. Only automated neural similarity rankings are paused until the AI service re-establishes connection.
-                </p>
-                <p className="font-mono text-[10px] text-slate-500 pt-1">
-                  Start service: <code>cd ai-service &amp;&amp; .venv\Scripts\activate &amp;&amp; uvicorn main:app --port 8001 --reload</code>
+                  Campus item browsing, lost/found reporting, student claims, and administrative review remain 100% operational.
                 </p>
               </div>
             </div>
@@ -180,11 +197,11 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
 
           {/* Empty Candidates State */}
           {!loading && !error && matchData && matchData.matches.length === 0 && (
-            <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-3xl p-8">
-              <Info className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-              <h4 className="text-base font-semibold text-slate-800">No Eligible Found Items Yet</h4>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                There are currently no active Found reports in MongoDB to match against. Submit a found item report first to test the matching engine!
+            <div className="py-12 text-center border-2 border-dashed border-[#383E39] rounded-3xl p-8 bg-[#171A18]">
+              <Info className="w-10 h-10 text-[#A9B0AA] mx-auto mb-2" />
+              <h4 className="text-base font-semibold text-[#F3F4EF]">No Eligible Found Items Yet</h4>
+              <p className="text-xs text-[#A9B0AA] mt-1 max-w-sm mx-auto">
+                There are currently no active Found reports to match against. Submit a found item report first to test the matching engine!
               </p>
             </div>
           )}
@@ -192,12 +209,12 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
           {/* Ranked Candidates Feed */}
           {!loading && !error && matchData && matchData.matches.length > 0 && (
             <div className="space-y-5">
-              <div className="flex items-center justify-between text-xs text-slate-500 pb-2 border-b border-slate-200">
+              <div className="flex items-center justify-between text-xs text-[#A9B0AA] pb-2 border-b border-[#383E39]">
                 <span>
-                  Evaluated <strong>{matchData.totalCandidatesEvaluated}</strong> candidate reports in MongoDB. Showing top {matchData.matches.length} matches.
+                  Evaluated <strong className="text-[#F3F4EF]">{matchData.totalCandidatesEvaluated}</strong> candidate reports in MongoDB. Showing top {matchData.matches.length} matches.
                 </span>
-                <span className="font-semibold text-indigo-600">
-                  Ranked by 5-Factor Multimodal Score
+                <span className="font-semibold text-[#45B58A]">
+                  Ranked by Multimodal Score
                 </span>
               </div>
 
@@ -208,29 +225,29 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                 return (
                   <div
                     key={match.itemId}
-                    className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs hover:shadow-md transition space-y-4"
+                    className="p-5 rounded-2xl border border-[#383E39] bg-[#171A18] space-y-4"
                   >
                     {/* Top Row: Rank, Title, Score */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start gap-3">
-                        <span className="w-7 h-7 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                        <span className="w-7 h-7 rounded-xl bg-[#252B27] border border-[#383E39] text-[#45B58A] font-bold text-xs flex items-center justify-center shrink-0">
                           #{index + 1}
                         </span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="text-base font-bold text-slate-900">
+                            <h4 className="text-base font-bold text-[#F3F4EF]">
                               {match.title}
                             </h4>
-                            <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
+                            <span className="text-xs px-2 py-0.5 rounded bg-[#252B27] text-[#A9B0AA] border border-[#383E39] font-mono">
                               #{match.itemId.slice(-6)}
                             </span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
-                            <span className="capitalize text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-medium">
+                          <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-[#A9B0AA]">
+                            <span className="capitalize text-[#45B58A] bg-[#45B58A]/10 px-2 py-0.5 rounded border border-[#45B58A]/20 font-medium">
                               {match.category.replace("_", " ")}
                             </span>
-                            {match.brand && <span>Brand: <strong>{match.brand}</strong></span>}
-                            <span>Zone: <strong>{match.campusZone || "Campus"}</strong></span>
+                            {match.brand && <span>Brand: <strong className="text-[#F3F4EF]">{match.brand}</strong></span>}
+                            <span>Zone: <strong className="text-[#F3F4EF]">{match.campusZone || "Campus"}</strong></span>
                           </div>
                         </div>
                       </div>
@@ -249,7 +266,7 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                     {/* Middle Row: Photo Preview & 5-Weight Breakdown */}
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center pt-2">
                       {/* Image Thumbnail */}
-                      <div className="md:col-span-3 h-28 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200">
+                      <div className="md:col-span-3 h-28 rounded-xl bg-[#252B27] overflow-hidden flex items-center justify-center border border-[#383E39]">
                         {hasImage ? (
                           <img
                             src={match.imageUrls[0]}
@@ -257,7 +274,7 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="text-center p-3 text-slate-400">
+                          <div className="text-center p-3 text-[#A9B0AA]">
                             <ImageIcon className="w-7 h-7 mx-auto mb-1 stroke-1" />
                             <span className="text-[10px] block font-medium">No Photo</span>
                           </div>
@@ -269,19 +286,19 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                         {/* Visual */}
                         <div className="space-y-0.5">
                           <div className="flex justify-between text-[11px]">
-                            <span className="font-semibold text-slate-700 flex items-center gap-1">
-                              🖼️ Visual (OpenCLIP ViT-B-32)
-                              <span className="text-slate-400 font-normal">
+                            <span className="font-semibold text-[#F3F4EF] flex items-center gap-1">
+                              Visual (OpenCLIP ViT-B/32)
+                              <span className="text-[#A9B0AA] font-normal">
                                 [Weight: {(match.effectiveWeights.visual ? match.effectiveWeights.visual * 100 : 0).toFixed(0)}%]
                               </span>
                             </span>
-                            <span className="font-bold text-slate-800">
+                            <span className="font-bold text-[#45B58A]">
                               {match.scoreBreakdown.visual !== null
                                 ? `${(match.scoreBreakdown.visual * 100).toFixed(0)}%`
-                                : "Unavailable (Omitted)"}
+                                : "Unavailable"}
                             </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="w-full h-2 rounded-full bg-[#252B27] overflow-hidden">
                             <div
                               className={`h-full ${getBarColor(match.scoreBreakdown.visual || 0)}`}
                               style={{ width: `${(match.scoreBreakdown.visual || 0) * 100}%` }}
@@ -292,19 +309,19 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                         {/* Textual */}
                         <div className="space-y-0.5">
                           <div className="flex justify-between text-[11px]">
-                            <span className="font-semibold text-slate-700 flex items-center gap-1">
-                              📝 Text Semantic (all-MiniLM-L6-v2)
-                              <span className="text-slate-400 font-normal">
+                            <span className="font-semibold text-[#F3F4EF] flex items-center gap-1">
+                              Text Semantic (S-BERT)
+                              <span className="text-[#A9B0AA] font-normal">
                                 [Weight: {(match.effectiveWeights.textual ? match.effectiveWeights.textual * 100 : 0).toFixed(0)}%]
                               </span>
                             </span>
-                            <span className="font-bold text-slate-800">
+                            <span className="font-bold text-[#45B58A]">
                               {match.scoreBreakdown.textual !== null
                                 ? `${(match.scoreBreakdown.textual * 100).toFixed(0)}%`
                                 : "N/A"}
                             </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="w-full h-2 rounded-full bg-[#252B27] overflow-hidden">
                             <div
                               className={`h-full ${getBarColor(match.scoreBreakdown.textual || 0)}`}
                               style={{ width: `${(match.scoreBreakdown.textual || 0) * 100}%` }}
@@ -315,19 +332,19 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                         {/* Location */}
                         <div className="space-y-0.5">
                           <div className="flex justify-between text-[11px]">
-                            <span className="font-semibold text-slate-700 flex items-center gap-1">
-                              📍 Campus Location Proximity
-                              <span className="text-slate-400 font-normal">
+                            <span className="font-semibold text-[#F3F4EF] flex items-center gap-1">
+                              Location Proximity
+                              <span className="text-[#A9B0AA] font-normal">
                                 [Weight: {(match.effectiveWeights.location ? match.effectiveWeights.location * 100 : 0).toFixed(0)}%]
                               </span>
                             </span>
-                            <span className="font-bold text-slate-800">
+                            <span className="font-bold text-[#45B58A]">
                               {match.scoreBreakdown.location !== null
                                 ? `${(match.scoreBreakdown.location * 100).toFixed(0)}%`
                                 : "N/A"}
                             </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="w-full h-2 rounded-full bg-[#252B27] overflow-hidden">
                             <div
                               className={`h-full ${getBarColor(match.scoreBreakdown.location || 0)}`}
                               style={{ width: `${(match.scoreBreakdown.location || 0) * 100}%` }}
@@ -339,14 +356,14 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                         <div className="grid grid-cols-2 gap-3 pt-1">
                           <div className="space-y-0.5">
                             <div className="flex justify-between text-[10px]">
-                              <span className="font-semibold text-slate-600">⏱️ Time Proximity</span>
-                              <span className="font-bold">
+                              <span className="font-semibold text-[#A9B0AA]">Time Proximity</span>
+                              <span className="font-bold text-[#45B58A]">
                                 {match.scoreBreakdown.time !== null
                                   ? `${(match.scoreBreakdown.time * 100).toFixed(0)}%`
                                   : "N/A"}
                               </span>
                             </div>
-                            <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div className="w-full h-1.5 rounded-full bg-[#252B27] overflow-hidden">
                               <div
                                 className={`h-full ${getBarColor(match.scoreBreakdown.time || 0)}`}
                                 style={{ width: `${(match.scoreBreakdown.time || 0) * 100}%` }}
@@ -356,14 +373,14 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
 
                           <div className="space-y-0.5">
                             <div className="flex justify-between text-[10px]">
-                              <span className="font-semibold text-slate-600">🏷️ Attributes Match</span>
-                              <span className="font-bold">
+                              <span className="font-semibold text-[#A9B0AA]">Attributes Match</span>
+                              <span className="font-bold text-[#45B58A]">
                                 {match.scoreBreakdown.attribute !== null
                                   ? `${(match.scoreBreakdown.attribute * 100).toFixed(0)}%`
                                   : "N/A"}
                               </span>
                             </div>
-                            <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div className="w-full h-1.5 rounded-full bg-[#252B27] overflow-hidden">
                               <div
                                 className={`h-full ${getBarColor(match.scoreBreakdown.attribute || 0)}`}
                                 style={{ width: `${(match.scoreBreakdown.attribute || 0) * 100}%` }}
@@ -376,20 +393,20 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
 
                     {/* Weight Re-normalization Banner if Visual is missing */}
                     {isTextOnlyFallback && (
-                      <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-2">
-                        <Sliders className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <div className="p-2.5 rounded-xl bg-[#252B27] border border-[#383E39] text-[11px] text-[#A9B0AA] flex items-center gap-2">
+                        <Sliders className="w-3.5 h-3.5 text-[#45B58A] shrink-0" />
                         <span>
-                          <strong>Missing Modality Re-normalization:</strong> Since one or both items lacked photos, visual weight (40%) was automatically redistributed to semantic text (41.7%), location (25.0%), time (16.7%), and attributes (16.7%).
+                          <strong className="text-[#F3F4EF]">Missing Modality Re-normalization:</strong> Since one or both items lacked photos, visual weight was redistributed.
                         </span>
                       </div>
                     )}
 
-                    {/* Natural Language Explanation & Multimodal Cues Box */}
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-3">
+                    {/* Natural Language Explanation Box */}
+                    <div className="p-4 rounded-xl bg-[#252B27] border border-[#383E39] text-xs text-[#A9B0AA] space-y-3">
                       <div className="flex items-start gap-2">
-                        <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                        <Sparkles className="w-4 h-4 text-[#45B58A] shrink-0 mt-0.5" />
                         <div>
-                          <span className="font-bold text-slate-900">Explainable AI Rationale: </span>
+                          <span className="font-bold text-[#F3F4EF]">AI Rationale: </span>
                           <span className="leading-relaxed">{match.explanation}</span>
                         </div>
                       </div>
@@ -397,13 +414,13 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                       {/* Top Shared Keywords / Cues */}
                       {match.topKeywordsShared && match.topKeywordsShared.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5 pt-1 pl-6">
-                          <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1 mr-1">
-                            <Tag className="w-3 h-3 text-indigo-500" /> Key Shared Cues:
+                          <span className="text-[11px] font-semibold text-[#A9B0AA] flex items-center gap-1 mr-1">
+                            <Tag className="w-3 h-3 text-[#45B58A]" /> Key Shared Cues:
                           </span>
                           {match.topKeywordsShared.map((kw, i) => (
                             <span
                               key={i}
-                              className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-medium"
+                              className="px-2 py-0.5 rounded-md bg-[#171A18] text-[#45B58A] border border-[#383E39] text-[10px] font-medium"
                             >
                               {kw}
                             </span>
@@ -411,15 +428,15 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                         </div>
                       )}
 
-                      {/* Visual & Textual Cues Bullets */}
+                      {/* Visual & Textual Cues */}
                       {((match.visualCues && match.visualCues.length > 0) || (match.textualCues && match.textualCues.length > 0)) && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 pl-6 text-[11px]">
                           {match.visualCues && match.visualCues.length > 0 && (
-                            <div className="p-2 rounded-lg bg-white border border-slate-200 space-y-1">
-                              <span className="font-semibold text-slate-800 flex items-center gap-1">
-                                🖼️ Visual Evidence
+                            <div className="p-2 rounded-lg bg-[#171A18] border border-[#383E39] space-y-1">
+                              <span className="font-semibold text-[#F3F4EF] flex items-center gap-1">
+                                Visual Evidence
                               </span>
-                              <ul className="list-disc list-inside text-slate-600 space-y-0.5">
+                              <ul className="list-disc list-inside text-[#A9B0AA] space-y-0.5">
                                 {match.visualCues.map((vc, i) => (
                                   <li key={i}>{vc}</li>
                                 ))}
@@ -427,11 +444,11 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
                             </div>
                           )}
                           {match.textualCues && match.textualCues.length > 0 && (
-                            <div className="p-2 rounded-lg bg-white border border-slate-200 space-y-1">
-                              <span className="font-semibold text-slate-800 flex items-center gap-1">
-                                📝 Semantic Text Evidence
+                            <div className="p-2 rounded-lg bg-[#171A18] border border-[#383E39] space-y-1">
+                              <span className="font-semibold text-[#F3F4EF] flex items-center gap-1">
+                                Semantic Text Evidence
                               </span>
-                              <ul className="list-disc list-inside text-slate-600 space-y-0.5">
+                              <ul className="list-disc list-inside text-[#A9B0AA] space-y-0.5">
                                 {match.textualCues.map((tc, i) => (
                                   <li key={i}>{tc}</li>
                                 ))}
@@ -443,10 +460,10 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
 
                       {/* Admin Human Verification Guidance */}
                       {match.humanVerificationGuidance && (
-                        <div className="mt-2 pl-6 text-[11px] text-amber-800 bg-amber-50/80 p-2.5 rounded-lg border border-amber-200 flex items-start gap-2">
-                          <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                        <div className="mt-2 pl-6 text-[11px] text-[#A9B0AA] bg-[#171A18] p-2.5 rounded-lg border border-[#383E39] flex items-start gap-2">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#45B58A] shrink-0 mt-0.5" />
                           <div>
-                            <span className="font-bold text-amber-900">Admin Verification Guidance: </span>
+                            <span className="font-bold text-[#F3F4EF]">Admin Verification Guidance: </span>
                             <span>{match.humanVerificationGuidance}</span>
                           </div>
                         </div>
@@ -459,22 +476,22 @@ export default function MatchesModal({ lostItem, isOpen, onClose }: MatchesModal
           )}
 
           {/* Strict Human-in-the-Loop Ownership Safeguard */}
-          <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-[#171A18] border border-[#383E39] text-[#A9B0AA] text-xs flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-[#45B58A] shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Human-in-the-Loop Safeguard:</span>
-              <p className="mt-0.5 text-amber-800 leading-relaxed">
-                These scores represent mathematical candidate rankings calculated by OpenCLIP and Sentence Transformers. <strong>The AI system will never automatically confirm ownership or change an item status to claimed.</strong> Final physical handover requires manual verification by campus administration in Day 4.
+              <span className="font-bold text-[#F3F4EF]">Human-in-the-Loop Safeguard:</span>
+              <p className="mt-0.5 text-[#A9B0AA] leading-relaxed">
+                These scores represent mathematical candidate rankings calculated by OpenCLIP and Sentence Transformers. <strong>The AI system will never automatically confirm ownership.</strong> Final physical handover requires manual verification by campus administration.
               </p>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <div className="px-6 py-4 border-t border-[#383E39] bg-[#171A18] flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition"
+            className="px-5 py-2 text-xs font-semibold text-[#F3F4EF] bg-[#252B27] border border-[#383E39] rounded-xl hover:bg-[#383E39] transition cursor-pointer"
           >
             Close Matches
           </button>

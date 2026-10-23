@@ -2,11 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Compass,
-  FilePlus2,
-  Sparkles,
-  ShieldCheck,
   Menu,
   X,
   Search,
@@ -15,7 +13,9 @@ import {
   User as UserIcon,
   ClipboardList,
   Shield,
-  FileText,
+  HelpCircle,
+  MapPin,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
@@ -23,113 +23,138 @@ import NotificationBell from "./NotificationBell";
 interface NavbarProps {
   onOpenWeights?: () => void;
   onOpenProposal?: () => void;
+  onOpenHowItWorks?: () => void;
   onNavigateSection?: (sectionId: string) => void;
   onOpenAuth?: (tab: "login" | "register") => void;
 }
 
-export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSection, onOpenAuth }: NavbarProps) {
+export default function Navbar({
+  onNavigateSection,
+  onOpenAuth,
+}: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
-    if (onNavigateSection) {
+    if (pathname === "/" && onNavigateSection) {
       onNavigateSection(id);
     } else {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      } else if (typeof window !== "undefined") {
-        window.location.href = `/#${id}`;
-      }
+      router.push(`/#${id}`);
     }
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-slate-950/85 backdrop-blur-2xl">
-      {/* Specular hairline highlight along top border */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/30 to-transparent pointer-events-none" />
+    <header className="sticky top-0 z-40 w-full border-b border-[#2C342E] bg-[#141715]/90 backdrop-blur-xl animate-slide-down">
+      {/* Specular hairline highlight along top border with emerald glow */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#45B58A]/30 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo / Branding */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 border border-slate-700/80 text-sky-400 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] group-hover:border-sky-500/50 group-hover:text-sky-300 group-hover:scale-105 transition-all">
-              <Compass className="w-5 h-5" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-tight text-white">
-                Find<span className="text-sky-400">It</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-900/90 text-slate-300 border border-slate-800 shadow-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Sylhet Hubs
-              </span>
-            </div>
-          </Link>
+          {/* Logo / Branding + Live Status Indicator */}
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#1C221E] border border-[#313A33] text-[#45B58A] group-hover:border-[#45B58A]/60 group-hover:scale-105 transition-all shadow-xs">
+                <Compass className="w-5 h-5" />
+              </div>
+              <div className="flex items-center">
+                <span className="text-xl font-bold tracking-tight text-[#F3F4EF]">
+                  Find<span className="text-[#45B58A]">It</span>
+                </span>
+              </div>
+            </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
-            <button
-              onClick={() => scrollTo("recent-items")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer"
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-widest uppercase bg-[#1C221E] text-[#C4CBC5] border border-[#313A33] shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#45B58A] animate-pulse" />
+              <span>SYLHET</span>
+            </div>
+          </div>
+
+          {/* Desktop Navigation Links with Interactive Hover Pills */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
+            <Link
+              href="/explore"
+              className={`relative group px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                pathname === "/explore"
+                  ? "text-[#45B58A] bg-[#1C221E] border border-[#45B58A]/40 shadow-xs"
+                  : "text-[#C4CBC5] hover:text-[#F3F4EF]"
+              }`}
             >
-              <Search className="w-3.5 h-3.5 text-slate-400" />
-              Browse Items
-            </button>
-            <button
-              onClick={onOpenWeights}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              AI Matching
-            </button>
+              <span className="relative z-10 flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5 text-[#45B58A]" />
+                Explore Items
+              </span>
+              <span className="absolute inset-0 rounded-xl bg-[#252B27] border border-[#383E39] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
+            </Link>
 
             <button
-              onClick={() => scrollTo("report-form")}
-              className="flex items-center gap-1.5 ml-1 px-3.5 py-1.5 text-xs font-bold text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-400/30 hover:border-sky-400/60 rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
+              onClick={() => scrollTo("how-it-works")}
+              className="relative group px-3.5 py-1.5 text-xs font-semibold text-[#C4CBC5] hover:text-[#F3F4EF] rounded-xl transition-all cursor-pointer active:scale-95"
             >
-              <FilePlus2 className="w-3.5 h-3.5 text-sky-400" />
-              + Report Item
+              <span className="relative z-10 flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5 text-[#A2ABA4]" />
+                How It Works
+              </span>
+              <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
             </button>
+
+            <Link
+              href="/map"
+              className={`relative group px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                pathname === "/map"
+                  ? "text-[#45B58A] bg-[#1C221E] border border-[#45B58A]/40 shadow-xs"
+                  : "text-[#C4CBC5] hover:text-[#F3F4EF]"
+              }`}
+            >
+              <span className="relative z-10 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#45B58A]" />
+                Map
+              </span>
+              <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
+            </Link>
 
             {/* Student & Admin Protected Nav Links */}
             {user && (
               <Link
                 href="/my-claims"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition"
+                className="relative group px-3.5 py-1.5 text-xs font-medium text-[#C4CBC5] hover:text-[#F3F4EF] rounded-xl transition-all"
               >
-                <ClipboardList className="w-3.5 h-3.5 text-sky-400" />
-                My Claims
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <ClipboardList className="w-3.5 h-3.5 text-[#A2ABA4]" />
+                  My Claims
+                </span>
+                <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none" />
               </Link>
             )}
 
             {user?.role === "admin" && (
               <Link
                 href="/admin"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg transition border border-amber-500/30"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#45B58A] bg-[#45B58A]/15 hover:bg-[#45B58A]/25 rounded-xl transition border border-[#45B58A]/35 shadow-xs"
               >
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <Shield className="w-3.5 h-3.5 text-[#45B58A]" />
                 Admin Dashboard
               </Link>
             )}
           </nav>
 
           {/* Right Status Indicator & Auth Actions */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5 lg:gap-3">
             {user ? (
               <div className="flex items-center gap-2">
                 {/* In-App Notification Bell */}
                 <NotificationBell />
 
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200">
-                  <UserIcon className="w-3.5 h-3.5 text-sky-400" />
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1C221E] border border-[#313A33] rounded-xl text-xs font-semibold text-[#F3F4EF]">
+                  <UserIcon className="w-3.5 h-3.5 text-[#45B58A]" />
                   <span className="max-w-[120px] truncate">{user.name}</span>
                   <span
                     className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${
                       user.role === "admin"
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                        : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                        ? "bg-[#45B58A]/20 text-[#45B58A] border border-[#45B58A]/40"
+                        : "bg-[#28322A] text-[#C4CBC5] border border-[#313A33]"
                     }`}
                   >
                     {user.role}
@@ -137,7 +162,7 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-900 rounded-xl transition cursor-pointer"
+                  className="p-2 text-[#A2ABA4] hover:text-rose-400 hover:bg-[#1C221E] rounded-xl transition cursor-pointer"
                   title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -147,14 +172,14 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onOpenAuth?.("login")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#C4CBC5] hover:text-[#F3F4EF] hover:bg-[#1C221E] rounded-xl transition cursor-pointer"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-slate-400" />
+                  <LogIn className="w-3.5 h-3.5 text-[#A2ABA4]" />
                   Sign In
                 </button>
                 <button
                   onClick={() => onOpenAuth?.("register")}
-                  className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-slate-950 bg-white hover:bg-slate-100 rounded-xl shadow-[0_2px_12px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.6)] active:scale-95 transition cursor-pointer"
+                  className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-bold text-[#141715] bg-[#45B58A] hover:bg-[#3ca37c] rounded-xl shadow-md shadow-[#45B58A]/15 active:scale-95 transition cursor-pointer"
                 >
                   Create Account
                 </button>
@@ -167,7 +192,7 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
             {user && <NotificationBell />}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              className="p-2 rounded-xl text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] transition"
               aria-label="Toggle mobile menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -176,48 +201,81 @@ export default function Navbar({ onOpenWeights, onOpenProposal, onNavigateSectio
         </div>
       </div>
 
-      {/* Mobile menu dropdown */}
+      {/* Mobile dropdown drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
-          <button
-            onClick={() => scrollTo("report-form")}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-md text-left"
-          >
-            <FilePlus2 className="w-4 h-4 text-indigo-500" />
-            Report Lost / Found Item
-          </button>
-          <button
-            onClick={() => scrollTo("recent-items")}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-md text-left"
-          >
-            <Search className="w-4 h-4 text-slate-500" />
-            Browse Campus Items
-          </button>
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              if (onOpenWeights) onOpenWeights();
-            }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-md text-left"
-          >
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            AI Match Logic & Weights
-          </button>
-          <button
-            onClick={() => scrollTo("admin-preview")}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-md text-left"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            Admin Verification Portal
-          </button>
-          <div className="pt-2">
-            <button
-              onClick={() => scrollTo("report-form")}
-              className="w-full flex items-center justify-center py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm"
+        <div className="md:hidden border-b border-[#383E39] bg-[#171A18] p-4 space-y-3 animate-in slide-in-from-top-2 duration-150">
+          <div className="pt-2 space-y-1">
+            <Link
+              href="/explore"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
             >
-              Submit Report
+              <Search className="w-4 h-4 text-[#45B58A]" />
+              Explore Items
+            </Link>
+
+            <button
+              onClick={() => scrollTo("how-it-works")}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
+            >
+              <HelpCircle className="w-4 h-4 text-[#A9B0AA]" />
+              How It Works
             </button>
+
+            <Link
+              href="/map"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
+            >
+              <MapPin className="w-4 h-4 text-[#45B58A]" />
+              Map
+            </Link>
+
+            {user && (
+              <Link
+                href="/my-claims"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
+              >
+                <ClipboardList className="w-4 h-4 text-[#A9B0AA]" />
+                My Claims
+              </Link>
+            )}
+
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#45B58A] hover:bg-[#45B58A]/10 rounded-xl text-left transition"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#45B58A]" />
+                Admin Verification Portal
+              </Link>
+            )}
           </div>
+
+          {!user && (
+            <div className="pt-3 border-t border-[#383E39] flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAuth?.("login");
+                }}
+                className="flex-1 py-2 text-center text-xs font-semibold text-[#A9B0AA] bg-[#252B27] hover:bg-[#383E39] rounded-xl border border-[#383E39]"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAuth?.("register");
+                }}
+                className="flex-1 py-2 text-center text-xs font-bold text-[#171A18] bg-[#45B58A] hover:bg-[#3ca37c] rounded-xl"
+              >
+                Create Account
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>

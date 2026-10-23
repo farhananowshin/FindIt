@@ -24,10 +24,6 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
     {
       factor: "Visual Similarity (W_img)",
       weight: "0.40 (40%)",
-      color: "bg-indigo-500",
-      textColor: "text-indigo-600",
-      bgColor: "bg-indigo-50",
-      borderColor: "border-indigo-200",
       icon: ImageIcon,
       model: "OpenCLIP ViT-B/32",
       description:
@@ -37,10 +33,6 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
     {
       factor: "Semantic Description (W_txt)",
       weight: "0.25 (25%)",
-      color: "bg-blue-500",
-      textColor: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
       icon: FileText,
       model: "all-MiniLM-L6-v2 (Sentence Transformers)",
       description:
@@ -50,10 +42,6 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
     {
       factor: "Spatiotemporal Location (W_loc)",
       weight: "0.15 (15%)",
-      color: "bg-emerald-500",
-      textColor: "text-emerald-600",
-      bgColor: "bg-emerald-50",
-      borderColor: "border-emerald-200",
       icon: MapPin,
       model: "Campus Graph & Zone Proximity",
       description:
@@ -63,10 +51,6 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
     {
       factor: "Time Proximity (W_time)",
       weight: "0.10 (10%)",
-      color: "bg-amber-500",
-      textColor: "text-amber-600",
-      bgColor: "bg-amber-50",
-      borderColor: "border-amber-200",
       icon: Clock,
       model: "Exponential Time-Decay Function",
       description:
@@ -76,10 +60,6 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
     {
       factor: "Attributes & Brand (W_attr)",
       weight: "0.10 (10%)",
-      color: "bg-purple-500",
-      textColor: "text-purple-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200",
       icon: Tag,
       model: "Exact / Fuzzy Categorical Overlap",
       description:
@@ -89,26 +69,26 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#171A18]/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-[#252B27] rounded-3xl shadow-2xl border border-[#383E39] overflow-hidden flex flex-col max-h-[90vh] text-[#F3F4EF]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#383E39] bg-[#1E2320]">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+            <div className="p-2.5 bg-[#171A18] text-[#45B58A] border border-[#383E39] rounded-2xl">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="text-lg font-bold text-[#F3F4EF]">
                 Multimodal AI Weighting Formula
               </h3>
-              <p className="text-xs text-slate-500">
-                Explainable Match Scoring Architecture (Day 3 & Day 5 Grid Search)
+              <p className="text-xs text-[#A9B0AA]">
+                Explainable Match Scoring Architecture &bull; Multimodal Cross-Verification
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition"
+            className="p-1.5 rounded-lg text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -117,15 +97,15 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
         {/* Body */}
         <div className="px-6 py-5 overflow-y-auto space-y-5">
           {/* Formula Display */}
-          <div className="p-4 rounded-xl bg-slate-900 text-slate-100 border border-slate-800">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-indigo-400 block mb-1">
+          <div className="p-4 rounded-2xl bg-[#171A18] border border-[#383E39]">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#45B58A] block mb-1">
               Matching Formulation
             </span>
-            <code className="text-sm sm:text-base font-mono block text-emerald-400">
+            <code className="text-sm sm:text-base font-mono block text-[#45B58A]">
               Score = 0.40(S_img) + 0.25(S_txt) + 0.15(S_loc) + 0.10(S_time) + 0.10(S_attr)
             </code>
-            <p className="text-xs text-slate-400 mt-2">
-              Sum of weights = 1.00 (100%). In Day 5, these initial weights will be tuned via Grid Search over 300–500 labeled pairs to optimize Mean Reciprocal Rank (MRR).
+            <p className="text-xs text-[#A9B0AA] mt-2">
+              Sum of weights = 1.00 (100%). Weights combine visual OpenCLIP image embeddings, dense semantic text vectors, spatiotemporal proximity, and attribute classification to maximize match accuracy across Sylhet.
             </p>
           </div>
 
@@ -136,23 +116,23 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
               return (
                 <div
                   key={index}
-                  className={`p-3.5 rounded-xl border ${w.borderColor} ${w.bgColor} flex flex-col sm:flex-row sm:items-start gap-3`}
+                  className="p-3.5 rounded-2xl border border-[#383E39] bg-[#171A18] flex flex-col sm:flex-row sm:items-start gap-3"
                 >
                   <div className="flex items-center gap-2 sm:gap-3 min-w-[200px]">
-                    <div className={`p-2 rounded-lg bg-white shadow-xs ${w.textColor}`}>
+                    <div className="p-2 rounded-xl bg-[#252B27] border border-[#383E39] text-[#45B58A]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-900">{w.factor}</h4>
-                      <span className={`inline-block text-xs font-bold ${w.textColor}`}>
+                      <h4 className="text-sm font-semibold text-[#F3F4EF]">{w.factor}</h4>
+                      <span className="inline-block text-xs font-bold text-[#45B58A]">
                         Weight: {w.weight}
                       </span>
                     </div>
                   </div>
-                  <div className="flex-1 text-xs text-slate-600">
+                  <div className="flex-1 text-xs text-[#A9B0AA]">
                     <p className="leading-relaxed">{w.description}</p>
-                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500 font-mono">
-                      <span className="font-semibold text-slate-700">Model:</span> {w.model}
+                    <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[#A9B0AA] font-mono">
+                      <span className="font-semibold text-[#F3F4EF]">Model:</span> {w.model}
                     </div>
                   </div>
                 </div>
@@ -161,11 +141,11 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
           </div>
 
           {/* Ethics / Verification Notice */}
-          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-2.5">
-            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-2xl bg-[#171A18] border border-[#383E39] text-[#A9B0AA] flex items-start gap-2.5">
+            <ShieldAlert className="w-5 h-5 text-[#45B58A] shrink-0 mt-0.5" />
             <div className="text-xs">
-              <span className="font-semibold">Human-in-the-Loop Safeguard:</span>
-              <p className="mt-0.5 text-amber-800">
+              <span className="font-semibold text-[#F3F4EF]">Human-in-the-Loop Safeguard:</span>
+              <p className="mt-0.5 leading-relaxed">
                 The AI system ranks candidates and explains why they match. By design, <strong>the AI will NEVER automatically confirm ownership or release an item</strong>. Final release requires manual review by campus administrators.
               </p>
             </div>
@@ -173,10 +153,10 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <div className="px-6 py-4 border-t border-[#383E39] bg-[#1E2320] flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition"
+            className="px-4 py-2 text-xs font-semibold text-[#F3F4EF] bg-[#252B27] border border-[#383E39] rounded-xl hover:bg-[#383E39] transition cursor-pointer"
           >
             Close Explanation
           </button>

@@ -10,7 +10,6 @@ import {
   Info,
   Check,
   RefreshCw,
-  ExternalLink,
 } from "lucide-react";
 import { NotificationItem } from "../types/item";
 import {
@@ -50,24 +49,52 @@ export default function NotificationBell() {
     [token]
   );
 
-  // Initial load and periodic polling every 30 seconds
-  useEffect(() => {
+  // Reset notifications if user logs out
+  const [prevToken, setPrevToken] = useState(token);
+  if (token !== prevToken) {
+    setPrevToken(token);
     if (!token) {
       setNotifications([]);
       setUnreadCount(0);
-      return;
     }
+  }
 
-    loadNotifications(true);
+  // Initial load and periodic polling every 30 seconds
+  useEffect(() => {
+    if (!token) return;
+
+    let isMounted = true;
+    fetchNotifications(token)
+      .then((res) => {
+        if (isMounted) {
+          setNotifications(res.data || []);
+          setUnreadCount(res.unreadCount || 0);
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to fetch notifications:", err);
+      });
 
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
-        loadNotifications(false);
+        fetchNotifications(token)
+          .then((res) => {
+            if (isMounted) {
+              setNotifications(res.data || []);
+              setUnreadCount(res.unreadCount || 0);
+            }
+          })
+          .catch((err) => {
+            console.warn("Failed to fetch notifications:", err);
+          });
       }
     }, 30000);
 
-    return () => clearInterval(interval);
-  }, [token, loadNotifications]);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [token]);
 
   // Click outside to close dropdown
   useEffect(() => {

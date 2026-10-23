@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type { Map as LeafletMap, PopupEvent } from "leaflet";
 import { StoredItemReport, CAMPUS_LOCATIONS } from "../types/item";
-import { MapPin, Sparkles, ShieldCheck, Layers, Info } from "lucide-react";
+import { MapPin, Layers, Info } from "lucide-react";
 
 interface CampusMapViewProps {
   items: StoredItemReport[];
@@ -13,19 +14,19 @@ interface CampusMapViewProps {
 // Sylhet Metropolitan City & Campus central coordinates (Zindabazar / Surma to Bateshwar)
 const SYLHET_METRO_CENTER: [number, number] = [24.8960, 91.9050];
 
+const emptySubscribe = () => () => {};
+
 export default function CampusMapView({
   items,
   onFindMatches,
   onClaimItem,
 }: CampusMapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<LeafletMap | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<string>("all");
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+
 
   useEffect(() => {
     if (!mounted || !mapContainerRef.current) return;
@@ -234,7 +235,7 @@ export default function CampusMapView({
       }
 
       // Handle popup action button clicks
-      map.on("popupopen", (e: any) => {
+      map.on("popupopen", (e: PopupEvent) => {
         const popupEl = e.popup.getElement();
         if (!popupEl) return;
 

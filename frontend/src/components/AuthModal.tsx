@@ -47,13 +47,16 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   // Canvas ref for dynamic neural constellation background
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  useEffect(() => {
+  // Sync tab & errors when modal opens
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setTab(defaultTab);
       setError(null);
       setSuccessMsg(null);
     }
-  }, [isOpen, defaultTab]);
+  }
 
   // Dynamic interactive neural constellation canvas animation
   useEffect(() => {
@@ -98,8 +101,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            const alpha = 0.25 * (1 - dist / 90);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+            const alpha = 0.22 * (1 - dist / 90);
+            ctx.strokeStyle = `rgba(69, 181, 138, ${alpha})`;
             ctx.lineWidth = 0.85;
             ctx.stroke();
           }
@@ -115,9 +118,9 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = node.isCyan ? "rgba(56, 189, 248, 0.85)" : "rgba(165, 180, 252, 0.85)";
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = node.isCyan ? "#38bdf8" : "#818cf8";
+        ctx.fillStyle = "rgba(69, 181, 138, 0.85)";
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#45B58A";
         ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -200,14 +203,14 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
   const isLoginTab = tab === "login";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md transition-all animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#171A18]/85 backdrop-blur-md transition-all animate-fadeIn">
       {/* Outer Modal Container */}
-      <div className="relative w-full max-w-4xl min-h-[570px] sm:min-h-[580px] bg-slate-900 rounded-3xl shadow-2xl border border-slate-700/80 overflow-hidden flex flex-col md:flex-row text-left">
+      <div className="relative w-full max-w-4xl min-h-[570px] sm:min-h-[580px] bg-[#252B27] rounded-3xl shadow-2xl border border-[#383E39] overflow-hidden flex flex-col md:flex-row text-left text-[#F3F4EF]">
         
         {/* Global Modal Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-40 p-2 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-full transition cursor-pointer"
+          className="absolute top-4 right-4 z-40 p-2 text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#383E39] rounded-full transition cursor-pointer"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
@@ -217,30 +220,30 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
         {/* LEFT FORM PANE: Sign In Form (Visible when overlay is on right) */}
         {/* ======================================================== */}
         <div
-          className={`w-full md:w-1/2 px-7 py-6 sm:px-9 sm:py-8 flex flex-col justify-between bg-slate-900 text-white transition-all duration-500 ${
+          className={`w-full md:w-1/2 px-7 py-6 sm:px-9 sm:py-8 flex flex-col justify-between bg-[#252B27] text-[#F3F4EF] transition-all duration-500 ${
             !isLoginTab ? "md:opacity-0 md:pointer-events-none md:invisible" : "opacity-100 visible"
           } ${isLoginTab ? "block" : "hidden md:flex"}`}
         >
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#171A18] text-[#45B58A] border border-[#383E39]">
                 Citizen &amp; Student Access
               </span>
             </div>
-            <h3 className="text-2xl font-black text-white tracking-tight mt-1">
-              Sign In to Find<span className="text-sky-400">It</span>
+            <h3 className="text-2xl font-black text-[#F3F4EF] tracking-tight mt-1">
+              Sign In to Find<span className="text-[#45B58A]">It</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[#A9B0AA] mt-1">
               Enter your credentials to manage reported items and review verified matches.
             </p>
 
             {/* Mobile Tab Toggle */}
-            <div className="flex md:hidden p-1 mt-4 bg-slate-800 rounded-xl border border-slate-700">
+            <div className="flex md:hidden p-1 mt-4 bg-[#171A18] rounded-xl border border-[#383E39]">
               <button
                 type="button"
                 onClick={() => handleTabChange("login")}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
-                  tab === "login" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
+                  tab === "login" ? "bg-[#45B58A] text-[#171A18] shadow-sm font-bold" : "text-[#A9B0AA]"
                 }`}
               >
                 Sign In
@@ -249,7 +252,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 type="button"
                 onClick={() => handleTabChange("register")}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
-                  tab === "register" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
+                  tab === "register" ? "bg-[#45B58A] text-[#171A18] shadow-sm font-bold" : "text-[#A9B0AA]"
                 }`}
               >
                 Create Account
@@ -258,15 +261,15 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
 
             {/* Alerts */}
             {error && isLoginTab && (
-              <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-200 text-xs">
+              <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-950/70 border border-rose-800/60 text-rose-300 text-xs">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {successMsg && isLoginTab && (
-              <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-[#171A18] border border-[#45B58A]/50 text-[#45B58A] text-xs">
+                <CheckCircle2 className="w-4 h-4 text-[#45B58A] shrink-0" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -274,31 +277,31 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             {/* Sign In Form */}
             <form onSubmit={handleLogin} className="mt-4 space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#A9B0AA] mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A9B0AA]" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your.email@gmail.com or admin@campus.edu"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-slate-300">
+                  <label className="block text-xs font-bold text-[#A9B0AA]">
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowLoginPassword(!showLoginPassword)}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer transition"
+                    className="text-[11px] text-[#45B58A] hover:underline flex items-center gap-1 cursor-pointer transition"
                   >
                     {showLoginPassword ? (
                       <>
@@ -312,14 +315,14 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A9B0AA]" />
                   <input
                     type={showLoginPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-inner"
+                    className="w-full pl-10 pr-10 py-2.5 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                   />
                 </div>
               </div>
@@ -327,17 +330,17 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(56,189,248,0.25)] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 px-4 bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="w-3.5 h-3.5 border-2 border-[#171A18]/30 border-t-[#171A18] rounded-full animate-spin" />
                     <span>Signing In...</span>
                   </>
                 ) : (
                   <>
                     <span>Sign In to FindIt</span>
-                    <ArrowRight className="w-4 h-4 text-sky-200" />
+                    <ArrowRight className="w-4 h-4 text-[#171A18]" />
                   </>
                 )}
               </button>
@@ -345,8 +348,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
           </div>
 
           {/* Quick Demo Credentials */}
-          <div className="pt-4 border-t border-slate-800/80 mt-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+          <div className="pt-4 border-t border-[#383E39] mt-4">
+            <span className="text-[10px] font-bold text-[#A9B0AA] uppercase tracking-wider block mb-2">
               ⚡ Quick Demo Accounts
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -356,9 +359,9 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   setEmail("admin@campus.edu");
                   setPassword("admin123");
                 }}
-                className="py-2 px-2 rounded-xl border border-amber-500/30 bg-amber-950/40 hover:bg-amber-900/50 text-[11px] font-extrabold text-amber-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2 px-2 rounded-xl border border-[#383E39] bg-[#171A18] hover:bg-[#383E39] text-[11px] font-bold text-[#F3F4EF] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <Zap className="w-3 h-3 text-amber-400" />
+                <Zap className="w-3 h-3 text-[#45B58A]" />
                 Fill Demo Admin
               </button>
               <button
@@ -367,9 +370,9 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   setEmail("student@campus.edu");
                   setPassword("student123");
                 }}
-                className="py-2 px-2 rounded-xl border border-indigo-500/30 bg-indigo-950/40 hover:bg-indigo-900/50 text-[11px] font-extrabold text-indigo-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2 px-2 rounded-xl border border-[#383E39] bg-[#171A18] hover:bg-[#383E39] text-[11px] font-bold text-[#F3F4EF] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <User className="w-3 h-3 text-indigo-400" />
+                <User className="w-3 h-3 text-[#45B58A]" />
                 Fill Demo Citizen
               </button>
             </div>
@@ -380,30 +383,30 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
         {/* RIGHT FORM PANE: Create Account Form (Visible when overlay is on left) */}
         {/* ======================================================== */}
         <div
-          className={`w-full md:w-1/2 px-7 py-6 sm:px-9 sm:py-8 flex flex-col justify-between bg-slate-900 text-white transition-all duration-500 ${
+          className={`w-full md:w-1/2 px-7 py-6 sm:px-9 sm:py-8 flex flex-col justify-between bg-[#252B27] text-[#F3F4EF] transition-all duration-500 ${
             isLoginTab ? "md:opacity-0 md:pointer-events-none md:invisible" : "opacity-100 visible"
           } ${!isLoginTab ? "block" : "hidden md:flex"}`}
         >
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#171A18] text-[#45B58A] border border-[#383E39]">
                 New Registration
               </span>
             </div>
-            <h3 className="text-2xl font-black text-white tracking-tight mt-1">
-              Create Find<span className="text-sky-400">It</span> Account
+            <h3 className="text-2xl font-black text-[#F3F4EF] tracking-tight mt-1">
+              Create Find<span className="text-[#45B58A]">It</span> Account
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-[#A9B0AA] mt-1">
               Join Sylhet&apos;s verified network for lost and found recovery.
             </p>
 
             {/* Mobile Tab Toggle */}
-            <div className="flex md:hidden p-1 mt-4 bg-slate-800 rounded-xl border border-slate-700">
+            <div className="flex md:hidden p-1 mt-4 bg-[#171A18] rounded-xl border border-[#383E39]">
               <button
                 type="button"
                 onClick={() => handleTabChange("login")}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
-                  tab === "login" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
+                  tab === "login" ? "bg-[#45B58A] text-[#171A18] shadow-sm font-bold" : "text-[#A9B0AA]"
                 }`}
               >
                 Sign In
@@ -412,7 +415,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 type="button"
                 onClick={() => handleTabChange("register")}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition ${
-                  tab === "register" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400"
+                  tab === "register" ? "bg-[#45B58A] text-[#171A18] shadow-sm font-bold" : "text-[#A9B0AA]"
                 }`}
               >
                 Create Account
@@ -421,15 +424,15 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
 
             {/* Alerts */}
             {error && !isLoginTab && (
-              <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-200 text-xs">
+              <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-rose-950/70 border border-rose-800/60 text-rose-300 text-xs">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {successMsg && !isLoginTab && (
-              <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-200 text-xs">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-[#171A18] border border-[#45B58A]/50 text-[#45B58A] text-xs">
+                <CheckCircle2 className="w-4 h-4 text-[#45B58A] shrink-0" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -437,81 +440,81 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             {/* Register Form */}
             <form onSubmit={handleRegister} className="mt-3 space-y-2.5">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#A9B0AA] mb-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A9B0AA]" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Tanvir Ahmed"
-                    className="w-full pl-10 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                    className="w-full pl-10 pr-4 py-2 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-[#A9B0AA] mb-1">
                     Student ID / NID
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A9B0AA]" />
                     <input
                       type="text"
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
                       placeholder="2026-CSE / NID"
-                      className="w-full pl-8 pr-2 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                      className="w-full pl-8 pr-2 py-2 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-[#A9B0AA] mb-1">
                     Phone (Optional)
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A9B0AA]" />
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="01711-XXXXXX"
-                      className="w-full pl-8 pr-2 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                      className="w-full pl-8 pr-2 py-2 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#A9B0AA] mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A9B0AA]" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your.email@gmail.com"
-                    className="w-full pl-10 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                    className="w-full pl-10 pr-4 py-2 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-slate-300">
+                  <label className="block text-xs font-bold text-[#A9B0AA]">
                     Create Password (min 6 chars)
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                    className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer transition"
+                    className="text-[11px] text-[#45B58A] hover:underline flex items-center gap-1 cursor-pointer transition"
                   >
                     {showRegisterPassword ? (
                       <>
@@ -525,31 +528,31 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A9B0AA]" />
                   <input
                     type={showRegisterPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="w-full pl-10 pr-10 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                    className="w-full pl-10 pr-10 py-2 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                   />
                 </div>
               </div>
 
-              <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 flex items-start gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="p-2 rounded-xl bg-[#171A18] border border-[#383E39] text-[10px] text-[#A9B0AA] flex items-start gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#45B58A] shrink-0 mt-0.5" />
                 <span>Verified <strong>Citizen / Student</strong> account across Sylhet Metropolitan Hubs.</span>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-98 text-white font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.35)] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="w-3.5 h-3.5 border-2 border-[#171A18]/30 border-t-[#171A18] rounded-full animate-spin" />
                     <span>Creating Account...</span>
                   </>
                 ) : (
@@ -568,63 +571,35 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
             isLoginTab ? "translate-x-full" : "translate-x-0"
           }`}
         >
-          <div
-            className={`w-full h-full p-8 flex flex-col justify-between text-white relative overflow-hidden border-x border-slate-700/80 shadow-2xl transition-colors duration-700 bg-slate-950 ${
-              isLoginTab
-                ? "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950"
-                : "bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950"
-            }`}
-          >
+          <div className="w-full h-full p-8 flex flex-col justify-between text-[#F3F4EF] relative overflow-hidden border-x border-[#383E39] shadow-2xl bg-[#1E2320]">
             {/* Live Interactive Neural Constellation Canvas Animation */}
             <canvas
               ref={canvasRef}
-              className="absolute inset-0 w-full h-full pointer-events-none opacity-60 z-0"
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-50 z-0"
             />
 
-            {/* Futuristic Perspective Grid Floor */}
-            <div className="absolute inset-x-0 bottom-0 h-44 bg-[radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.15),transparent_70%)] pointer-events-none z-0" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none z-0" />
-
-            {/* Ambient Nebula Glows */}
-            <div
-              className={`absolute -top-16 -left-16 w-60 h-60 rounded-full blur-3xl pointer-events-none transition-colors duration-700 ${
-                isLoginTab ? "bg-sky-500/25" : "bg-emerald-500/25"
-              }`}
-            />
-            <div
-              className={`absolute -bottom-16 -right-16 w-60 h-60 rounded-full blur-3xl pointer-events-none transition-colors duration-700 ${
-                isLoginTab ? "bg-purple-500/25" : "bg-cyan-500/25"
-              }`}
-            />
+            {/* Subtle Emerald Glow */}
+            <div className="absolute -top-16 -left-16 w-60 h-60 rounded-full blur-3xl pointer-events-none bg-[#45B58A]/10" />
+            <div className="absolute -bottom-16 -right-16 w-60 h-60 rounded-full blur-3xl pointer-events-none bg-[#45B58A]/10" />
 
             {/* Top Status Bar with clearance for close button */}
             <div className={`relative z-10 flex items-center justify-between ${isLoginTab ? "pr-8" : ""}`}>
-              <div
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border transition-colors ${
-                  isLoginTab
-                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-400/40"
-                    : "bg-teal-500/20 text-teal-300 border-teal-400/40"
-                }`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full animate-ping ${
-                    isLoginTab ? "bg-cyan-400" : "bg-emerald-400"
-                  }`}
-                />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border border-[#383E39] bg-[#171A18] text-[#45B58A]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#45B58A] animate-ping" />
                 Sylhet Metropolitan Network
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#A9B0AA]">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#45B58A]" />
                 <span>Verified Portal</span>
               </div>
             </div>
 
-            {/* Animated Cyber Hologram Scanner with Multimodal Reticle */}
+            {/* Cyber Scanner with Multimodal Reticle */}
             <div className="relative z-10 my-auto text-center py-2">
               <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
-                {/* Rotating Tech HUD Circle with Compass Reticle */}
+                {/* Tech Circle */}
                 <svg
-                  className="absolute inset-0 w-full h-full animate-spin [animation-duration:22s] text-sky-400/30"
+                  className="absolute inset-0 w-full h-full animate-spin [animation-duration:24s] text-[#45B58A]/30"
                   viewBox="0 0 100 100"
                 >
                   <circle
@@ -647,34 +622,17 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   />
                 </svg>
 
-                {/* Pulsing Core Ripple */}
-                <div
-                  className={`absolute inset-2 rounded-full animate-ping [animation-duration:3s] opacity-20 ${
-                    isLoginTab ? "bg-sky-500" : "bg-emerald-500"
-                  }`}
-                />
-
-                {/* Central Cyber Glowing Shield with Scanning Laser Beam */}
-                <div
-                  className={`relative w-22 h-22 rounded-3xl flex items-center justify-center text-white shadow-2xl transition-all duration-700 animate-neon-breath overflow-hidden ${
-                    isLoginTab
-                      ? "bg-gradient-to-tr from-sky-500 via-indigo-600 to-violet-600 shadow-[0_0_35px_rgba(99,102,241,0.7)]"
-                      : "bg-gradient-to-tr from-emerald-500 via-teal-600 to-cyan-600 shadow-[0_0_35px_rgba(16,185,129,0.7)]"
-                  }`}
-                >
-                  <ShieldCheck className="w-11 h-11 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                {/* Central Shield */}
+                <div className="relative w-22 h-22 rounded-3xl flex items-center justify-center text-[#45B58A] bg-[#171A18] border border-[#383E39] shadow-xl overflow-hidden">
+                  <ShieldCheck className="w-11 h-11 text-[#45B58A]" />
                   {/* Moving Cyber Laser Scanline */}
-                  <div
-                    className={`absolute left-0 right-0 h-1 shadow-[0_0_12px_#38bdf8] animate-cyber-scan ${
-                      isLoginTab ? "bg-cyan-300" : "bg-emerald-300"
-                    }`}
-                  />
+                  <div className="absolute left-0 right-0 h-1 bg-[#45B58A] shadow-[0_0_10px_#45B58A] animate-cyber-scan" />
                 </div>
               </div>
 
               {/* Status Indicator Pill */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-slate-900/80 border border-slate-700/80 text-slate-300 mt-2 mb-1 shadow-inner">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-[#171A18] border border-[#383E39] text-[#A9B0AA] mt-2 mb-1 shadow-inner">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#45B58A] animate-pulse" />
                 <span>Live Matching Network Active</span>
               </div>
 
@@ -682,19 +640,19 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <div className="mt-2 space-y-1.5 px-2">
                 {isLoginTab ? (
                   <>
-                    <h4 className="text-xl font-black text-white tracking-tight">
-                      New to Find<span className="text-sky-400">It</span>?
+                    <h4 className="text-xl font-black text-[#F3F4EF] tracking-tight">
+                      New to Find<span className="text-[#45B58A]">It</span>?
                     </h4>
-                    <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
+                    <p className="text-xs text-[#A9B0AA] max-w-xs mx-auto leading-relaxed">
                       Create an account to report lost belongings, turn in found items, and get automatically matched across Sylhet.
                     </p>
                   </>
                 ) : (
                   <>
-                    <h4 className="text-xl font-black text-white tracking-tight">
+                    <h4 className="text-xl font-black text-[#F3F4EF] tracking-tight">
                       Welcome Back!
                     </h4>
-                    <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
+                    <p className="text-xs text-[#A9B0AA] max-w-xs mx-auto leading-relaxed">
                       Sign in to check the status of your reported items, review match alerts, and securely verify your ownership.
                     </p>
                   </>
@@ -708,29 +666,29 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 <button
                   type="button"
                   onClick={() => handleTabChange("register")}
-                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-sky-400/40 text-white font-bold text-xs tracking-wide backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-md group cursor-pointer active:scale-98"
+                  className="w-full py-3 px-5 rounded-2xl bg-[#171A18] hover:bg-[#252B27] border border-[#383E39] hover:border-[#45B58A]/50 text-[#F3F4EF] font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2 shadow-md group cursor-pointer"
                 >
                   <span>Create an Account</span>
-                  <ArrowRight className="w-4 h-4 text-sky-400 group-hover:translate-x-1 transition" />
+                  <ArrowRight className="w-4 h-4 text-[#45B58A] group-hover:translate-x-1 transition" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => handleTabChange("login")}
-                  className="w-full py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-emerald-400/40 text-white font-bold text-xs tracking-wide backdrop-blur-md transition-all flex items-center justify-center gap-2 shadow-md group cursor-pointer active:scale-98"
+                  className="w-full py-3 px-5 rounded-2xl bg-[#171A18] hover:bg-[#252B27] border border-[#383E39] hover:border-[#45B58A]/50 text-[#F3F4EF] font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2 shadow-md group cursor-pointer"
                 >
-                  <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition" />
+                  <ArrowLeft className="w-4 h-4 text-[#45B58A] group-hover:-translate-x-1 transition" />
                   <span>Sign In to Your Account</span>
                 </button>
               )}
 
               {/* Trust Footer */}
-              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-2 border-t border-slate-800/80 font-medium">
-                <span className="flex items-center gap-1.5 text-slate-400">
-                  <Lock className="w-3.5 h-3.5 text-sky-400" /> Private &amp; Secure
+              <div className="flex items-center justify-between text-[11px] text-[#A9B0AA] px-1 pt-2 border-t border-[#383E39] font-medium">
+                <span className="flex items-center gap-1.5 text-[#A9B0AA]">
+                  <Lock className="w-3.5 h-3.5 text-[#45B58A]" /> Private &amp; Secure
                 </span>
-                <span className="flex items-center gap-1.5 text-slate-400">
-                  <MapPin className="w-3.5 h-3.5 text-rose-400" /> Sylhet Metropolitan Area
+                <span className="flex items-center gap-1.5 text-[#A9B0AA]">
+                  <MapPin className="w-3.5 h-3.5 text-[#45B58A]" /> Sylhet Metropolitan Area
                 </span>
               </div>
             </div>
