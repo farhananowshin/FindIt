@@ -839,14 +839,14 @@ export default function ItemUploadForm({
                   </span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#45B58A]/15 text-[#45B58A] border border-[#45B58A]/30">
-                  {user.role}
+                  {user.role === "admin" ? "ADMIN" : "CITIZEN"}
                 </span>
               </div>
             ) : (
               <div className="mb-4 p-3.5 rounded-xl bg-[#171A18] border border-[#383E39] text-[#A9B0AA] text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start sm:items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-[#45B58A] shrink-0 mt-0.5 sm:mt-0" />
-                  <span>You must be logged in with a campus account to register an item in the system.</span>
+                  <span>You must be logged in to register an item in the system.</span>
                 </div>
                 {onRequireAuth && (
                   <button

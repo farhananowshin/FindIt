@@ -154,10 +154,10 @@ export default function Navbar({
                     className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${
                       user.role === "admin"
                         ? "bg-[#45B58A]/20 text-[#45B58A] border border-[#45B58A]/40"
-                        : "bg-[#28322A] text-[#C4CBC5] border border-[#313A33]"
+                        : "bg-[#28322A] text-[#45B58A] border border-[#45B58A]/30"
                     }`}
                   >
-                    {user.role}
+                    {user.role === "admin" ? "ADMIN" : "CITIZEN"}
                   </span>
                 </div>
                 <button
