@@ -18,6 +18,36 @@ _IMAGE_CACHE: Dict[str, np.ndarray] = {}
 _TEXT_CACHE: Dict[str, np.ndarray] = {}
 MAX_CACHE_ENTRIES = 2000
 
+CACHE_METRICS = {
+    "image_hits": 0,
+    "image_misses": 0,
+    "text_hits": 0,
+    "text_misses": 0,
+}
+
+def get_cache_stats() -> Dict[str, Any]:
+    """Returns telemetry on in-memory embedding caches."""
+    total_img = CACHE_METRICS["image_hits"] + CACHE_METRICS["image_misses"]
+    total_txt = CACHE_METRICS["text_hits"] + CACHE_METRICS["text_misses"]
+    return {
+        "imageCacheEntries": len(_IMAGE_CACHE),
+        "textCacheEntries": len(_TEXT_CACHE),
+        "maxCapacity": MAX_CACHE_ENTRIES,
+        "metrics": dict(CACHE_METRICS),
+        "imageHitRate": round((CACHE_METRICS["image_hits"] / total_img) * 100, 2) if total_img > 0 else 0.0,
+        "textHitRate": round((CACHE_METRICS["text_hits"] / total_txt) * 100, 2) if total_txt > 0 else 0.0,
+    }
+
+def clear_all_caches():
+    """Flushes in-memory image and text embedding caches."""
+    _IMAGE_CACHE.clear()
+    _TEXT_CACHE.clear()
+    CACHE_METRICS["image_hits"] = 0
+    CACHE_METRICS["image_misses"] = 0
+    CACHE_METRICS["text_hits"] = 0
+    CACHE_METRICS["text_misses"] = 0
+    logger.info("Cleared all in-memory embedding caches and reset metrics.")
+
 def _prune_cache_if_needed(cache_dict: dict):
     if len(cache_dict) > MAX_CACHE_ENTRIES:
         # Simple FIFO removal of oldest 20%
@@ -81,8 +111,10 @@ def generate_image_embedding(image_source: Union[str, Path, Image.Image]) -> Opt
             cache_key = hashlib.sha256(content_bytes).hexdigest()
 
             if cache_key in _IMAGE_CACHE:
+                CACHE_METRICS["image_hits"] += 1
                 return _IMAGE_CACHE[cache_key]
 
+            CACHE_METRICS["image_misses"] += 1
             pil_image = Image.open(resolved_path).convert("RGB")
         except Exception as e:
             logger.warning(f"Could not load image file {resolved_path}: {e}")
@@ -168,7 +200,10 @@ def generate_text_embedding(text_or_report: Union[str, Dict[str, Any]]) -> Optio
 
     cache_key = hashlib.sha256(text.encode("utf-8")).hexdigest()
     if cache_key in _TEXT_CACHE:
+        CACHE_METRICS["text_hits"] += 1
         return _TEXT_CACHE[cache_key]
+
+    CACHE_METRICS["text_misses"] += 1
 
     try:
         # S-BERT encode with automatic L2 normalization

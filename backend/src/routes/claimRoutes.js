@@ -317,6 +317,18 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
             relatedClaimId: otherClaim._id,
           });
         }
+        // Non-blocking closed-loop AI learning feedback
+        const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+        fetch(`${aiServiceUrl}/api/weights/feedback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lostItemId: String(claim.claimantId || item._id),
+            candidateItemId: String(item._id),
+            feedbackType: "accepted_claim",
+            notes: `Claim approved by admin ${req.user?.name || req.user?.email || "Staff"}`,
+          }),
+        }).catch((e) => console.warn("Notice: AI feedback dispatch:", e.message));
       } catch (notifErr) {
         console.warn("⚠️ Non-blocking error generating claim approval notification:", notifErr.message);
       }
@@ -343,6 +355,18 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
             reviewNotes: claim.reviewNotes,
           },
         });
+        // Non-blocking closed-loop AI learning feedback
+        const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+        fetch(`${aiServiceUrl}/api/weights/feedback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lostItemId: String(claim.claimantId || item._id),
+            candidateItemId: String(item._id),
+            feedbackType: "accepted_claim",
+            notes: `Claim approved by admin ${req.user?.name || req.user?.email || "Staff"}`,
+          }),
+        }).catch((e) => console.warn("Notice: AI feedback dispatch:", e.message));
       } catch (notifErr) {
         console.warn("⚠️ Non-blocking error generating claim rejection notification:", notifErr.message);
       }

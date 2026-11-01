@@ -7,15 +7,22 @@ from pydantic import BaseModel, Field
 
 import numpy as np
 
-from src.config import PORT, HOST, DEFAULT_TOP_K, MAX_TOP_K
+from src.config import PORT, HOST, DEFAULT_TOP_K, MAX_TOP_K, INITIAL_WEIGHTS, CURRENT_WEIGHTS
 from src.models_loader import get_model_manager
-from src.embeddings import generate_image_embedding, generate_text_embedding
+from src.embeddings import (
+    generate_image_embedding,
+    generate_text_embedding,
+    get_cache_stats,
+    clear_all_caches,
+)
 from src.matcher import calculate_match
 from src.database import (
     check_db_health,
     find_item_by_id,
     find_active_found_candidates,
     update_item_embeddings,
+    record_match_feedback,
+    get_feedback_stats,
 )
 
 # Configure structured logging
@@ -79,6 +86,7 @@ class EmbedRequest(BaseModel):
 class MatchRequest(BaseModel):
     lostItemId: str = Field(..., description="MongoDB ObjectId of the lost item report")
     topK: Optional[int] = Field(DEFAULT_TOP_K, ge=1, le=MAX_TOP_K, description="Number of top matches to return")
+    weights: Optional[Dict[str, float]] = Field(None, description="Custom 5-factor weights (visual, textual, location, time, attribute)")
 
 @app.get("/health")
 def health_check():
@@ -260,6 +268,7 @@ def match_lost_item(request: MatchRequest):
             found_img_emb=found_img_emb,
             lost_txt_emb=lost_txt_emb,
             found_txt_emb=found_txt_emb,
+            weights=request.weights or CURRENT_WEIGHTS,
         )
 
         candidate_result = {
@@ -305,6 +314,117 @@ def match_lost_item(request: MatchRequest):
         "totalCandidatesEvaluated": len(found_candidates),
         "matchesReturned": len(top_matches),
         "matches": top_matches,
+    }
+
+class TuneWeightsRequest(BaseModel):
+    weights: Dict[str, float] = Field(..., description="Map of factor weights: visual, textual, location, time, attribute")
+
+class MatchFeedbackRequest(BaseModel):
+    lostItemId: str
+    candidateItemId: str
+    feedbackType: str = Field(..., description="'confirmed_match', 'accepted_claim', 'rejected_claim', or 'false_match'")
+    reportedScore: Optional[float] = None
+    notes: Optional[str] = ""
+
+@app.get("/api/weights")
+def get_weights():
+    """
+    Returns current active weights, initial baseline weights,
+    and ground-truth feedback learning statistics.
+    """
+    feedback_stats = get_feedback_stats()
+    return {
+        "success": True,
+        "currentWeights": CURRENT_WEIGHTS,
+        "initialWeights": INITIAL_WEIGHTS,
+        "feedbackStats": feedback_stats,
+    }
+
+@app.post("/api/weights/tune")
+def tune_weights(request: TuneWeightsRequest):
+    """
+    Online Tuning Endpoint: Adjusts the runtime weights dynamically.
+    Ensures all 5 factors exist and sum to 1.00 (tolerance ±0.05).
+    """
+    required_keys = {"visual", "textual", "location", "time", "attribute"}
+    provided_keys = set(request.weights.keys())
+
+    if not required_keys.issubset(provided_keys):
+        missing = required_keys - provided_keys
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Missing required weight factors: {', '.join(missing)}",
+        )
+
+    weight_sum = sum(request.weights[k] for k in required_keys)
+    if not (0.95 <= weight_sum <= 1.05):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Weights must sum to 1.00 (got {round(weight_sum, 3)}). Please re-normalize.",
+        )
+
+    # Normalize strictly to sum = 1.00
+    for k in required_keys:
+        CURRENT_WEIGHTS[k] = round(request.weights[k] / weight_sum, 4)
+
+    logger.info(f"Updated active matching weights dynamically: {CURRENT_WEIGHTS}")
+    return {
+        "success": True,
+        "message": "Matching weights dynamically tuned successfully.",
+        "activeWeights": CURRENT_WEIGHTS,
+    }
+
+@app.post("/api/weights/reset")
+def reset_weights():
+    """Resets active weights back to the initial baseline."""
+    for k, v in INITIAL_WEIGHTS.items():
+        CURRENT_WEIGHTS[k] = v
+    logger.info("Reset active matching weights to initial baseline.")
+    return {
+        "success": True,
+        "message": "Weights reset to default baseline.",
+        "activeWeights": CURRENT_WEIGHTS,
+    }
+
+@app.post("/api/weights/feedback")
+def submit_match_feedback(request: MatchFeedbackRequest):
+    """
+    Continuous Learning Loop: Records positive/negative feedback from user claims or admin actions,
+    enabling closed-loop weight tuning and ground-truth validation.
+    """
+    data = request.model_dump()
+    success = record_match_feedback(data)
+    return {
+        "success": success,
+        "message": "Feedback recorded successfully for continuous tuning." if success else "Failed to record feedback.",
+    }
+
+@app.get("/api/cache/stats")
+def cache_telemetry():
+    """
+    Telemetry and inspection for in-memory and MongoDB caches and fallbacks.
+    """
+    cache_info = get_cache_stats()
+    mgr = get_model_manager()
+    return {
+        "success": True,
+        "cache": cache_info,
+        "modelsLoaded": mgr.get_status(),
+        "fallbacks": {
+            "zeroShotTextOnly": "Available when image is missing or corrupt",
+            "heuristicSecurity": "Available if Groq API limit reached",
+            "diskStorage": "Available if Cloudinary remote upload fails",
+            "serviceOfflineDegradation": "Backend proxies return HTTP 503 graceful notice",
+        },
+    }
+
+@app.post("/api/cache/clear")
+def flush_cache():
+    """Flushes in-memory OpenCLIP and Sentence Transformer caches."""
+    clear_all_caches()
+    return {
+        "success": True,
+        "message": "All in-memory embedding caches flushed successfully.",
     }
 
 if __name__ == "__main__":

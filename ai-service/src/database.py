@@ -134,3 +134,36 @@ def update_item_embeddings(
     except Exception as e:
         logger.error(f"Error caching embeddings for item {item_id}: {e}")
         return False
+
+def record_match_feedback(feedback_data: Dict[str, Any]) -> bool:
+    """
+    Stores positive or negative match confirmation feedback in MongoDB
+    for continuous evaluation and automated fine-tuning.
+    """
+    try:
+        db = get_db()
+        feedback_data["createdAt"] = feedback_data.get("createdAt") or logging.Formatter().default_msec_format
+        db["match_feedback"].insert_one(feedback_data)
+        logger.info(f"Recorded match feedback: {feedback_data.get('feedbackType', 'unknown')}")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving match feedback: {e}")
+        return False
+
+def get_feedback_stats() -> Dict[str, Any]:
+    """Retrieves aggregated positive/negative feedback metrics."""
+    try:
+        db = get_db()
+        col = db["match_feedback"]
+        total = col.count_documents({})
+        positive = col.count_documents({"feedbackType": {"$in": ["confirmed_match", "accepted_claim"]}})
+        negative = col.count_documents({"feedbackType": {"$in": ["rejected_claim", "false_match"]}})
+        return {
+            "totalFeedbackCount": total,
+            "positiveMatches": positive,
+            "negativeMatches": negative,
+            "acceptanceRate": round((positive / total) * 100, 2) if total > 0 else 0.0,
+        }
+    except Exception as e:
+        logger.warning(f"Could not read feedback collection: {e}")
+        return {"totalFeedbackCount": 0, "positiveMatches": 0, "negativeMatches": 0, "acceptanceRate": 0.0}

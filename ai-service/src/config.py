@@ -33,6 +33,9 @@ INITIAL_WEIGHTS = {
     "attribute": 0.10,
 }
 
+# Runtime Active Weights (Supports Dynamic Online Fine-Tuning)
+CURRENT_WEIGHTS = dict(INITIAL_WEIGHTS)
+
 # Ranking Configuration
 DEFAULT_TOP_K = int(os.getenv("DEFAULT_TOP_K", 5))
 MAX_TOP_K = int(os.getenv("MAX_TOP_K", 20))

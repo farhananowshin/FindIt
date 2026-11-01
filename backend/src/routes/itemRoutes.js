@@ -335,15 +335,55 @@ router.get("/:id/admin", authenticateToken, requireRole(["admin"]), async (req, 
   }
 });
 
+// In-Memory Short-Term Cache for AI Match Requests (TTL: 30 seconds)
+const matchCache = new Map();
+const MATCH_CACHE_TTL_MS = 30 * 1000;
+
+function getCachedMatches(key) {
+  const cached = matchCache.get(key);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > MATCH_CACHE_TTL_MS) {
+    matchCache.delete(key);
+    return null;
+  }
+  return cached.data;
+}
+
+function setCachedMatches(key, data) {
+  if (matchCache.size > 500) {
+    const oldestKey = matchCache.keys().next().value;
+    matchCache.delete(oldestKey);
+  }
+  matchCache.set(key, { timestamp: Date.now(), data });
+}
+
 /**
  * @route   GET /api/items/:id/matches
- * @desc    Proxy matching request to the FastAPI AI service (OpenCLIP + S-BERT)
+ * @desc    Proxy matching request to the FastAPI AI service (OpenCLIP + S-BERT) with in-memory TTL caching
  * @access  Public
  */
 router.get("/:id/matches", async (req, res) => {
   try {
     const { id } = req.params;
     const topK = req.query.topK ? parseInt(req.query.topK, 10) : 5;
+
+    // Optional dynamic custom weights passed as JSON string in query
+    let customWeights = null;
+    if (req.query.weights) {
+      try {
+        customWeights = typeof req.query.weights === "string" ? JSON.parse(req.query.weights) : req.query.weights;
+      } catch (wErr) {
+        console.warn("Could not parse query weights JSON, falling back to server default:", wErr.message);
+      }
+    }
+
+    // Check short-term in-memory cache
+    const cacheKey = `${id}_${topK}_${customWeights ? JSON.stringify(customWeights) : "default"}`;
+    const cachedResponse = getCachedMatches(cacheKey);
+    if (cachedResponse) {
+      res.setHeader("X-Cache", "HIT");
+      return res.status(200).json(cachedResponse);
+    }
 
     // Validate MongoDB ObjectId format
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -372,10 +412,15 @@ router.get("/:id/matches", async (req, res) => {
     // Call FastAPI AI service
     const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
     try {
+      const matchPayload = { lostItemId: id, topK };
+      if (customWeights) {
+        matchPayload.weights = customWeights;
+      }
+
       const response = await fetch(`${aiServiceUrl}/api/match`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lostItemId: id, topK }),
+        body: JSON.stringify(matchPayload),
         signal: AbortSignal.timeout(15000), // 15s timeout
       });
 
@@ -387,6 +432,10 @@ router.get("/:id/matches", async (req, res) => {
           message: aiResponse.detail || "AI matching service encountered an error.",
         });
       }
+
+      // Cache successful response in memory
+      setCachedMatches(cacheKey, aiResponse);
+      res.setHeader("X-Cache", "MISS");
 
       // Check for High-Confidence AI Match Alerts (threshold >= 70%)
       if (item.submitterId && Array.isArray(aiResponse.matches)) {
@@ -440,6 +489,132 @@ router.get("/:id/matches", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error while retrieving matches.",
+    });
+  }
+});
+
+/**
+ * @route   GET /api/items/weights
+ * @desc    Fetch active & baseline AI matching weights + learning statistics
+ * @access  Public
+ */
+router.get("/weights", async (req, res) => {
+  try {
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+    const response = await fetch(`${aiServiceUrl}/api/weights`);
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      message: "AI service unreachable for weight retrieval.",
+    });
+  }
+});
+
+/**
+ * @route   POST /api/items/weights/tune
+ * @desc    Dynamically tune matching weights in real-time
+ * @access  Public
+ */
+router.post("/weights/tune", async (req, res) => {
+  try {
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+    const response = await fetch(`${aiServiceUrl}/api/weights/tune`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    // Invalidate match cache on weight re-tuning
+    matchCache.clear();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      message: "AI service unreachable for weight tuning.",
+    });
+  }
+});
+
+/**
+ * @route   POST /api/items/weights/reset
+ * @desc    Reset matching weights to baseline
+ * @access  Public
+ */
+router.post("/weights/reset", async (req, res) => {
+  try {
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+    const response = await fetch(`${aiServiceUrl}/api/weights/reset`, { method: "POST" });
+    const data = await response.json();
+    matchCache.clear();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      message: "AI service unreachable for weight reset.",
+    });
+  }
+});
+
+/**
+ * @route   POST /api/items/match-feedback
+ * @desc    Submit positive/negative match verification feedback for continuous learning
+ * @access  Public
+ */
+router.post("/match-feedback", async (req, res) => {
+  try {
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+    const response = await fetch(`${aiServiceUrl}/api/weights/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err) {
+    return res.status(503).json({
+      success: false,
+      message: "AI service unreachable for feedback submission.",
+    });
+  }
+});
+
+/**
+ * @route   GET /api/items/cache-telemetry
+ * @desc    Fetch comprehensive cache and fallback telemetry from backend and AI service
+ * @access  Public
+ */
+router.get("/cache-telemetry", async (req, res) => {
+  try {
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
+    const response = await fetch(`${aiServiceUrl}/api/cache/stats`);
+    const aiCacheData = response.ok ? await response.json() : null;
+
+    return res.status(200).json({
+      success: true,
+      backendCache: {
+        shortTermMatchCacheSize: matchCache.size,
+        ttlSeconds: MATCH_CACHE_TTL_MS / 1000,
+        type: "In-Memory LRU/TTL Map",
+      },
+      aiServiceCache: aiCacheData?.cache || { status: "offline" },
+      models: aiCacheData?.modelsLoaded || {},
+      fallbacks: aiCacheData?.fallbacks || {
+        textOnly: "Active",
+        diskFallback: "Active",
+        heuristicSecurity: "Active",
+      },
+    });
+  } catch (err) {
+    return res.status(200).json({
+      success: true,
+      backendCache: {
+        shortTermMatchCacheSize: matchCache.size,
+        ttlSeconds: MATCH_CACHE_TTL_MS / 1000,
+        type: "In-Memory LRU/TTL Map",
+      },
+      aiServiceCache: { status: "unreachable" },
     });
   }
 });

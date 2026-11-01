@@ -519,3 +519,89 @@ export async function generateVerificationChallenges(item: {
   return json;
 }
 
+
+
+/**
+ * Fetch active and baseline multimodal AI weights + ground-truth stats.
+ */
+export async function getAIWeights(): Promise<{
+  success: boolean;
+  currentWeights: Record<string, number>;
+  initialWeights: Record<string, number>;
+  feedbackStats: {
+    totalFeedbackCount: number;
+    positiveMatches: number;
+    negativeMatches: number;
+    acceptanceRate: number;
+  };
+}> {
+  const res = await fetch(`${API_BASE}/api/items/weights`);
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to fetch weights.");
+  }
+  return json;
+}
+
+/**
+ * Dynamically tune matching weights in real-time.
+ */
+export async function tuneAIWeights(weights: Record<string, number>): Promise<{
+  success: boolean;
+  message: string;
+  activeWeights: Record<string, number>;
+}> {
+  const res = await fetch(`${API_BASE}/api/items/weights/tune`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ weights }),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.detail || json.message || "Failed to tune weights.");
+  }
+  return json;
+}
+
+/**
+ * Reset weights back to default baseline.
+ */
+export async function resetAIWeights(): Promise<{
+  success: boolean;
+  message: string;
+  activeWeights: Record<string, number>;
+}> {
+  const res = await fetch(`${API_BASE}/api/items/weights/reset`, { method: "POST" });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to reset weights.");
+  }
+  return json;
+}
+
+/**
+ * Submit positive/negative match verification feedback for continuous learning.
+ */
+export async function submitMatchFeedback(payload: {
+  lostItemId: string;
+  candidateItemId: string;
+  feedbackType: "confirmed_match" | "accepted_claim" | "rejected_claim" | "false_match";
+  reportedScore?: number;
+  notes?: string;
+}): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${API_BASE}/api/items/match-feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  return json;
+}
+
+/**
+ * Inspect live cache telemetry and fallback mechanisms across services.
+ */
+export async function getAICacheTelemetry(): Promise<any> {
+  const res = await fetch(`${API_BASE}/api/items/cache-telemetry`);
+  return res.json();
+}
