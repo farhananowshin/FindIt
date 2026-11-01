@@ -26,7 +26,7 @@ import {
   COMMON_COLORS,
   StoredItemReport,
 } from "../types/item";
-import { submitItemReport } from "../services/api";
+import { submitItemReport, generateVerificationChallenges } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 interface ItemUploadFormProps {
@@ -65,6 +65,11 @@ export default function ItemUploadForm({
   const [contactPhone, setContactPhone] = useState(user?.phone || "");
   const [consentPrivacy, setConsentPrivacy] = useState(true);
 
+  // AI Verification Challenge generator state (Groq LLM / Security Engine)
+  const [isGeneratingChallenge, setIsGeneratingChallenge] = useState(false);
+  const [challengeSuggestions, setChallengeSuggestions] = useState<string[]>([]);
+  const [challengeSource, setChallengeSource] = useState<string | null>(null);
+
   // Sync user details when user state changes
   const [prevUser, setPrevUser] = useState(user);
   if (user !== prevUser) {
@@ -89,6 +94,33 @@ export default function ItemUploadForm({
   const [submittedReport, setSubmittedReport] = useState<StoredItemReport | null>(null);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [serverError, setServerError] = useState<string | null>(null);
+
+  // Synthesize AI-Powered Verification Challenges via Groq LLM / Security Engine
+  const handleGenerateChallenges = async () => {
+    if (!title.trim() && !description.trim()) {
+      setUploadError("Please enter an item title or description first so AI can analyze it.");
+      return;
+    }
+    setIsGeneratingChallenge(true);
+    setUploadError(null);
+    try {
+      const res = await generateVerificationChallenges({
+        title,
+        description,
+        category,
+        brand,
+        uniqueMarks,
+      });
+      if (res.challenges && res.challenges.length > 0) {
+        setChallengeSuggestions(res.challenges);
+        setChallengeSource(res.source);
+      }
+    } catch (err: unknown) {
+      console.warn("Failed to generate challenge questions:", err);
+    } finally {
+      setIsGeneratingChallenge(false);
+    }
+  };
 
   // Image Upload Handlers
   const handleFiles = (files: FileList | null) => {
@@ -797,13 +829,33 @@ export default function ItemUploadForm({
                 />
               </div>
 
-              {/* Secret Verification Hint */}
+              {/* Secret Verification Hint & AI Challenge Generator */}
               <div className="p-4 rounded-2xl bg-[#171A18] border border-[#383E39]">
-                <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4 text-[#45B58A]" />
-                  <label className="text-xs font-bold text-[#F3F4EF] uppercase tracking-wider">
-                    Secret Verification Detail (Admin Anti-Fraud Safeguard)
-                  </label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-[#45B58A]" />
+                    <label className="text-xs font-bold text-[#F3F4EF] uppercase tracking-wider">
+                      Secret Verification Detail (Anti-Fraud Safeguard)
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateChallenges}
+                    disabled={isGeneratingChallenge}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-[#45B58A]/15 hover:bg-[#45B58A]/25 text-[#45B58A] border border-[#45B58A]/30 transition disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+                  >
+                    {isGeneratingChallenge ? (
+                      <>
+                        <span className="w-3 h-3 border-2 border-[#45B58A]/30 border-t-[#45B58A] rounded-full animate-spin" />
+                        <span>Synthesizing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 text-[#45B58A]" />
+                        <span>Generate AI Challenge (Groq LLM)</span>
+                      </>
+                    )}
+                  </button>
                 </div>
                 <p className="text-xs text-[#A9B0AA] mb-2">
                   {isLost
@@ -817,6 +869,36 @@ export default function ItemUploadForm({
                   placeholder="e.g., Phone wallpaper is a golden retriever named Max; 3 silver coins in front pocket"
                   className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#252B27] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
                 />
+
+                {/* AI Generated Verification Questions */}
+                {challengeSuggestions.length > 0 && (
+                  <div className="mt-3 p-3 rounded-xl bg-[#252B27] border border-[#383E39] animate-fadeIn">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold text-[#45B58A] flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-[#45B58A]" />
+                        AI-Generated Challenge Questions ({challengeSource || "Groq LLM"}):
+                      </span>
+                      <span className="text-[10px] text-[#A9B0AA]">Click question to apply</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {challengeSuggestions.map((suggestion, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setSecretVerificationHint(suggestion)}
+                          className="w-full text-left p-2 rounded-lg bg-[#171A18] hover:bg-[#1E2320] border border-[#383E39] hover:border-[#45B58A]/40 text-xs text-[#C4CBC5] hover:text-[#F3F4EF] transition cursor-pointer flex items-start gap-2 group"
+                        >
+                          <span className="w-4 h-4 rounded-full bg-[#45B58A]/20 text-[#45B58A] text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span className="flex-1 leading-snug group-hover:text-[#45B58A] transition">
+                            {suggestion}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

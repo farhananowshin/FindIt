@@ -444,4 +444,111 @@ router.get("/:id/matches", async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/items/generate-challenge
+ * @desc    Generate AI-powered zero-knowledge ownership verification questions (Groq LLM + Smart Heuristic Engine)
+ * @access  Public
+ */
+router.post("/generate-challenge", async (req, res) => {
+  try {
+    const { title, description, category, brand, uniqueMarks } = req.body;
+
+    const itemContext = `Item Title: ${title || "Personal Belonging"}
+Category: ${category || "General"}
+Brand: ${brand || "Unspecified"}
+Description: ${description || "Found personal item"}
+Distinctive Marks: ${uniqueMarks || "None specified"}`;
+
+    const groqApiKey = process.env.GROQ_API_KEY;
+
+    if (groqApiKey && groqApiKey !== "your_groq_api_key_here") {
+      try {
+        const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${groqApiKey}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a security AI for a Lost & Found platform. Your job is to generate 3 secret, highly-specific verification challenge questions that ONLY the true owner would know, but a fraudster cannot guess. Focus on hidden compartments, lockscreen wallpapers, engravings, minor internal marks, or specific contents. Respond ONLY with a valid JSON array of 3 strings. No markdown, no preface.",
+              },
+              {
+                role: "user",
+                content: `Generate 3 unguessable secret ownership verification questions for this item:\n${itemContext}`,
+              },
+            ],
+            temperature: 0.6,
+            max_tokens: 250,
+          }),
+        });
+
+        if (groqResponse.ok) {
+          const groqData = await groqResponse.json();
+          const content = groqData.choices?.[0]?.message?.content?.trim();
+          if (content) {
+            try {
+              const cleanJson = content.replace(/```json/gi, "").replace(/```/g, "").trim();
+              const parsed = JSON.parse(cleanJson);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                return res.status(200).json({
+                  success: true,
+                  source: "Groq LLM (Llama 3.1)",
+                  challenges: parsed.slice(0, 3),
+                });
+              }
+            } catch (pErr) {
+              console.warn("Could not parse Groq JSON array, falling back to smart rules:", pErr.message);
+            }
+          }
+        }
+      } catch (groqErr) {
+        console.warn("Groq API request failed, utilizing high-precision fallback engine:", groqErr.message);
+      }
+    }
+
+    // High-Precision Smart Heuristic Challenge Generator (Zero-Downtime Guarantee)
+    const cat = (category || "").toLowerCase();
+    const suggestions = [];
+
+    if (cat.includes("electronic") || cat.includes("phone") || cat.includes("laptop")) {
+      suggestions.push("What specific wallpaper or lockscreen photo is set on the device?");
+      suggestions.push("Is there any specific scratch, sticker, or cover type on the back?");
+      suggestions.push("What is the exact storage capacity or model/serial number identifier?");
+    } else if (cat.includes("bag") || cat.includes("wallet")) {
+      suggestions.push("What specific card, photo, or ID is inside the hidden inner sleeve?");
+      suggestions.push("What is the exact coin denomination or approximate cash note amount?");
+      suggestions.push("Are there any keys, transit tokens, or receipts inside the zipper compartment?");
+    } else if (cat.includes("key")) {
+      suggestions.push("How many total keys are on the ring and what specific keychain/charm is attached?");
+      suggestions.push("Is there any engraved number, vehicle brand logo, or distinct color band?");
+      suggestions.push("Is there a USB drive, bottle opener, or tag attached to the bunch?");
+    } else if (cat.includes("book") || cat.includes("note") || cat.includes("id_card")) {
+      suggestions.push("What name, handwritten notes, or student ID number is on the first or back page?");
+      suggestions.push("Is there any specific bookmark, highlighter color, or folded section?");
+      suggestions.push("What specific department, semester, or subject is referenced inside?");
+    } else {
+      suggestions.push(`What specific hidden marking, initial, or scratch is on the item?`);
+      suggestions.push(`What specific contents, brand tag, or accessory is attached to it?`);
+      suggestions.push(`Can you specify the exact brand, purchase origin, or serial details?`);
+    }
+
+    return res.status(200).json({
+      success: true,
+      source: "FindIt Security Engine (Heuristic AI)",
+      challenges: suggestions,
+    });
+  } catch (err) {
+    console.error("❌ Error generating verification challenges:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate verification challenge questions.",
+    });
+  }
+});
+
 module.exports = router;

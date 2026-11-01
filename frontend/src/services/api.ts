@@ -495,3 +495,27 @@ export async function markAllNotificationsAsRead(
   return json;
 }
 
+/**
+ * Generate AI-powered zero-knowledge ownership verification challenges (Groq LLM / Security Engine).
+ */
+export async function generateVerificationChallenges(item: {
+  title?: string;
+  description?: string;
+  category?: string;
+  brand?: string;
+  uniqueMarks?: string;
+}): Promise<{ success: boolean; source: string; challenges: string[] }> {
+  const res = await fetch(`${API_BASE}/api/items/generate-challenge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(item),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to generate verification challenges.");
+  }
+
+  return json;
+}
+
