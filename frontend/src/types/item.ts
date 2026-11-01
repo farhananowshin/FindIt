@@ -187,6 +187,8 @@ export interface UserProfile {
   _id: string;
   name: string;
   email: string;
+  avatar?: string;
+  googleId?: string;
   studentId?: string;
   phone?: string;
   role: UserRole;

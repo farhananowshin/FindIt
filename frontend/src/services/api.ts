@@ -285,6 +285,8 @@ export async function loginUser(credentials: {
  * Authenticate or register a user via Google Sign-In.
  */
 export async function googleLoginUser(payload?: {
+  credential?: string;
+  accessToken?: string;
   email?: string;
   name?: string;
 }): Promise<AuthResponse> {

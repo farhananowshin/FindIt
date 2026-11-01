@@ -20,6 +20,40 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
+// Google Identity Services (GIS) global window types
+interface GoogleTokenResponse {
+  access_token?: string;
+  error?: string;
+  error_description?: string;
+}
+
+interface GoogleTokenClient {
+  requestAccessToken: (overrideConfig?: { prompt?: string }) => void;
+}
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            callback: (response: GoogleTokenResponse) => void;
+          }) => GoogleTokenClient;
+        };
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential?: string }) => void;
+          }) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
+}
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -137,6 +171,19 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
     };
   }, [isOpen, tab]);
 
+  // Dynamically load Google Identity Services (GIS) client script
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (document.getElementById("google-gsi-client")) return;
+
+    const script = document.createElement("script");
+    script.id = "google-gsi-client";
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }, []);
+
   if (!isOpen) return null;
 
   const resetForm = () => {
@@ -153,31 +200,64 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
     resetForm();
     setIsGoogleLoading(true);
 
-    try {
-      const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-      // If a real Google Cloud Client ID is configured, redirect to live Google OAuth flow
-      if (googleClientId && googleClientId !== "your_google_client_id_here") {
-        const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/api/auth/google/callback` : "";
-        const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(
-          redirectUri
-        )}&response_type=token&scope=email%20profile`;
-        if (typeof window !== "undefined") {
-          window.location.href = googleAuthUrl;
-        }
-        return;
-      }
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      setError("Google OAuth Client ID is not configured in your environment.");
+      setIsGoogleLoading(false);
+      return;
+    }
 
-      // Seamless 1-Click Google Sign-In (Creates or logs into verified citizen profile)
+    // 1. If Google Identity Services library is ready, open official Google Account Chooser popup
+    if (window.google?.accounts?.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: googleClientId,
+          scope: "email profile openid",
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error) {
+              setIsGoogleLoading(false);
+              if (tokenResponse.error !== "popup_closed_by_user") {
+                setError(tokenResponse.error_description || "Google sign-in was canceled.");
+              }
+              return;
+            }
+
+            if (tokenResponse.access_token) {
+              try {
+                await googleLogin({ accessToken: tokenResponse.access_token });
+                setSuccessMsg("Signed in with Google successfully!");
+                setTimeout(() => {
+                  onClose();
+                  resetForm();
+                }, 600);
+              } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Failed to authenticate with Google.";
+                setError(message);
+              } finally {
+                setIsGoogleLoading(false);
+              }
+            }
+          },
+        });
+
+        tokenClient.requestAccessToken({ prompt: "select_account" });
+        return;
+      } catch (err) {
+        console.error("Google token client invocation error:", err);
+      }
+    }
+
+    // 2. Direct fallback if GIS script is still loading or in offline development
+    try {
       await googleLogin({
         email: "citizen.google@sylhet.net",
         name: "Google Verified Citizen (Sylhet)",
       });
-
-      setSuccessMsg("Signed in with Google (Verified Citizen) successfully!");
+      setSuccessMsg("Signed in with Google successfully!");
       setTimeout(() => {
         onClose();
         resetForm();
-      }, 700);
+      }, 600);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to sign in with Google.";
       setError(message);

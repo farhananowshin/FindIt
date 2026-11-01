@@ -16,7 +16,12 @@ interface AuthContextType {
     studentId?: string;
     phone?: string;
   }) => Promise<void>;
-  googleLogin: (payload?: { email?: string; name?: string }) => Promise<void>;
+  googleLogin: (payload?: {
+    credential?: string;
+    accessToken?: string;
+    email?: string;
+    name?: string;
+  }) => Promise<void>;
   logout: () => void;
 }
 
@@ -84,7 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const googleLogin = async (payload?: { email?: string; name?: string }) => {
+  const googleLogin = async (payload?: {
+    credential?: string;
+    accessToken?: string;
+    email?: string;
+    name?: string;
+  }) => {
     const res: AuthResponse = await googleLoginUser(payload);
     if (res.token && res.user) {
       localStorage.setItem(TOKEN_KEY, res.token);

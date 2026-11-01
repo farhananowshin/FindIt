@@ -148,7 +148,16 @@ export default function Navbar({
                 <NotificationBell />
 
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-[#1C221E] border border-[#313A33] rounded-xl text-xs font-semibold text-[#F3F4EF]">
-                  <UserIcon className="w-3.5 h-3.5 text-[#45B58A]" />
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-4 h-4 rounded-full object-cover border border-[#45B58A]/50 shrink-0"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <UserIcon className="w-3.5 h-3.5 text-[#45B58A]" />
+                  )}
                   <span className="max-w-[120px] truncate">{user.name}</span>
                   <span
                     className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${

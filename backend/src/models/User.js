@@ -40,6 +40,15 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    avatar: {
+      type: String,
+      default: "",
+    },
+    googleId: {
+      type: String,
+      default: "",
+      index: true,
+    },
     role: {
       type: String,
       enum: {

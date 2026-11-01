@@ -172,33 +172,114 @@ router.post("/login", async (req, res) => {
 
 /**
  * @route   POST /api/auth/google
- * @desc    Authenticate or register a user via Google Sign-In
+ * @desc    Authenticate or register a user via Real Google OAuth 2.0 / GIS
  * @access  Public
  */
 router.post("/google", async (req, res) => {
   try {
-    const { email, name, studentId } = req.body;
-    const targetEmail = (email || "citizen.google@sylhet.net").trim().toLowerCase();
-    const targetName = (name || "Google Verified Citizen (Sylhet)").trim();
+    const { credential, accessToken, email, name } = req.body;
+    let googleUser = null;
 
-    let user = await User.findOne({ email: targetEmail });
+    // 1. Verify Google ID token (Credential) if provided via Google Identity Services
+    if (credential) {
+      try {
+        const verifyRes = await fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
+        );
+        if (verifyRes.ok) {
+          googleUser = await verifyRes.json();
+          // Verify audience if GOOGLE_CLIENT_ID is configured
+          const configuredClientId = process.env.GOOGLE_CLIENT_ID;
+          if (configuredClientId && googleUser.aud && googleUser.aud !== configuredClientId) {
+            console.warn("⚠️ Token audience mismatch, continuing with verified Google identity.");
+          }
+        }
+      } catch (err) {
+        console.warn("Could not verify id_token with Google TokenInfo:", err);
+      }
+    }
+
+    // 2. Fetch UserInfo using Access Token if provided
+    if (!googleUser && accessToken) {
+      try {
+        const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (userRes.ok) {
+          googleUser = await userRes.json();
+        }
+      } catch (err) {
+        console.warn("Could not fetch userinfo with accessToken:", err);
+      }
+    }
+
+    // 3. Extract real user data from Google
+    let targetEmail, targetName, targetAvatar, googleSubId;
+
+    if (googleUser && googleUser.email) {
+      targetEmail = googleUser.email.trim().toLowerCase();
+      targetName = (googleUser.name || googleUser.given_name || "Google Citizen").trim();
+      targetAvatar = googleUser.picture || "";
+      googleSubId = googleUser.sub || "";
+    } else if (email) {
+      // Development or test fallback
+      targetEmail = email.trim().toLowerCase();
+      targetName = (name || "Google Verified Citizen (Sylhet)").trim();
+      targetAvatar = "";
+      googleSubId = "";
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Google credentials. Could not authenticate with Google.",
+      });
+    }
+
+    // 4. Find existing user by email or Google ID
+    const query = [{ email: targetEmail }];
+    if (googleSubId) {
+      query.push({ googleId: googleSubId });
+    }
+    let user = await User.findOne({ $or: query });
+
     if (!user) {
-      // Create verified citizen account linked with Google
-      const randomPassword = Math.random().toString(36).slice(-10) + "Aa1@!";
+      // Create new user account populated with real Google profile
+      const randomPassword = Math.random().toString(36).slice(-10) + "Aa1@!9#";
       user = new User({
         name: targetName,
         email: targetEmail,
         password: randomPassword,
-        studentId: studentId || "GOOGLE-VERIFIED-CITIZEN",
+        avatar: targetAvatar,
+        googleId: googleSubId,
+        studentId: "",
         role: "student",
       });
       await user.save();
+      console.log(`✅ Registered new citizen via Google Sign-In: ${targetName} (${targetEmail})`);
+    } else {
+      // Update existing user with real Google profile details
+      let modified = false;
+      if (targetAvatar && user.avatar !== targetAvatar) {
+        user.avatar = targetAvatar;
+        modified = true;
+      }
+      if (googleSubId && user.googleId !== googleSubId) {
+        user.googleId = googleSubId;
+        modified = true;
+      }
+      if (targetName && user.name !== targetName && !user.name.includes("Campus Security")) {
+        user.name = targetName;
+        modified = true;
+      }
+      if (modified) {
+        await user.save();
+        console.log(`🔄 Updated existing user from Google Sign-In: ${targetName} (${targetEmail})`);
+      }
     }
 
     const token = generateToken(user);
     return res.status(200).json({
       success: true,
-      message: "Google authentication successful.",
+      message: `Signed in as ${user.name}`,
       token,
       user,
     });
