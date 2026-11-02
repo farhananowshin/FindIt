@@ -10,6 +10,8 @@
  */
 
 const path = require("path");
+const dns = require("dns");
+try { dns.setServers(["8.8.8.8", "8.8.4.4"]); } catch (_) {}
 const mongoose = require("mongoose");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 

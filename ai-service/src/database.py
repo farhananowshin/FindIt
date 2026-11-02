@@ -5,6 +5,14 @@ from bson.errors import InvalidId
 from pymongo import MongoClient
 from pymongo.database import Database
 
+# Configure Google DNS resolver for MongoDB Atlas SRV lookups on Windows
+try:
+    import dns.resolver
+    dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
+    dns.resolver.default_resolver.nameservers = ["8.8.8.8", "8.8.4.4"]
+except Exception:
+    pass
+
 from .config import MONGODB_URI, DATABASE_NAME, COLLECTION_NAME
 
 logger = logging.getLogger("findit.database")

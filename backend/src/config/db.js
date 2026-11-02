@@ -1,4 +1,12 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Optimize DNS lookup for MongoDB Atlas SRV connection on Windows
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4"]);
+} catch (dnsErr) {
+  // Ignore fallback if network adapter overrides
+}
 
 /**
  * Connect to MongoDB with sensible timeouts and retry options.
