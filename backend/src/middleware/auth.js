@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { getJwtSecret } = require("../config/security");
 
 /**
  * Middleware: Authenticates JWT token from Authorization header (Bearer <token>).
@@ -23,7 +24,17 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    const secret = process.env.JWT_SECRET || "findit_super_secret_jwt_key_2026_campus_secure";
+    let secret;
+    try {
+      secret = getJwtSecret();
+    } catch (configErr) {
+      console.error("❌ Authentication verification failed: JWT_SECRET is not configured.");
+      return res.status(500).json({
+        success: false,
+        message: "Server configuration error: Authentication service is unavailable.",
+      });
+    }
+
     let decoded;
     try {
       decoded = jwt.verify(token, secret);

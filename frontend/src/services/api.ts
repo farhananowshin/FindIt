@@ -13,6 +13,9 @@ export function resolveImageUrl(url?: string | null): string | null {
     return trimmed;
   }
   const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  if (cleanPath.startsWith("/dataset_images")) {
+    return cleanPath;
+  }
   return `${API_BASE}${cleanPath}`;
 }
 
@@ -283,6 +286,8 @@ export async function loginUser(credentials: {
 
 /**
  * Authenticate or register a user via Google Sign-In.
+ * credential = Google ID Token from GIS one-tap flow.
+ * Backend checks idToken | credential | token — we send all three so it always finds it.
  */
 export async function googleLoginUser(payload?: {
   credential?: string;
@@ -290,10 +295,19 @@ export async function googleLoginUser(payload?: {
   email?: string;
   name?: string;
 }): Promise<AuthResponse> {
+  // Map credential -> idToken so backend finds it under any field name it checks
+  const body: Record<string, string | undefined> = {
+    ...(payload || {}),
+    idToken: payload?.credential,
+    credential: payload?.credential,
+    token: payload?.credential,
+    accessToken: payload?.accessToken,
+  };
+
   const res = await fetch(`${API_BASE}/api/auth/google`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload || {}),
+    body: JSON.stringify(body),
   });
 
   const json = await res.json();
@@ -601,7 +615,130 @@ export async function submitMatchFeedback(payload: {
 /**
  * Inspect live cache telemetry and fallback mechanisms across services.
  */
-export async function getAICacheTelemetry(): Promise<any> {
+export async function getAICacheTelemetry(): Promise<Record<string, unknown>> {
   const res = await fetch(`${API_BASE}/api/items/cache-telemetry`);
   return res.json();
+}
+
+
+export interface BenchmarkSummaryResponse {
+  success: boolean;
+  datasetInfo: {
+    totalPairs: number;
+    positiveGroundTruthPairs: number;
+    candidatePoolSize: number;
+    categoriesCount: number;
+    vectorDimensions: {
+      visualOpenCLIP: number;
+      textSentenceTransformers: number;
+    };
+  };
+  weightsComparison: {
+    baseline: {
+      visual: number;
+      textual: number;
+      location: number;
+      time: number;
+      attribute: number;
+    };
+    tuned: {
+      visual: number;
+      textual: number;
+      location: number;
+      time: number;
+      attribute: number;
+    };
+    simplexEvaluationsCount: number;
+    tuningRationale: string;
+  };
+  irMetrics: {
+    mrr: number;
+    recallAt1?: number;
+    precisionAt1?: number;
+    "recall@1"?: number;
+    "precision@1"?: number;
+    "recall@3"?: number;
+    "precision@3"?: number;
+    "recall@5"?: number;
+    "precision@5"?: number;
+  };
+  thresholdSensitivity: Array<{
+    threshold: number;
+    precision: number;
+    recall: number;
+    f1_score: number;
+    tp: number;
+    fp: number;
+    tn: number;
+    fn: number;
+  }>;
+  efficiencyGuards: {
+    embeddingCaching: string;
+    batchInference: string;
+    missingModalityDegradation: string;
+  };
+  realValidationData?: any;
+}
+
+/**
+ * Fetch Academic IR Benchmark metrics, weight grid-search tuning, and threshold evaluation.
+ */
+export async function fetchBenchmarkSummary(): Promise<BenchmarkSummaryResponse> {
+  const res = await fetch(`${API_BASE}/api/items/benchmark/summary`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to load academic benchmark summary.");
+  }
+
+  return json;
+}
+
+export interface ClaimAiExplanationResponse {
+  success: boolean;
+  claimId: string;
+  matchScore: number;
+  matchScoreNormalized: number;
+  subScores: {
+    visual: number | null;
+    textual: number | null;
+    location: number | null;
+    time: number | null;
+    attribute: number | null;
+  };
+  effectiveWeights: Record<string, number>;
+  visualCues: string[];
+  textualCues: string[];
+  topKeywordsShared?: string[];
+  explanation: string;
+  humanVerificationGuidance: string;
+  fallback?: boolean;
+}
+
+/**
+ * Fetch explainable AI match output (sub-scores & top visual/textual cues) for an admin reviewing a claim.
+ */
+export async function fetchClaimAiExplanation(
+  claimId: string,
+  token: string
+): Promise<ClaimAiExplanationResponse> {
+  const res = await fetch(`${API_BASE}/api/claims/${claimId}/ai-explanation`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to generate AI explanation for this claim.");
+  }
+
+  return json;
 }

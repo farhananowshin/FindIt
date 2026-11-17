@@ -1,7 +1,15 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
 const { authenticateToken } = require("../middleware/auth");
+const {
+  getJwtSecret,
+  loginLimiter,
+  registerLimiter,
+  googleAuthLimiter,
+} = require("../config/security");
 
 const router = express.Router();
 
@@ -9,7 +17,7 @@ const router = express.Router();
  * Helper to generate signed JWT token for an authenticated user.
  */
 function generateToken(user) {
-  const secret = process.env.JWT_SECRET || "findit_super_secret_jwt_key_2026_campus_secure";
+  const secret = getJwtSecret();
   const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
   return jwt.sign(
     {
@@ -27,7 +35,7 @@ function generateToken(user) {
  * @desc    Register a new student account (public registration CANNOT create admins)
  * @access  Public
  */
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   try {
     const { name, email, password, studentId, phone, role } = req.body;
 
@@ -121,7 +129,7 @@ router.post("/register", async (req, res) => {
  * @desc    Authenticate user credentials and return signed JWT token
  * @access  Public
  */
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -172,115 +180,175 @@ router.post("/login", async (req, res) => {
 
 /**
  * @route   POST /api/auth/google
- * @desc    Authenticate or register a user via Real Google OAuth 2.0 / GIS
+ * @desc    Cryptographically verify Google ID token and issue JWT session
  * @access  Public
  */
-router.post("/google", async (req, res) => {
+router.post("/google", googleAuthLimiter, async (req, res) => {
   try {
-    const { credential, accessToken, email, name } = req.body;
-    let googleUser = null;
+    const { idToken, credential, token, accessToken, studentId, phone } = req.body;
+    const rawGoogleToken = idToken || credential || token;
+    const rawAccessToken = accessToken;
 
-    // 1. Verify Google ID token (Credential) if provided via Google Identity Services
-    if (credential) {
-      try {
-        const verifyRes = await fetch(
-          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
-        );
-        if (verifyRes.ok) {
-          googleUser = await verifyRes.json();
-          // Verify audience if GOOGLE_CLIENT_ID is configured
-          const configuredClientId = process.env.GOOGLE_CLIENT_ID;
-          if (configuredClientId && googleUser.aud && googleUser.aud !== configuredClientId) {
-            console.warn("⚠️ Token audience mismatch, continuing with verified Google identity.");
-          }
-        }
-      } catch (err) {
-        console.warn("Could not verify id_token with Google TokenInfo:", err);
-      }
-    }
-
-    // 2. Fetch UserInfo using Access Token if provided
-    if (!googleUser && accessToken) {
-      try {
-        const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-          headers: { Authorization: `Bearer ${accessToken}` },
+    // Development/Localhost Demo Mode: allow instant one-click login for demo citizen
+    if (
+      (!rawGoogleToken && !rawAccessToken || rawGoogleToken === "mock-dev-token") &&
+      process.env.NODE_ENV === "development" &&
+      req.body.email === "citizen.google@sylhet.net"
+    ) {
+      let devUser = await User.findOne({ email: "citizen.google@sylhet.net" });
+      if (!devUser) {
+        devUser = await User.create({
+          name: req.body.name || "Google Verified Citizen (Sylhet)",
+          email: "citizen.google@sylhet.net",
+          password: "DevPassword2026!",
+          role: "student",
+          studentId: "SYLHET-DEMO-001",
         });
-        if (userRes.ok) {
-          googleUser = await userRes.json();
-        }
-      } catch (err) {
-        console.warn("Could not fetch userinfo with accessToken:", err);
       }
+      const jwtSecret = getJwtSecret();
+      const sessionToken = jwt.sign(
+        { id: devUser._id.toString(), email: devUser.email, role: devUser.role },
+        jwtSecret,
+        { expiresIn: "7d" }
+      );
+      const userObj = devUser.toObject();
+      delete userObj.password;
+      return res.status(200).json({
+        success: true,
+        message: "Signed in with Google (Development Demo Mode).",
+        token: sessionToken,
+        user: userObj,
+      });
     }
 
-    // 3. Extract real user data from Google
-    let targetEmail, targetName, targetAvatar, googleSubId;
+    // 1. Mandatory Google credential check (accepts either ID token or Access token)
+    const hasValidIdToken = rawGoogleToken && typeof rawGoogleToken === "string" && rawGoogleToken.trim();
+    const hasValidAccessToken = rawAccessToken && typeof rawAccessToken === "string" && rawAccessToken.trim();
 
-    if (googleUser && googleUser.email) {
-      targetEmail = googleUser.email.trim().toLowerCase();
-      targetName = (googleUser.name || googleUser.given_name || "Google Citizen").trim();
-      targetAvatar = googleUser.picture || "";
-      googleSubId = googleUser.sub || "";
-    } else if (email) {
-      // Development or test fallback
-      targetEmail = email.trim().toLowerCase();
-      targetName = (name || "Google Verified Citizen (Sylhet)").trim();
-      targetAvatar = "";
-      googleSubId = "";
-    } else {
+    if (!hasValidIdToken && !hasValidAccessToken) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Google credentials. Could not authenticate with Google.",
+        message: "Google ID token or access token is required. Please provide a valid Google credential.",
       });
     }
 
-    // 4. Find existing user by email or Google ID
-    const query = [{ email: targetEmail }];
-    if (googleSubId) {
-      query.push({ googleId: googleSubId });
+    // 2. Server configuration check
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!googleClientId || !googleClientId.trim()) {
+      return res.status(503).json({
+        success: false,
+        message:
+          "Google Sign-In is not configured on this server. GOOGLE_CLIENT_ID environment variable is missing.",
+      });
     }
-    let user = await User.findOne({ $or: query });
 
-    if (!user) {
-      // Create new user account populated with real Google profile
-      const randomPassword = Math.random().toString(36).slice(-10) + "Aa1@!9#";
+    let verifiedEmail = "";
+    let verifiedName = "Google User";
+
+    const client = new OAuth2Client(googleClientId.trim());
+
+    if (hasValidIdToken) {
+      // 3a. Cryptographic token verification via Google's official library
+      let ticket;
+      try {
+        ticket = await client.verifyIdToken({
+          idToken: rawGoogleToken.trim(),
+          audience: googleClientId.trim(),
+        });
+      } catch (verifyErr) {
+        return res.status(401).json({
+          success: false,
+          message: `Google token verification failed: ${verifyErr.message}`,
+        });
+      }
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid Google token payload.",
+        });
+      }
+
+      // Validate issuer (accounts.google.com or https://accounts.google.com)
+      if (payload.iss !== "accounts.google.com" && payload.iss !== "https://accounts.google.com") {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid token issuer. Expected accounts.google.com.",
+        });
+      }
+
+      // Validate email_verified status
+      if (!payload.email_verified) {
+        return res.status(401).json({
+          success: false,
+          message: "Google email address is not verified by Google.",
+        });
+      }
+
+      verifiedEmail = (payload.email || "").trim().toLowerCase();
+      verifiedName = (payload.name || payload.given_name || "Google User").trim();
+    } else if (hasValidAccessToken) {
+      // 3b. Verify Google Access Token via tokeninfo endpoint
+      let tokenInfo;
+      try {
+        tokenInfo = await client.getTokenInfo(rawAccessToken.trim());
+      } catch (err) {
+        return res.status(401).json({
+          success: false,
+          message: `Google access token verification failed: ${err.message}`,
+        });
+      }
+
+      if (!tokenInfo || (!tokenInfo.email_verified && tokenInfo.email_verified !== "true")) {
+        return res.status(401).json({
+          success: false,
+          message: "Google email address is not verified by Google.",
+        });
+      }
+
+      verifiedEmail = (tokenInfo.email || "").trim().toLowerCase();
+      verifiedName = (req.body.name || verifiedEmail.split("@")[0] || "Google User").trim();
+    }
+
+    if (!verifiedEmail) {
+      return res.status(401).json({
+        success: false,
+        message: "Google token did not contain a valid email address.",
+      });
+    }
+
+    // 6. Prevent Privilege Escalation & Account Takeover
+    let user = await User.findOne({ email: verifiedEmail });
+    if (user) {
+      // Strictly prevent administrator accounts from being accessed via Google OAuth bypass
+      if (user.role === "admin") {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Forbidden: Administrator accounts cannot be accessed via Google Sign-In. Please use standard password authentication.",
+        });
+      }
+    } else {
+      // 7. Create new student user from verified Google identity
+      const randomPassword = crypto.randomBytes(32).toString("hex") + "Aa1!";
       user = new User({
-        name: targetName,
-        email: targetEmail,
+        name: verifiedName,
+        email: verifiedEmail,
         password: randomPassword,
-        avatar: targetAvatar,
-        googleId: googleSubId,
-        studentId: "",
-        role: "student",
+        studentId: (studentId || "").trim(),
+        phone: (phone || "").trim(),
+        role: "student", // Always force student role
       });
       await user.save();
-      console.log(`✅ Registered new citizen via Google Sign-In: ${targetName} (${targetEmail})`);
-    } else {
-      // Update existing user with real Google profile details
-      let modified = false;
-      if (targetAvatar && user.avatar !== targetAvatar) {
-        user.avatar = targetAvatar;
-        modified = true;
-      }
-      if (googleSubId && user.googleId !== googleSubId) {
-        user.googleId = googleSubId;
-        modified = true;
-      }
-      if (targetName && user.name !== targetName && !user.name.includes("Campus Security")) {
-        user.name = targetName;
-        modified = true;
-      }
-      if (modified) {
-        await user.save();
-        console.log(`🔄 Updated existing user from Google Sign-In: ${targetName} (${targetEmail})`);
-      }
     }
 
-    const token = generateToken(user);
+    // 8. Issue signed custom JWT token
+    const jwtToken = generateToken(user);
     return res.status(200).json({
       success: true,
-      message: `Signed in as ${user.name}`,
-      token,
+      message: "Google authentication successful.",
+      token: jwtToken,
       user,
     });
   } catch (error) {

@@ -43,38 +43,45 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
   const [statusMessage, setStatusMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // Telemetry state
-  const [telemetry, setTelemetry] = useState<any>(null);
+  const [telemetry, setTelemetry] = useState<{
+    aiServiceCache?: {
+      imageCacheEntries?: number | string;
+      textCacheEntries?: number | string;
+    };
+    [key: string]: unknown;
+  } | null>(null);
+
+  const refreshTelemetry = () => {
+    getAICacheTelemetry().then((data) => setTelemetry(data)).catch(() => {});
+  };
 
   useEffect(() => {
+    let ignore = false;
     if (isOpen) {
-      loadCurrentWeights();
-      loadTelemetry();
+      getAIWeights()
+        .then((data) => {
+          if (!ignore && data?.currentWeights) {
+            setVisualWeight(Math.round((data.currentWeights.visual ?? 0.4) * 100));
+            setTextualWeight(Math.round((data.currentWeights.textual ?? 0.25) * 100));
+            setLocationWeight(Math.round((data.currentWeights.location ?? 0.15) * 100));
+            setTimeWeight(Math.round((data.currentWeights.time ?? 0.1) * 100));
+            setAttributeWeight(Math.round((data.currentWeights.attribute ?? 0.1) * 100));
+          }
+        })
+        .catch(() => {});
+
+      getAICacheTelemetry()
+        .then((data) => {
+          if (!ignore) {
+            setTelemetry(data);
+          }
+        })
+        .catch(() => {});
     }
+    return () => {
+      ignore = true;
+    };
   }, [isOpen]);
-
-  const loadCurrentWeights = async () => {
-    try {
-      const data = await getAIWeights();
-      if (data.currentWeights) {
-        setVisualWeight(Math.round((data.currentWeights.visual ?? 0.4) * 100));
-        setTextualWeight(Math.round((data.currentWeights.textual ?? 0.25) * 100));
-        setLocationWeight(Math.round((data.currentWeights.location ?? 0.15) * 100));
-        setTimeWeight(Math.round((data.currentWeights.time ?? 0.1) * 100));
-        setAttributeWeight(Math.round((data.currentWeights.attribute ?? 0.1) * 100));
-      }
-    } catch (e) {
-      // Graceful fallback to initial
-    }
-  };
-
-  const loadTelemetry = async () => {
-    try {
-      const data = await getAICacheTelemetry();
-      setTelemetry(data);
-    } catch (e) {
-      // Ignored
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -98,9 +105,10 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
         attribute: attributeWeight / 100,
       });
       setStatusMessage({ text: "Multimodal AI weights successfully tuned in real-time!", type: "success" });
-      loadTelemetry();
-    } catch (err: any) {
-      setStatusMessage({ text: err.message || "Failed to update weights.", type: "error" });
+      refreshTelemetry();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to update weights.";
+      setStatusMessage({ text: msg, type: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +125,10 @@ export default function WeightsModal({ isOpen, onClose }: WeightsModalProps) {
       setTimeWeight(10);
       setAttributeWeight(10);
       setStatusMessage({ text: "Weights restored to academic default baseline (40/25/15/10/10).", type: "success" });
-      loadTelemetry();
-    } catch (err: any) {
-      setStatusMessage({ text: err.message || "Failed to reset weights.", type: "error" });
+      refreshTelemetry();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to reset weights.";
+      setStatusMessage({ text: msg, type: "error" });
     } finally {
       setIsLoading(false);
     }

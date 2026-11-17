@@ -16,6 +16,8 @@ import {
   HelpCircle,
   MapPin,
   ShieldCheck,
+  BarChart3,
+  LayoutGrid,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
@@ -26,11 +28,13 @@ interface NavbarProps {
   onOpenHowItWorks?: () => void;
   onNavigateSection?: (sectionId: string) => void;
   onOpenAuth?: (tab: "login" | "register") => void;
+  onOpenSearch?: () => void;
 }
 
 export default function Navbar({
   onNavigateSection,
   onOpenAuth,
+  onOpenSearch,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -83,22 +87,24 @@ export default function Navbar({
               }`}
             >
               <span className="relative z-10 flex items-center gap-1.5">
-                <Search className="w-3.5 h-3.5 text-[#45B58A]" />
+                <LayoutGrid className="w-3.5 h-3.5 text-[#45B58A]" />
                 Explore Items
               </span>
               <span className="absolute inset-0 rounded-xl bg-[#252B27] border border-[#383E39] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
             </Link>
 
-            <button
-              onClick={() => scrollTo("how-it-works")}
-              className="relative group px-3.5 py-1.5 text-xs font-semibold text-[#C4CBC5] hover:text-[#F3F4EF] rounded-xl transition-all cursor-pointer active:scale-95"
-            >
-              <span className="relative z-10 flex items-center gap-1.5">
-                <HelpCircle className="w-3.5 h-3.5 text-[#A2ABA4]" />
-                How It Works
-              </span>
-              <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
-            </button>
+            {user?.role !== "admin" && (
+              <button
+                onClick={() => scrollTo("how-it-works")}
+                className="relative group px-3.5 py-1.5 text-xs font-semibold text-[#C4CBC5] hover:text-[#F3F4EF] rounded-xl transition-all cursor-pointer active:scale-95"
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <HelpCircle className="w-3.5 h-3.5 text-[#A2ABA4]" />
+                  How It Works
+                </span>
+                <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
+              </button>
+            )}
 
             <Link
               href="/map"
@@ -115,8 +121,25 @@ export default function Navbar({
               <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
             </Link>
 
-            {/* Student & Admin Protected Nav Links */}
-            {user && (
+            {user?.role !== "admin" && (
+              <Link
+                href="/benchmark"
+                className={`relative group px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                  pathname === "/benchmark"
+                    ? "text-[#45B58A] bg-[#1C221E] border border-[#45B58A]/40 shadow-xs"
+                    : "text-[#C4CBC5] hover:text-[#F3F4EF]"
+                }`}
+              >
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5 text-[#45B58A]" />
+                  <span>Benchmark</span>
+                </span>
+                <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
+              </Link>
+            )}
+
+            {/* Citizen Protected Nav Links */}
+            {user && user.role !== "admin" && (
               <Link
                 href="/my-claims"
                 className="relative group px-3.5 py-1.5 text-xs font-medium text-[#C4CBC5] hover:text-[#F3F4EF] rounded-xl transition-all"
@@ -142,6 +165,17 @@ export default function Navbar({
 
           {/* Right Status Indicator & Auth Actions */}
           <div className="hidden sm:flex items-center gap-2.5 lg:gap-3">
+            {/* Minimalist Search Icon (Like MOZ header) */}
+            <button
+              type="button"
+              onClick={onOpenSearch}
+              className="p-2 text-[#C4CBC5] hover:text-[#45B58A] hover:bg-[#1C221E] rounded-xl transition cursor-pointer flex items-center justify-center group"
+              title="Search items (Ctrl + K)"
+              aria-label="Search"
+            >
+              <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px] group-hover:scale-110 transition-transform" />
+            </button>
+
             {user ? (
               <div className="flex items-center gap-2">
                 {/* In-App Notification Bell */}
@@ -158,7 +192,7 @@ export default function Navbar({
                   ) : (
                     <UserIcon className="w-3.5 h-3.5 text-[#45B58A]" />
                   )}
-                  <span className="max-w-[120px] truncate">{user.name}</span>
+                  <span className="max-w-[170px] truncate font-medium">{user.name}</span>
                   <span
                     className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${
                       user.role === "admin"
@@ -196,8 +230,15 @@ export default function Navbar({
             )}
           </div>
 
-          {/* Mobile menu button & notification */}
-          <div className="flex items-center gap-2 md:hidden">
+          {/* Mobile menu button & search */}
+          <div className="flex items-center gap-1.5 md:hidden">
+            <button
+              onClick={onOpenSearch}
+              className="p-2 rounded-xl text-[#C4CBC5] hover:text-[#45B58A] hover:bg-[#1C221E] transition cursor-pointer"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
             {user && <NotificationBell />}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -219,17 +260,19 @@ export default function Navbar({
               onClick={() => setMobileMenuOpen(false)}
               className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
             >
-              <Search className="w-4 h-4 text-[#45B58A]" />
+              <LayoutGrid className="w-4 h-4 text-[#45B58A]" />
               Explore Items
             </Link>
 
-            <button
-              onClick={() => scrollTo("how-it-works")}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
-            >
-              <HelpCircle className="w-4 h-4 text-[#A9B0AA]" />
-              How It Works
-            </button>
+            {user?.role !== "admin" && (
+              <button
+                onClick={() => scrollTo("how-it-works")}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#A9B0AA] hover:text-[#F3F4EF] hover:bg-[#252B27] rounded-xl text-left transition"
+              >
+                <HelpCircle className="w-4 h-4 text-[#A9B0AA]" />
+                How It Works
+              </button>
+            )}
 
             <Link
               href="/map"
@@ -240,7 +283,18 @@ export default function Navbar({
               Map
             </Link>
 
-            {user && (
+            {user?.role !== "admin" && (
+              <Link
+                href="/benchmark"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#45B58A] hover:bg-[#45B58A]/10 rounded-xl text-left transition"
+              >
+                <BarChart3 className="w-4 h-4 text-[#45B58A]" />
+                AI Benchmark (350 Dataset)
+              </Link>
+            )}
+
+            {user && user.role !== "admin" && (
               <Link
                 href="/my-claims"
                 onClick={() => setMobileMenuOpen(false)}

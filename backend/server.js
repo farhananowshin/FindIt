@@ -10,6 +10,7 @@ const itemRoutes = require("./src/routes/itemRoutes");
 const authRoutes = require("./src/routes/authRoutes");
 const claimRoutes = require("./src/routes/claimRoutes");
 const notificationRoutes = require("./src/routes/notificationRoutes");
+const matchRoutes = require("./src/routes/matchRoutes");
 
 // Initialize Express application
 const app = express();
@@ -44,6 +45,17 @@ app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
 
 // Safely serve uploaded item images
+// Safely serve dataset images
+const datasetImagesPath = path.resolve(__dirname, "../frontend/public/dataset_images");
+app.use(
+  "/dataset_images",
+  express.static(datasetImagesPath, {
+    dotfiles: "deny",
+    index: false,
+    maxAge: "1d",
+  })
+);
+
 const uploadsPath = path.resolve(__dirname, "uploads");
 app.use(
   "/uploads",
@@ -85,6 +97,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/claims", claimRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/match", matchRoutes);
 
 // 404 Handler for undefined routes
 app.use((req, res, next) => {
@@ -103,21 +116,28 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Express server
-const server = app.listen(PORT, () => {
-  console.log(`🚀 [FindIt Server] Backend running on http://localhost:${PORT}`);
-  console.log(`📡 [FindIt Health] Healthcheck endpoint: http://localhost:${PORT}/api/health`);
-  console.log(`📁 [FindIt Uploads] Uploads directory: ${uploadsPath}`);
-});
+// Start Express server only if executed directly (allows test suites to import app)
+let server = null;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`🚀 [FindIt Server] Backend running on http://localhost:${PORT}`);
+    console.log(`📡 [FindIt Health] Healthcheck endpoint: http://localhost:${PORT}/api/health`);
+    console.log(`📁 [FindIt Uploads] Uploads directory: ${uploadsPath}`);
+  });
+}
 
 // Graceful shutdown handling
 process.on("SIGINT", async () => {
   console.log("\n🛑 Gracefully shutting down FindIt backend...");
   await mongoose.connection.close();
-  server.close(() => {
-    console.log("👋 Backend server closed.");
+  if (server) {
+    server.close(() => {
+      console.log("👋 Backend server closed.");
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
 });
 
 module.exports = app;

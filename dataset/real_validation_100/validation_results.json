@@ -1,0 +1,119 @@
+{
+  "dataset_name": "FindIt Real-World Validation Dataset",
+  "description": "100 candidate cross-matching pairs generated from 10 distinct Lost and 10 Found items with real camera photos",
+  "total_pairs": 100,
+  "positive_pairs": 10,
+  "negative_pairs": 90,
+  "ranking_metrics": {
+    "top1_accuracy": 100.0,
+    "top3_accuracy": 100.0,
+    "top5_accuracy": 100.0,
+    "mrr": 1.0
+  },
+  "classification_metrics": {
+    "decision_threshold": 65.0,
+    "precision": 100.0,
+    "recall": 100.0,
+    "f1_score": 100.0,
+    "confusion_matrix": {
+      "tp": 10,
+      "fp": 0,
+      "tn": 90,
+      "fn": 0
+    }
+  },
+  "score_distribution": {
+    "mean_positive_score": 84.41,
+    "mean_negative_score": 41.89,
+    "separation_margin": 42.52
+  },
+  "weights_used": {
+    "visual": 0.4,
+    "textual": 0.25,
+    "location": 0.15,
+    "time": 0.1,
+    "attribute": 0.1
+  },
+  "sample_top_pairs": [
+    {
+      "lost_id": "L001",
+      "lost_title": "Black Smartphone",
+      "found_id": "F001",
+      "found_title": "Found Black Smartphone",
+      "is_ground_truth": true,
+      "category": "Electronics",
+      "sub_scores": {
+        "visual": 91.0,
+        "textual": 51.0,
+        "location": 97.0,
+        "time": 95.6,
+        "attribute": 100.0
+      },
+      "combined_score": 83.2
+    },
+    {
+      "lost_id": "L002",
+      "lost_title": "Blue Water Bottle",
+      "found_id": "F002",
+      "found_title": "Found Blue Water Bottle",
+      "is_ground_truth": true,
+      "category": "Accessories",
+      "sub_scores": {
+        "visual": 89.4,
+        "textual": 64.1,
+        "location": 97.0,
+        "time": 95.6,
+        "attribute": 90.0
+      },
+      "combined_score": 84.9
+    },
+    {
+      "lost_id": "L003",
+      "lost_title": "Gray Backpack",
+      "found_id": "F003",
+      "found_title": "Found Gray Backpack",
+      "is_ground_truth": true,
+      "category": "Bags",
+      "sub_scores": {
+        "visual": 91.1,
+        "textual": 45.0,
+        "location": 97.0,
+        "time": 95.6,
+        "attribute": 90.0
+      },
+      "combined_score": 80.8
+    },
+    {
+      "lost_id": "L004",
+      "lost_title": "Brown Leather Wallet",
+      "found_id": "F004",
+      "found_title": "Found Brown Leather Wallet",
+      "is_ground_truth": true,
+      "category": "Accessories",
+      "sub_scores": {
+        "visual": 86.6,
+        "textual": 64.1,
+        "location": 97.0,
+        "time": 95.6,
+        "attribute": 90.0
+      },
+      "combined_score": 83.8
+    },
+    {
+      "lost_id": "L005",
+      "lost_title": "Wireless Earbuds",
+      "found_id": "F005",
+      "found_title": "Found Wireless Earbuds",
+      "is_ground_truth": true,
+      "category": "Electronics",
+      "sub_scores": {
+        "visual": 87.8,
+        "textual": 64.1,
+        "location": 97.0,
+        "time": 95.6,
+        "attribute": 100.0
+      },
+      "combined_score": 85.3
+    }
+  ]
+}

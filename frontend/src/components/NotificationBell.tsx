@@ -165,13 +165,8 @@ export default function NotificationBell() {
 
   const formatRelativeTime = (dateStr: string) => {
     try {
-      const now = new Date();
       const date = new Date(dateStr);
-      const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-      if (diffSec < 60) return "Just now";
-      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
-      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+      if (isNaN(date.getTime())) return "";
       return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     } catch {
       return "";

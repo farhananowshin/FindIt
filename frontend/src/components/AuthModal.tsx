@@ -46,8 +46,12 @@ declare global {
           initialize: (config: {
             client_id: string;
             callback: (response: { credential?: string }) => void;
+            auto_select?: boolean;
+            cancel_on_tap_outside?: boolean;
           }) => void;
-          prompt: () => void;
+          prompt: (momentListener?: (notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean; isDismissedMoment: () => boolean; getDismissedReason: () => string; }) => void) => void;
+          renderButton: (parent: HTMLElement, options: object) => void;
+          disableAutoSelect: () => void;
         };
       };
     };
@@ -81,6 +85,9 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
 
   // Canvas ref for dynamic neural constellation background
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Hidden div ref for GIS renderButton fallback
+  const googleBtnDivRef = useRef<HTMLDivElement | null>(null);
+  const googleInitializedRef = useRef(false);
 
   // Sync tab & errors when modal opens
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -196,23 +203,28 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
     setTab(newTab);
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     resetForm();
-    setIsGoogleLoading(true);
 
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!googleClientId) {
       setError("Google OAuth Client ID is not configured in your environment.");
-      setIsGoogleLoading(false);
       return;
     }
 
-    // 1. If Google Identity Services library is ready, open official Google Account Chooser popup
-    if (window.google?.accounts?.oauth2) {
+    if (!window.google?.accounts) {
+      setError("Google Sign-In library is loading. Please try again in a moment.");
+      return;
+    }
+
+    setIsGoogleLoading(true);
+
+    // 1. Primary Method: Google OAuth2 popup client (instant account chooser popup)
+    if (window.google.accounts.oauth2) {
       try {
         const tokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: googleClientId,
-          scope: "email profile openid",
+          scope: "openid email profile",
           callback: async (tokenResponse) => {
             if (tokenResponse.error) {
               setIsGoogleLoading(false);
@@ -236,6 +248,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               } finally {
                 setIsGoogleLoading(false);
               }
+            } else {
+              setIsGoogleLoading(false);
             }
           },
         });
@@ -243,27 +257,49 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
         tokenClient.requestAccessToken({ prompt: "select_account" });
         return;
       } catch (err) {
-        console.error("Google token client invocation error:", err);
+        console.error("Error launching Google OAuth2 token client:", err);
       }
     }
 
-    // 2. Direct fallback if GIS script is still loading or in offline development
-    try {
-      await googleLogin({
-        email: "citizen.google@sylhet.net",
-        name: "Google Verified Citizen (Sylhet)",
+    // 2. Secondary Method: Google One-Tap / ID Token flow
+    if (window.google.accounts.id) {
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response) => {
+          if (!response.credential) {
+            setError("Google sign-in failed. Please try again.");
+            setIsGoogleLoading(false);
+            return;
+          }
+          try {
+            await googleLogin({ credential: response.credential });
+            setSuccessMsg("Signed in with Google successfully!");
+            setTimeout(() => {
+              onClose();
+              resetForm();
+            }, 600);
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Failed to authenticate with Google.";
+            setError(message);
+          } finally {
+            setIsGoogleLoading(false);
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true,
       });
-      setSuccessMsg("Signed in with Google successfully!");
-      setTimeout(() => {
-        onClose();
-        resetForm();
-      }, 600);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to sign in with Google.";
-      setError(message);
-    } finally {
-      setIsGoogleLoading(false);
+
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          setIsGoogleLoading(false);
+          setError("Google Sign-In popup was blocked. Please allow popups or disable ad blockers.");
+        }
+      });
+      return;
     }
+
+    setIsGoogleLoading(false);
+    setError("Google Sign-In is unavailable. Please try again or use email sign in.");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -437,6 +473,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                   or continue with email
                 </span>
               </div>
+              {/* Hidden GIS renderButton fallback container */}
+              <div ref={googleBtnDivRef} className="hidden" />
             </div>
 
             {/* Sign In Form */}
@@ -522,7 +560,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                 type="button"
                 onClick={() => {
                   setEmail("admin@campus.edu");
-                  setPassword("admin123");
+                  setPassword("AdminSecure2026!");
                 }}
                 className="py-2 px-2 rounded-xl border border-[#383E39] bg-[#171A18] hover:bg-[#383E39] text-[11px] font-bold text-[#F3F4EF] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >

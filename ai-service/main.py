@@ -88,6 +88,9 @@ class MatchRequest(BaseModel):
     topK: Optional[int] = Field(DEFAULT_TOP_K, ge=1, le=MAX_TOP_K, description="Number of top matches to return")
     weights: Optional[Dict[str, float]] = Field(None, description="Custom 5-factor weights (visual, textual, location, time, attribute)")
 
+class ItemEmbedRequest(BaseModel):
+    itemId: str = Field(..., description="MongoDB ObjectId of the item report to embed and cache")
+
 @app.get("/health")
 def health_check():
     """
@@ -162,6 +165,45 @@ def batch_embed_reports(request: BatchEmbedRequest):
         "success": True,
         "processedCount": len(results),
         "results": results,
+    }
+
+@app.post("/api/embed-item")
+def embed_single_item(request: ItemEmbedRequest):
+    """
+    Eager Embedding: Given an itemId, retrieves the item from MongoDB,
+    generates its OpenCLIP (512-dim) and S-BERT (384-dim) vectors,
+    persists them back to MongoDB, and returns vector telemetry.
+    """
+    item_id = request.itemId.strip()
+    item = find_item_by_id(item_id)
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Item with ID '{item_id}' not found in MongoDB.",
+        )
+
+    image_source = None
+    if item.get("imagePaths") and len(item["imagePaths"]) > 0:
+        image_source = item["imagePaths"][0]
+    elif item.get("imageUrls") and len(item["imageUrls"]) > 0:
+        image_source = item["imageUrls"][0]
+
+    img_emb = None
+    if image_source:
+        img_emb = generate_image_embedding(image_source)
+
+    txt_emb = generate_text_embedding(item)
+
+    updated = update_item_embeddings(item_id, img_emb, txt_emb)
+
+    return {
+        "success": True,
+        "itemId": item_id,
+        "updatedInDb": updated,
+        "hasImageEmbedding": img_emb is not None,
+        "imageDimensions": len(img_emb) if img_emb is not None else 0,
+        "hasTextEmbedding": txt_emb is not None,
+        "textDimensions": len(txt_emb) if txt_emb is not None else 0,
     }
 
 @app.post("/api/match")

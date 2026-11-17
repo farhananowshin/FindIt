@@ -31,14 +31,20 @@ import { useAuth } from "../context/AuthContext";
 
 interface ItemUploadFormProps {
   onReportCreated?: (report: StoredItemReport) => void;
+  onFindMatches?: (report: StoredItemReport) => void;
   onRequireAuth?: () => void;
   initialType?: ReportType;
+  onBackToFeed?: () => void;
+  onTypeChange?: (type: ReportType) => void;
 }
 
 export default function ItemUploadForm({
   onReportCreated,
+  onFindMatches,
   onRequireAuth,
   initialType = "lost",
+  onBackToFeed,
+  onTypeChange,
 }: ItemUploadFormProps) {
   const { user, token } = useAuth();
   // Form State
@@ -409,6 +415,17 @@ export default function ItemUploadForm({
 
               {/* Action buttons */}
               <div className="mt-6 flex flex-wrap items-center gap-3">
+                {submittedReport.reportType === "lost" && onFindMatches && (
+                  <button
+                    type="button"
+                    onClick={() => onFindMatches(submittedReport)}
+                    className="px-5 py-2.5 rounded-xl font-medium text-sm text-[#171A18] bg-[#45B58A] hover:bg-[#3ca37c] font-bold shadow-md transition inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#171A18]" />
+                    <span>Run Instant AI Match</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={resetForm}
@@ -431,8 +448,19 @@ export default function ItemUploadForm({
 
       {/* Main Upload Form Container */}
       <div className="bg-[#252B27] rounded-3xl shadow-2xl border border-[#383E39] overflow-hidden text-[#F3F4EF]">
-        {/* Banner with Lost vs Found Toggle */}
+        {/* Banner with Back Navigation & Lost vs Found Toggle */}
         <div className="p-6 sm:p-8 bg-[#1E2320] border-b border-[#383E39] text-[#F3F4EF]">
+          {onBackToFeed && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={onBackToFeed}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#A9B0AA] hover:text-[#45B58A] transition cursor-pointer"
+              >
+                <span>&larr; Back to Items Feed</span>
+              </button>
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#171A18] text-[#45B58A] border border-[#383E39]">
@@ -453,8 +481,11 @@ export default function ItemUploadForm({
             <div className="bg-[#171A18] p-1.5 rounded-2xl flex items-center border border-[#383E39] self-start sm:self-center">
               <button
                 type="button"
-                onClick={() => setReportType("lost")}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                onClick={() => {
+                  setReportType("lost");
+                  onTypeChange?.("lost");
+                }}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   isLost
                     ? "bg-[#252B27] text-[#F3F4EF] border border-[#383E39] shadow-sm"
                     : "text-[#A9B0AA] hover:text-[#F3F4EF]"
@@ -464,8 +495,11 @@ export default function ItemUploadForm({
               </button>
               <button
                 type="button"
-                onClick={() => setReportType("found")}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                onClick={() => {
+                  setReportType("found");
+                  onTypeChange?.("found");
+                }}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   !isLost
                     ? "bg-[#45B58A] text-[#171A18] shadow-sm font-bold"
                     : "text-[#A9B0AA] hover:text-[#F3F4EF]"
