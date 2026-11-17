@@ -742,3 +742,59 @@ export async function fetchClaimAiExplanation(
 
   return json;
 }
+
+
+export interface ChatMessageItem {
+  _id: string;
+  claimId: string;
+  itemId?: string;
+  senderRole: "claimant" | "finder" | "admin";
+  senderAlias: string;
+  message: string;
+  createdAt: string;
+}
+
+/**
+ * Fetch anonymous mediation chat messages for an ownership claim.
+ */
+export async function fetchClaimMessages(
+  claimId: string,
+  token: string
+): Promise<ChatMessageItem[]> {
+  const res = await fetch(`${API_BASE}/api/claims/${claimId}/messages`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to load messages.");
+  }
+  return json.data || [];
+}
+
+/**
+ * Send an anonymous handover coordination message.
+ */
+export async function sendClaimMessage(
+  claimId: string,
+  message: string,
+  token: string
+): Promise<ChatMessageItem> {
+  const res = await fetch(`${API_BASE}/api/claims/${claimId}/messages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ message }),
+  });
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || "Failed to send message.");
+  }
+  return json.data;
+}

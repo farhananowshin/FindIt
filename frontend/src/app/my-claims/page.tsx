@@ -215,7 +215,7 @@ export default function MyClaimsPage() {
         ) : (
           /* Claims List */
           <div className="space-y-6">
-            {claims.map((claim) => {
+            {claims.map((claim, index) => {
               const claimId = claim._id || (claim as unknown as { id: string }).id;
               const item =
                 typeof claim.itemId === "object" && claim.itemId
@@ -224,7 +224,7 @@ export default function MyClaimsPage() {
               return (
                 <div
                   key={claimId}
-                  className="bg-[#252B27] rounded-3xl border border-[#383E39] shadow-xl overflow-hidden transition hover:border-[#45B58A]/50 text-[#F3F4EF]"
+                  style={{ animationDelay: `${(index % 6) * 60}ms` }} className="animate-linear-up linear-card-interactive rounded-3xl overflow-hidden text-[#F3F4EF]"
                 >
                   {/* Claim Status Header Bar */}
                   <div

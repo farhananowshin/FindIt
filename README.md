@@ -8,7 +8,7 @@ FindIt is an intelligent, privacy-first, explainable lost-and-found matching pla
 
 ```
   ┌───────────────────────┐
-  │ Next.js 14 Frontend   │ (TypeScript, Tailwind, Linear/Vercel Dark UI, Leaflet Maps)
+  │ Next.js 16 Frontend   │ (TypeScript, Tailwind, Linear/Vercel Dark UI, Leaflet Maps)
   └──────────┬────────────┘
              │ multipart/form-data (Images, GPS/Zone, Metadata)
              ▼

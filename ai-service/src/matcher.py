@@ -6,6 +6,7 @@ import numpy as np
 
 from .config import INITIAL_WEIGHTS, TIME_DECAY_LAMBDA
 from .embeddings import generate_image_embedding, generate_text_embedding
+from .nlp_enhancer import normalize_attribute_term, resolve_sylhet_location
 
 logger = logging.getLogger("findit.matcher")
 
@@ -39,11 +40,18 @@ def compute_location_similarity(loc_a: Optional[Dict[str, Any]], loc_b: Optional
     if not loc_a or not loc_b:
         return None
 
-    zone_a = (loc_a.get("campusZone") or "").strip().lower()
-    zone_b = (loc_b.get("campusZone") or "").strip().lower()
+    raw_zone_a = (loc_a.get("campusZone") or "").strip()
+    raw_zone_b = (loc_b.get("campusZone") or "").strip()
 
     spec_a = (loc_a.get("specificLocation") or "").strip().lower()
     spec_b = (loc_b.get("specificLocation") or "").strip().lower()
+
+    # Resolve Sylhet multilingual location names (e.g. আম্বরখানা / Zindabazar)
+    syl_zone_a, _ = resolve_sylhet_location(raw_zone_a or spec_a)
+    syl_zone_b, _ = resolve_sylhet_location(raw_zone_b or spec_b)
+
+    zone_a = syl_zone_a or raw_zone_a.lower()
+    zone_b = syl_zone_b or raw_zone_b.lower()
 
     if not zone_a and not zone_b and not spec_a and not spec_b:
         return None
@@ -131,17 +139,18 @@ def compute_attribute_similarity(item_a: Dict[str, Any], item_b: Dict[str, Any])
     - Brand: 25%
     - Color: 25% (15% primary, 10% secondary)
     """
-    cat_a = (item_a.get("category") or "").strip().lower()
-    cat_b = (item_b.get("category") or "").strip().lower()
+    # Multilingual attribute normalization (Bangla, Banglish, English)
+    cat_a = normalize_attribute_term(item_a.get("category"))
+    cat_b = normalize_attribute_term(item_b.get("category"))
 
-    brand_a = (item_a.get("brand") or "").strip().lower()
-    brand_b = (item_b.get("brand") or "").strip().lower()
+    brand_a = normalize_attribute_term(item_a.get("brand"))
+    brand_b = normalize_attribute_term(item_b.get("brand"))
 
-    color1_a = (item_a.get("primaryColor") or "").strip().lower()
-    color1_b = (item_b.get("primaryColor") or "").strip().lower()
+    color1_a = normalize_attribute_term(item_a.get("primaryColor"))
+    color1_b = normalize_attribute_term(item_b.get("primaryColor"))
 
-    color2_a = (item_a.get("secondaryColor") or "").strip().lower()
-    color2_b = (item_b.get("secondaryColor") or "").strip().lower()
+    color2_a = normalize_attribute_term(item_a.get("secondaryColor"))
+    color2_b = normalize_attribute_term(item_b.get("secondaryColor"))
 
     score = 0.0
 

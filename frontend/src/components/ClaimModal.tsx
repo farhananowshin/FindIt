@@ -87,7 +87,7 @@ export default function ClaimModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#171A18]/80 backdrop-blur-md transition-all animate-fadeIn">
-      <div className="relative w-full max-w-xl bg-[#252B27] rounded-3xl shadow-2xl border border-[#383E39] overflow-hidden max-h-[90vh] flex flex-col text-[#F3F4EF]">
+      <div className="relative w-full max-w-xl bg-[#171D19] rounded-3xl border border-[#2B382F] overflow-hidden max-h-[90vh] flex flex-col text-[#F3F4EF] linear-modal-container">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#383E39] bg-[#1E2320]">
           <div className="flex items-center gap-3">

@@ -29,6 +29,9 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import AuthModal from "../../components/AuthModal";
+import QrCodeModal from "../../components/QrCodeModal";
+import AnonymousChatModal from "../../components/AnonymousChatModal";
+import { QrCode, MessageSquare, Printer } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { fetchAdminClaims, updateClaimStatus, fetchClaimAiExplanation, ClaimAiExplanationResponse } from "../../services/api";
 import { Claim, StoredItemReport, UserProfile, CAMPUS_LOCATIONS } from "../../types/item";
@@ -48,6 +51,8 @@ export default function AdminDashboardPage() {
   const [actionNotes, setActionNotes] = useState("");
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [qrModalItem, setQrModalItem] = useState<StoredItemReport | null>(null);
+  const [chatModalClaim, setChatModalClaim] = useState<{ id: string; title: string } | null>(null);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   // Auth modal state for login fallback
@@ -445,7 +450,7 @@ export default function AdminDashboardPage() {
               </div>
             ) : (
               <div className="space-y-6">
-                {filteredClaims.map((claim) => {
+                {filteredClaims.map((claim, index) => {
                   const claimId = claim._id || (claim as unknown as { id: string }).id;
                   const item =
                     typeof claim.itemId === "object" && claim.itemId
@@ -459,7 +464,7 @@ export default function AdminDashboardPage() {
                   return (
                     <div
                       key={claimId}
-                      className="bg-[#252B27] rounded-3xl border border-[#383E39] shadow-xl overflow-hidden text-[#F3F4EF]"
+                      style={{ animationDelay: `${(index % 8) * 50}ms` }} className="animate-linear-up linear-card-interactive rounded-3xl overflow-hidden text-[#F3F4EF]"
                     >
                       {/* Claim Header Bar */}
                       <div className="px-6 py-3.5 bg-[#1E2320] border-b border-[#383E39] flex flex-wrap items-center justify-between gap-3">
@@ -488,8 +493,37 @@ export default function AdminDashboardPage() {
                           </span>
                         </div>
 
-                        <div className="text-xs text-[#A9B0AA]">
-                          Submitted: {formatDate(claim.createdAt)}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (item) setQrModalItem(item);
+                            }}
+                            className="px-2.5 py-1 rounded-xl bg-[#1E2721] hover:bg-[#28352D] text-[#D8E4DC] border border-[#38483D] text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                            title="Print intake QR sticker for this item"
+                          >
+                            <QrCode className="w-3.5 h-3.5 text-[#45B58A]" />
+                            <span>Print QR Tag</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChatModalClaim({
+                                id: claimId,
+                                title: item?.title || `Claim #${claimId.slice(-6)}`,
+                              });
+                            }}
+                            className="px-2.5 py-1 rounded-xl bg-[#1C2C24] hover:bg-[#253A2F] text-[#45B58A] border border-[#45B58A]/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                            title="Open privacy-preserving handover coordination chat"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Handover Chat</span>
+                          </button>
+
+                          <span className="text-xs text-[#A9B0AA] ml-1">
+                            Submitted: {formatDate(claim.createdAt)}
+                          </span>
                         </div>
                       </div>
 
@@ -679,11 +713,11 @@ export default function AdminDashboardPage() {
                                           </span>
                                           <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                                             {[
-                                              { label: "Visual (CLIP)", key: "visual", weight: ai.effectiveWeights.visual || 0.40, score: ai.subScores.visual, unit: "ViT-B/32" },
-                                              { label: "Text (S-BERT)", key: "textual", weight: ai.effectiveWeights.textual || 0.25, score: ai.subScores.textual, unit: "MiniLM-L6" },
-                                              { label: "Location", key: "location", weight: ai.effectiveWeights.location || 0.15, score: ai.subScores.location, unit: "Zone Match" },
-                                              { label: "Time Gap", key: "time", weight: ai.effectiveWeights.time || 0.10, score: ai.subScores.time, unit: "Decay Prox." },
-                                              { label: "Attributes", key: "attribute", weight: ai.effectiveWeights.attribute || 0.10, score: ai.subScores.attribute, unit: "Brand & Color" },
+                                              { label: "Visual (CLIP)", key: "visual", weight: ai.effectiveWeights?.visual ?? 0, score: ai.subScores?.visual ?? null, unit: "ViT-B/32" },
+                                              { label: "Text (S-BERT)", key: "textual", weight: ai.effectiveWeights?.textual ?? 0, score: ai.subScores?.textual ?? null, unit: "MiniLM-L6" },
+                                              { label: "Location", key: "location", weight: ai.effectiveWeights?.location ?? 0, score: ai.subScores?.location ?? null, unit: "Zone Match" },
+                                              { label: "Time Gap", key: "time", weight: ai.effectiveWeights?.time ?? 0, score: ai.subScores?.time ?? null, unit: "Decay Prox." },
+                                              { label: "Attributes", key: "attribute", weight: ai.effectiveWeights?.attribute ?? 0, score: ai.subScores?.attribute ?? null, unit: "Brand & Color" },
                                             ].map((f) => (
                                               <div key={f.key} className="p-2.5 rounded-xl bg-[#252B27] border border-[#383E39] space-y-1">
                                                 <div className="flex items-center justify-between text-[11px]">
@@ -826,6 +860,26 @@ export default function AdminDashboardPage() {
             )}
           </div>
         )}
+      
+      {/* Physical Intake QR Tag Modal */}
+      <QrCodeModal
+        isOpen={Boolean(qrModalItem)}
+        onClose={() => setQrModalItem(null)}
+        item={qrModalItem}
+      />
+
+      {/* Anonymous Handover Chat Modal */}
+      {chatModalClaim && token && (
+        <AnonymousChatModal
+          isOpen={Boolean(chatModalClaim)}
+          onClose={() => setChatModalClaim(null)}
+          claimId={chatModalClaim.id}
+          itemTitle={chatModalClaim.title}
+          token={token}
+          currentUserRole="admin"
+        />
+      )}
+
       </main>
 
       {/* Confirmation & Review Notes Modal */}

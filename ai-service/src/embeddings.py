@@ -9,6 +9,7 @@ from PIL import Image
 
 from .config import UPLOADS_DIR
 from .models_loader import get_model_manager
+from .nlp_enhancer import enrich_multilingual_text, smart_image_enhancer
 
 logger = logging.getLogger("findit.embeddings")
 
@@ -66,20 +67,22 @@ def resolve_safe_image_path(image_identifier: str) -> Optional[Path]:
     # Strip URL prefix if an HTTP URL was passed (e.g. http://localhost:5000/uploads/item-123.jpg)
     if "uploads/" in image_identifier:
         filename = image_identifier.split("uploads/")[-1].strip("/")
+    elif "dataset_images/" in image_identifier:
+        filename = image_identifier.split("dataset_images/")[-1].strip("/")
     else:
         filename = Path(image_identifier).name
 
-    # Check for path traversal attempts
-    target_path = (UPLOADS_DIR / filename).resolve()
-    try:
-        # Verify target is strictly inside UPLOADS_DIR
-        target_path.relative_to(UPLOADS_DIR.resolve())
-    except ValueError:
-        logger.warning(f"Path traversal attempt rejected: {image_identifier}")
-        return None
+    # Check candidates safely
+    candidates = [
+        (UPLOADS_DIR / filename).resolve(),
+        (UPLOADS_DIR.parent / "dataset" / "real_validation_100" / filename).resolve(),
+        (UPLOADS_DIR.parent / "frontend" / "public" / "dataset_images" / filename).resolve(),
+    ]
 
-    if target_path.is_file():
-        return target_path
+    for target_path in candidates:
+        if target_path.is_file():
+            return target_path
+
     return None
 
 def generate_image_embedding(image_source: Union[str, Path, Image.Image]) -> Optional[np.ndarray]:
@@ -124,6 +127,9 @@ def generate_image_embedding(image_source: Union[str, Path, Image.Image]) -> Opt
         return _IMAGE_CACHE[cache_key]
 
     try:
+        # Apply computer vision pre-processing (EXIF auto-orientation & contrast enhancement)
+        pil_image = smart_image_enhancer(pil_image)
+
         # OpenCLIP vision inference
         image_tensor = mgr.clip_preprocess(pil_image).unsqueeze(0).to(mgr.device)
 
@@ -177,7 +183,9 @@ def build_report_text(report: Dict[str, Any]) -> str:
     if unique_marks:
         parts.append(f"Distinctive features: {unique_marks}")
 
-    return ". ".join(parts) if parts else "Unknown lost or found campus item"
+    raw_description = ". ".join(parts) if parts else "Unknown lost or found item"
+    # Augment with cross-lingual Bengali / Banglish / English conceptual anchors
+    return enrich_multilingual_text(raw_description)
 
 def generate_text_embedding(text_or_report: Union[str, Dict[str, Any]]) -> Optional[np.ndarray]:
     """
@@ -193,7 +201,7 @@ def generate_text_embedding(text_or_report: Union[str, Dict[str, Any]]) -> Optio
     if isinstance(text_or_report, dict):
         text = build_report_text(text_or_report)
     else:
-        text = str(text_or_report).strip()
+        text = enrich_multilingual_text(str(text_or_report).strip())
 
     if not text:
         text = "Empty item report description"

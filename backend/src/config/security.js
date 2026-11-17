@@ -41,13 +41,8 @@ function getEncryptionKey() {
     return Buffer.from(process.env.ENCRYPTION_KEY.trim().slice(0, 32), "utf-8");
   }
   // Derive a deterministic 32-byte key from JWT_SECRET if explicit ENCRYPTION_KEY is not provided
-  try {
-    const jwtSecret = getJwtSecret();
-    return crypto.createHash("sha256").update(jwtSecret).digest();
-  } catch (e) {
-    // Fallback key buffer for initialization checks if secret check is mocked
-    return crypto.createHash("sha256").update("findit_fallback_key_material").digest();
-  }
+  const jwtSecret = getJwtSecret(); // throws if JWT_SECRET missing — no hardcoded fallback
+  return crypto.createHash("sha256").update(jwtSecret).digest();
 }
 
 /**

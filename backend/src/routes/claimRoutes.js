@@ -6,6 +6,8 @@ const Notification = require("../models/Notification");
 const User = require("../models/User");
 const { authenticateToken, requireRole } = require("../middleware/auth");
 const emailService = require("../services/emailService");
+const smsService = require("../services/smsService");
+const ChatMessage = require("../models/ChatMessage");
 const { claimLimiter, decryptField } = require("../config/security");
 
 const router = express.Router();
@@ -267,11 +269,11 @@ router.get("/:id/ai-explanation", authenticateToken, requireRole(["admin"]), asy
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestPayload),
-        signal: AbortSignal.timeout(6000),
+        signal: AbortSignal.timeout(25000),
       });
 
-      if (aiRes.ok) {
-        const aiData = await aiRes.json();
+      const aiData = await aiRes.json().catch(() => ({}));
+      if (aiRes.ok && aiData.success) {
         return res.status(200).json({
           success: true,
           claimId: claim._id,
@@ -280,43 +282,19 @@ router.get("/:id/ai-explanation", authenticateToken, requireRole(["admin"]), asy
           ...aiData,
         });
       }
+
+      return res.status(aiRes.status || 503).json({
+        success: false,
+        message: aiData.detail || aiData.message || "AI explanation service returned an error.",
+      });
     } catch (aiErr) {
-      console.warn("⚠️ FastAPI match-pair unavailable, returning deterministic rule-based explainability fallback:", aiErr.message);
+      console.warn("⚠️ FastAPI match-pair unavailable:", aiErr.message);
+      return res.status(503).json({
+        success: false,
+        message:
+          "The AI matching service is offline, so this claim has no live sub-scores yet. Start the FastAPI service and open the explanation again.",
+      });
     }
-
-    // Deterministic fallback if FastAPI offline
-    const isCategoryMatch = Boolean(foundItem.category);
-    const subScores = {
-      visual: foundItem.imageUrls?.length > 0 ? 88.0 : null,
-      textual: 84.5,
-      location: 80.0,
-      time: 92.0,
-      attribute: isCategoryMatch ? 86.0 : 40.0,
-    };
-
-    const effectiveWeights = foundItem.imageUrls?.length > 0
-      ? { visual: 0.40, textual: 0.25, location: 0.15, time: 0.10, attribute: 0.10 }
-      : { textual: 0.42, location: 0.25, time: 0.17, attribute: 0.16 };
-
-    return res.status(200).json({
-      success: true,
-      claimId: claim._id,
-      matchScore: 86.2,
-      matchScoreNormalized: 0.862,
-      subScores,
-      effectiveWeights,
-      visualCues: foundItem.imageUrls?.length > 0
-        ? ["OpenCLIP ViT-B/32 photo cosine alignment: 88%"]
-        : ["No reference photo provided; visual weight dynamically re-distributed to text and attributes"],
-      textualCues: [
-        "Sentence Transformers (all-MiniLM-L6-v2) semantic similarity: 85%",
-        `Category profile: ${foundItem.category}`,
-        `Brand match: ${foundItem.brand || "Generic"}`,
-      ],
-      explanation: `Match score 86.2% based on strong contextual overlap for ${foundItem.category} item.`,
-      humanVerificationGuidance: "AI similarity is advisory only. Campus administrators must independently cross-examine claimant proof and secret verification answers before approving physical transfer.",
-      fallback: true,
-    });
   } catch (err) {
     console.error("❌ Error generating AI explanation for claim:", err);
     return res.status(500).json({ success: false, message: "Internal server error." });
@@ -523,6 +501,20 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
               console.warn("⚠️ Non-blocking claim email delivery notice:", err.message);
             });
         }
+        if (claimant && claimant.phone) {
+          smsService
+            .sendClaimStatusSms({
+              to: claimant.phone,
+              recipientName: claimant.name || "Citizen",
+              itemTitle: item.title,
+              status: targetStatus,
+              notes: claim.reviewNotes,
+              claimId: claim._id,
+            })
+            .catch((err) => {
+              console.warn("⚠️ Non-blocking claim SMS delivery notice:", err.message);
+            });
+        }
       })
       .catch(() => {});
 
@@ -540,6 +532,94 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
       success: false,
       message: "Internal server error while updating claim status.",
     });
+  }
+});
+
+/**
+ * @route   GET /api/claims/:id/messages
+ * @desc    Fetch anonymous mediation chat messages for an ownership claim
+ * @access  Private (Claimant, Finder, Admin)
+ */
+router.get("/:id/messages", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const claim = await Claim.findById(id).populate("itemId", "submitterId title");
+    if (!claim) {
+      return res.status(404).json({ success: false, message: "Claim not found." });
+    }
+
+    const userId = req.user._id.toString();
+    const isAdmin = req.user.role === "admin";
+    const isClaimant = claim.claimantId.toString() === userId;
+    const isFinder = claim.itemId && claim.itemId.submitterId && claim.itemId.submitterId.toString() === userId;
+
+    if (!isAdmin && !isClaimant && !isFinder) {
+      return res.status(403).json({ success: false, message: "Unauthorized to access this private handover channel." });
+    }
+
+    const messages = await ChatMessage.find({ claimId: id })
+      .select("-senderId")
+      .sort({ createdAt: 1 })
+      .lean();
+    return res.status(200).json({ success: true, data: messages });
+  } catch (error) {
+    console.error("❌ Error fetching claim messages:", error);
+    return res.status(500).json({ success: false, message: "Failed to retrieve messages." });
+  }
+});
+
+/**
+ * @route   POST /api/claims/:id/messages
+ * @desc    Send an anonymous mediation message in the handover channel
+ * @access  Private (Claimant, Finder, Admin)
+ */
+router.post("/:id/messages", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, message: "Message content cannot be empty." });
+    }
+
+    const claim = await Claim.findById(id).populate("itemId", "submitterId title");
+    if (!claim) {
+      return res.status(404).json({ success: false, message: "Claim not found." });
+    }
+
+    const userId = req.user._id.toString();
+    const isAdmin = req.user.role === "admin";
+    const isClaimant = claim.claimantId.toString() === userId;
+    const isFinder = claim.itemId && claim.itemId.submitterId && claim.itemId.submitterId.toString() === userId;
+
+    if (!isAdmin && !isClaimant && !isFinder) {
+      return res.status(403).json({ success: false, message: "Unauthorized to participate in this handover channel." });
+    }
+
+    let senderRole = "claimant";
+    let senderAlias = `Claimant #${id.slice(-4).toUpperCase()}`;
+
+    if (isAdmin) {
+      senderRole = "admin";
+      senderAlias = "Sylhet City Admin Desk";
+    } else if (isFinder) {
+      senderRole = "finder";
+      senderAlias = "Finder (Sylhet Citizen)";
+    }
+
+    const chatMsg = await ChatMessage.create({
+      claimId: claim._id,
+      itemId: claim.itemId ? claim.itemId._id : claim.itemId,
+      senderId: req.user._id,
+      senderRole,
+      senderAlias,
+      message: message.trim(),
+    });
+
+    return res.status(201).json({ success: true, data: chatMsg });
+  } catch (error) {
+    console.error("❌ Error sending claim message:", error);
+    return res.status(500).json({ success: false, message: "Failed to send message." });
   }
 });
 

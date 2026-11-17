@@ -387,7 +387,7 @@ export default function ExplorePage() {
             ) : (
               /* Items Grid */
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {paginatedItems.map((item) => {
+                {paginatedItems.map((item, index) => {
                   const isLost = (item.type || item.reportType) === "lost";
                   const rawUrl =
                     (item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0]) ||
@@ -398,115 +398,133 @@ export default function ExplorePage() {
                     item.location?.campusZone || getLocationName(item.campusLocation);
                   const displayId = item._id || item.id;
 
+                  const rawBrand = item.brand?.trim() || "";
+                  const hasValidBrand = rawBrand && !/^none$/i.test(rawBrand);
+                  const rawColor = item.primaryColor?.trim() || "";
+                  const hasValidColor = rawColor && !/^none$/i.test(rawColor);
+                  const itemSubtitle = [
+                    hasValidBrand ? rawBrand : null,
+                    hasValidColor ? rawColor : null,
+                  ].filter(Boolean).join(" · ") || (item.category || "General").replace("_", " ");
+
                   return (
                     <div
                       key={displayId}
-                      className="group rounded-2xl bg-[#252B27] border border-[#383E39] hover:border-[#45B58A]/50 transition-all duration-200 overflow-hidden flex flex-col"
+                      style={{ animationDelay: `${(index % 9) * 50}ms` }}
+                      className="animate-linear-up linear-card-interactive group rounded-3xl overflow-hidden flex flex-col justify-between"
                     >
-                      {/* Image Thumbnail */}
-                      <div className="relative h-44 bg-[#171A18] overflow-hidden flex items-center justify-center">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full p-4 flex flex-col justify-between bg-[#171A18] border-b border-[#383E39]">
-                            <span className="text-[10px] font-semibold uppercase text-[#A9B0AA]">
-                              {item.category?.replace("_", " ")}
-                            </span>
-                            <div className="my-auto text-center">
-                              <Compass className="w-8 h-8 text-[#383E39] mx-auto mb-1" />
-                              <span className="text-xs font-semibold text-[#A9B0AA] line-clamp-1">
-                                {item.title}
-                              </span>
-                            </div>
-                            <span className="text-[10px] text-[#A9B0AA]">No Photo Provided</span>
-                          </div>
-                        )}
+                      {/* Image Thumbnail with Cinematic Flow */}
+                      <div>
+                        <div className="relative h-48 bg-[#111412] overflow-hidden flex items-center justify-center">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={item.title}
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                if (target.src.includes(":3000/dataset_images/")) {
+                                  target.src = target.src.replace(":3000/dataset_images/", ":5000/uploads/");
+                                } else if (target.src.includes(":5000/uploads/")) {
+                                  target.src = target.src.replace(":5000/uploads/", ":5000/dataset_images/");
+                                } else {
+                                  target.style.display = "none";
+                                  const fallback = target.parentElement?.querySelector(".item-card-placeholder") as HTMLElement;
+                                  if (fallback) fallback.style.display = "flex";
+                                }
+                              }}
+                              className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                            />
+                          ) : null}
 
-                        {/* Status Badge */}
-                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              isLost
-                                ? "bg-[#171A18]/90 text-[#F3F4EF] border border-[#383E39]"
-                                : "bg-[#45B58A] text-[#171A18]"
-                            }`}
+                          {/* Fallback Glass-Morphism Placeholder */}
+                          <div
+                            style={{ display: imageUrl ? "none" : "flex" }}
+                            className="item-card-placeholder w-full h-full relative flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#1B221E] via-[#141815] to-[#0F1210] overflow-hidden"
                           >
-                            {isLost ? "Lost" : "Found"}
-                          </span>
+                            <Compass className="w-8 h-8 text-[#45B58A] group-hover:scale-110 transition-transform duration-300" />
+                            <span className="text-[10px] font-semibold text-[#7E8880] uppercase tracking-wider">
+                              Verified Report
+                            </span>
+                          </div>
+
+                          {/* Bottom Vignette Gradient */}
+                          <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#161B18] via-[#161B18]/40 to-transparent pointer-events-none" />
+
+                          {/* Floating Frosted Glass Status Pill */}
+                          <div className="absolute top-3 left-3 z-10">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-xl shadow-lg transition-transform duration-300 group-hover:scale-105 ${
+                                isLost
+                                  ? "bg-black/65 text-amber-300 border border-amber-500/35"
+                                  : "bg-black/65 text-[#45B58A] border border-[#45B58A]/45"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  isLost
+                                    ? "bg-amber-400 animate-pulse"
+                                    : "bg-[#45B58A] shadow-[0_0_8px_#45B58A]"
+                                }`}
+                              />
+                              <span className="capitalize">{isLost ? "Lost" : "Found"}</span>
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Category Tag */}
-                        <span className="absolute top-2.5 right-2.5 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#171A18]/85 text-[#A9B0AA] border border-[#383E39]">
-                          {(item.category || "item").replace("_", " ")}
-                        </span>
-                      </div>
-
-                      {/* Content Details */}
-                      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                        <div className="space-y-1">
-                          <h3 className="font-semibold text-sm text-[#F3F4EF] line-clamp-1 group-hover:text-[#45B58A] transition">
+                        {/* Content Details */}
+                        <div className="p-4 space-y-1.5">
+                          <h3 className="font-bold text-sm sm:text-base text-[#F3F4EF] line-clamp-1 group-hover:text-[#45B58A] transition-colors duration-200">
                             {item.title}
                           </h3>
+                          <p className="text-xs text-[#8A958D] line-clamp-1 font-medium tracking-wide">
+                            {itemSubtitle}
+                          </p>
+                        </div>
+                      </div>
 
-                          {item.uniqueMarks ? (
-                            <p className="text-[11px] text-[#A9B0AA] truncate">
-                              <span className="text-[#45B58A] font-medium">Distinct:</span> {item.uniqueMarks}
-                            </p>
-                          ) : (
-                            <p className="text-[11px] text-[#A9B0AA] truncate">
-                              {item.brand ? `${item.brand} • ` : ""}{item.primaryColor || "Standard"}
-                            </p>
-                          )}
+                      {/* Footer & Action Button */}
+                      <div className="px-4 pb-4 pt-0">
+                        <div className="pt-2.5 border-t border-[#202722] flex items-center justify-between text-xs text-[#8A958D]">
+                          <div className="flex items-center gap-1.5 truncate max-w-[65%]">
+                            <MapPin className="w-3.5 h-3.5 text-[#45B58A] shrink-0" />
+                            <span className="truncate font-medium text-[#C4CBC5]">{campusZone || "Sylhet"}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[11px] text-[#717A73] font-medium shrink-0">
+                            <Clock className="w-3 h-3 text-[#717A73]" />
+                            <span>
+                              {item.dateTime
+                                ? String(item.dateTime).replace("T", " ").slice(5, 16)
+                                : "Recent"}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Location & Time Footer */}
-                        <div>
-                          <div className="pt-2 border-t border-[#383E39] flex items-center justify-between text-[11px] text-[#A9B0AA]">
-                            <div className="flex items-center gap-1.5 truncate max-w-[65%]">
-                              <MapPin className="w-3.5 h-3.5 text-[#45B58A] shrink-0" />
-                              <span className="truncate">{campusZone || "Sylhet"}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-[10px] shrink-0">
-                              <Clock className="w-3 h-3 text-[#A9B0AA]" />
-                              <span>
-                                {item.dateTime
-                                  ? String(item.dateTime).replace("T", " ").slice(5, 16)
-                                  : "Recent"}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          {isLost && (
+                        {/* Linear Tactile Action Buttons */}
+                        <div className="mt-3">
+                          {isLost ? (
                             <button
                               type="button"
                               onClick={() => setSelectedLostItem(item)}
-                              className="mt-3 w-full py-2 px-3 rounded-xl bg-[#171A18] hover:bg-[#252B27] text-[#F3F4EF] border border-[#383E39] hover:border-[#45B58A]/50 font-semibold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                              className="w-full py-2.5 px-3 rounded-xl bg-[#1D2520] group-hover:bg-[#45B58A] text-[#C4CBC5] group-hover:text-[#111412] border border-[#2B352E] group-hover:border-[#45B58A] font-semibold text-xs flex items-center justify-center gap-2 transition-all duration-300 shadow-xs group-hover:shadow-md group-hover:shadow-[#45B58A]/20 cursor-pointer active:scale-95"
                             >
-                              <Sparkles className="w-3.5 h-3.5 text-[#45B58A]" />
-                              Check Matching Items
+                              <Sparkles className="w-3.5 h-3.5 text-[#45B58A] group-hover:text-[#111412] transition-colors" />
+                              <span>Check Matching Items</span>
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform duration-300" />
                             </button>
-                          )}
-
-                          {!isLost && item.status === "claimed" && (
-                            <div className="mt-3 w-full py-2 px-3 rounded-xl bg-[#171A18] text-[#A9B0AA] font-semibold text-xs flex items-center justify-center gap-1.5 border border-[#383E39]">
+                          ) : item.status === "claimed" ? (
+                            <div className="w-full py-2.5 px-3 rounded-xl bg-[#141815] text-[#717A73] font-medium text-xs flex items-center justify-center gap-2 border border-[#222823]">
                               <CheckCircle2 className="w-3.5 h-3.5 text-[#45B58A]" />
-                              Claimed &amp; Verified
+                              <span>Claimed &amp; Verified</span>
                             </div>
-                          )}
-
-                          {!isLost && item.status !== "claimed" && (
+                          ) : (
                             <button
                               type="button"
                               onClick={() => setClaimItem(item)}
-                              className="mt-3 w-full py-2 px-3 rounded-xl bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs"
+                              className="w-full py-2.5 px-3 rounded-xl bg-[#45B58A]/10 group-hover:bg-[#45B58A] text-[#45B58A] group-hover:text-[#111412] border border-[#45B58A]/30 group-hover:border-[#45B58A] font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 shadow-xs group-hover:shadow-md group-hover:shadow-[#45B58A]/25 cursor-pointer active:scale-95"
                             >
-                              <ShieldAlert className="w-3.5 h-3.5" />
-                              Claim This Item
+                              <ShieldAlert className="w-3.5 h-3.5 text-[#45B58A] group-hover:text-[#111412] transition-colors" />
+                              <span>Claim This Item</span>
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform duration-300" />
                             </button>
                           )}
                         </div>

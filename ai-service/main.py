@@ -62,10 +62,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for frontend and backend proxy
+# Restrict CORS to internal backend and frontend origins
+allowed_origins_env = os.getenv("CORS_ORIGINS", "http://backend:5000,http://localhost:5000,http://localhost:3000")
+allowed_origins = [orig.strip() for orig in allowed_origins_env.split(",") if orig.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -206,6 +209,106 @@ def embed_single_item(request: ItemEmbedRequest):
         "textDimensions": len(txt_emb) if txt_emb is not None else 0,
     }
 
+def _image_source(item: Dict[str, Any]) -> Optional[str]:
+    paths = item.get("imagePaths") or []
+    urls = item.get("imageUrls") or []
+    if paths:
+        return paths[0]
+    if urls:
+        return urls[0]
+    return None
+
+
+def _resolve_embeddings(item: Dict[str, Any]):
+    """
+    Reuse MongoDB-cached vectors when present. Otherwise run OpenCLIP / S-BERT
+    and write the new vectors back when the document has an id.
+    Missing photos return a null image vector so the matcher can drop visual weight.
+    """
+    image_source = _image_source(item)
+
+    img_emb = (
+        np.array(item["imageEmbedding"], dtype=np.float32)
+        if item.get("imageEmbedding")
+        else None
+    )
+    if img_emb is None and image_source:
+        img_emb = generate_image_embedding(image_source)
+
+    txt_emb = (
+        np.array(item["textEmbedding"], dtype=np.float32)
+        if item.get("textEmbedding")
+        else None
+    )
+    if txt_emb is None:
+        txt_emb = generate_text_embedding(item)
+
+    item_id = item.get("_id")
+    if item_id and (not item.get("imageEmbedding") or not item.get("textEmbedding")):
+        update_item_embeddings(str(item_id), img_emb, txt_emb)
+
+    return img_emb, txt_emb
+
+
+class MatchPairRequest(BaseModel):
+    lostItemId: Optional[str] = None
+    foundItemId: Optional[str] = None
+    lostItemData: Optional[Dict[str, Any]] = None
+    foundItemData: Optional[Dict[str, Any]] = None
+
+
+@app.post("/api/match-pair")
+def match_pair(request: MatchPairRequest):
+    """
+    Explain one lost/found pair for admin ownership review.
+    Returns each sub-score plus the visual and textual cues. Does not confirm ownership.
+    """
+    lost_item = find_item_by_id(request.lostItemId.strip()) if request.lostItemId else None
+    if lost_item is None and request.lostItemData:
+        lost_item = request.lostItemData
+
+    found_item = find_item_by_id(request.foundItemId.strip()) if request.foundItemId else None
+    if found_item is None and request.foundItemData:
+        found_item = request.foundItemData
+
+    if not lost_item or not found_item:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Both a lost report and a found report are required to explain a claim.",
+        )
+
+    lost_img_emb, lost_txt_emb = _resolve_embeddings(lost_item)
+    found_img_emb, found_txt_emb = _resolve_embeddings(found_item)
+
+    match_data = calculate_match(
+        lost_item=lost_item,
+        found_item=found_item,
+        lost_img_emb=lost_img_emb,
+        found_img_emb=found_img_emb,
+        lost_txt_emb=lost_txt_emb,
+        found_txt_emb=found_txt_emb,
+        weights=CURRENT_WEIGHTS,
+    )
+
+    return {
+        "success": True,
+        "lostItemId": str(lost_item.get("_id") or request.lostItemId or ""),
+        "foundItemId": str(found_item.get("_id") or request.foundItemId or ""),
+        "matchScore": match_data["matchScore"],
+        "matchScoreNormalized": match_data["matchScoreNormalized"],
+        "subScores": match_data.get("subScores", {}),
+        "scoreBreakdown": match_data["scoreBreakdown"],
+        "effectiveWeights": match_data["effectiveWeights"],
+        "availableModalities": match_data["availableModalities"],
+        "unavailableModalities": match_data["unavailableModalities"],
+        "explanation": match_data["explanation"],
+        "visualCues": match_data.get("visualCues", []),
+        "textualCues": match_data.get("textualCues", []),
+        "topKeywordsShared": match_data.get("topKeywordsShared", []),
+        "humanVerificationGuidance": match_data.get("humanVerificationGuidance"),
+    }
+
+
 @app.post("/api/match")
 def match_lost_item(request: MatchRequest):
     """
@@ -245,63 +348,13 @@ def match_lost_item(request: MatchRequest):
         }
 
     # 4. Retrieve or generate embeddings for the Lost item (with MongoDB persistent cache)
-    lost_image_source = None
-    if lost_item.get("imagePaths") and len(lost_item["imagePaths"]) > 0:
-        lost_image_source = lost_item["imagePaths"][0]
-    elif lost_item.get("imageUrls") and len(lost_item["imageUrls"]) > 0:
-        lost_image_source = lost_item["imageUrls"][0]
-
-    # Check MongoDB cache
-    lost_img_emb = (
-        np.array(lost_item["imageEmbedding"], dtype=np.float32)
-        if lost_item.get("imageEmbedding")
-        else None
-    )
-    if lost_img_emb is None and lost_image_source:
-        lost_img_emb = generate_image_embedding(lost_image_source)
-
-    lost_txt_emb = (
-        np.array(lost_item["textEmbedding"], dtype=np.float32)
-        if lost_item.get("textEmbedding")
-        else None
-    )
-    if lost_txt_emb is None:
-        lost_txt_emb = generate_text_embedding(lost_item)
-
-    # Persist newly generated embeddings back to MongoDB
-    if lost_item.get("_id") and (lost_item.get("imageEmbedding") is None or lost_item.get("textEmbedding") is None):
-        update_item_embeddings(lost_item["_id"], lost_img_emb, lost_txt_emb)
+    lost_img_emb, lost_txt_emb = _resolve_embeddings(lost_item)
 
     # 5. Evaluate similarity against each Found candidate (with caching)
     ranked_results = []
 
     for found_item in found_candidates:
-        found_image_source = None
-        if found_item.get("imagePaths") and len(found_item["imagePaths"]) > 0:
-            found_image_source = found_item["imagePaths"][0]
-        elif found_item.get("imageUrls") and len(found_item["imageUrls"]) > 0:
-            found_image_source = found_item["imageUrls"][0]
-
-        # Check MongoDB cache for found candidate
-        found_img_emb = (
-            np.array(found_item["imageEmbedding"], dtype=np.float32)
-            if found_item.get("imageEmbedding")
-            else None
-        )
-        if found_img_emb is None and found_image_source:
-            found_img_emb = generate_image_embedding(found_image_source)
-
-        found_txt_emb = (
-            np.array(found_item["textEmbedding"], dtype=np.float32)
-            if found_item.get("textEmbedding")
-            else None
-        )
-        if found_txt_emb is None:
-            found_txt_emb = generate_text_embedding(found_item)
-
-        # Persist newly generated embeddings back to MongoDB
-        if found_item.get("_id") and (found_item.get("imageEmbedding") is None or found_item.get("textEmbedding") is None):
-            update_item_embeddings(found_item["_id"], found_img_emb, found_txt_emb)
+        found_img_emb, found_txt_emb = _resolve_embeddings(found_item)
 
         match_data = calculate_match(
             lost_item=lost_item,

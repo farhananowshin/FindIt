@@ -71,11 +71,11 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/findit
       - FRONTEND_URL=http://localhost:3000
       - AI_SERVICE_URL=http://ai-service:8001
-      - JWT_SECRET=findit_super_secret_jwt_key_2026_campus_secure
+      - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
       - ADMIN_NAME=Campus Security Admin
       - ADMIN_EMAIL=admin@campus.edu
-      - ADMIN_PASSWORD=AdminSecure2026!
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - ADMIN_STUDENT_ID=ADMIN-001
       - ADMIN_PHONE=+1 (555) 019-9000
     volumes:
