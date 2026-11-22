@@ -248,7 +248,7 @@ export default function SearchModal({
                   Search lost or found items across Sylhet
                 </p>
                 <p className="text-[11px] text-[#6E7871] max-w-xs mx-auto">
-                  Type an item title, category, or area (e.g. &ldquo;wallet&rdquo;, &ldquo;student id&rdquo;, &ldquo;Amberkhana&rdquo;).
+                  Type an item title, category, or area (e.g. &ldquo;wallet&rdquo;, &ldquo;backpack&rdquo;, &ldquo;Amberkhana&rdquo;).
                 </p>
               </div>
 

@@ -30,11 +30,11 @@ import {
 // Dynamically import Leaflet map component to prevent SSR issues
 const DynamicLeafletMap = dynamic(() => import("./MapCanvas"), {
   ssr: false,
-  loading: () => (
+          loading: () => (
     <div className="w-full h-full bg-[#121513] flex flex-col items-center justify-center text-[#9EA8A0] gap-3">
-      <div className="w-10 h-10 border-3 border-[#45B58A]/20 border-t-[#45B58A] rounded-full animate-spin" />
-      <span className="text-xs font-semibold tracking-wider uppercase text-[#45B58A]">
-        Loading Sylhet Radar Map...
+      <div className="w-8 h-8 border-2 border-[#45B58A]/20 border-t-[#45B58A] rounded-full animate-spin" />
+      <span className="text-xs font-medium tracking-wide text-[#8EA295]">
+        Loading map...
       </span>
     </div>
   ),
@@ -59,6 +59,18 @@ export default function MapPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
   const [isWeightsOpen, setIsWeightsOpen] = useState(false);
+
+  const handleFindMatches = useCallback((item: StoredItemReport) => {
+    setSelectedLostItem(item);
+  }, []);
+
+  const handleClaimItem = useCallback((item: StoredItemReport) => {
+    setClaimItem(item);
+  }, []);
+
+  const handleSelectZone = useCallback((zoneId: string) => {
+    setSelectedZone(zoneId);
+  }, []);
 
   const loadItems = useCallback(async () => {
     try {
@@ -97,24 +109,15 @@ export default function MapPage() {
       syl_zinda: "Zindabazar Point",
       syl_amber: "Amberkhana Stand",
       syl_bandar: "Bandarbazar / Court Point",
-      syl_mu: "Metropolitan University",
-      syl_sust: "SUST Campus Hub",
+      syl_mu: "Bateshwar Area",
+      syl_sust: "Kumargaon Hub",
       syl_rail_bus: "Kadamtali Transit Hub",
       syl_shibganj: "Shibganj / Tilagarh",
-      syl_osmani_med: "Osmani Medical College",
+      syl_osmani_med: "Osmani Hospital Area",
       syl_dargah: "Shah Jalal Dargah",
       syl_upashahar: "Shahjalal Upashahar",
       syl_airport: "Osmani Airport (ZIA)",
-      lib_main: "Central University Library",
-      sci_eng: "Science & Engineering Complex",
-      dining_hall: "Campus Cafeteria",
-      stu_union: "Student Activity Center",
-      sports_rec: "Sports & Recreation Center",
-      dorm_east: "East Residence Halls",
-      dorm_west: "West Residence Halls",
-      auditorium: "Grand Auditorium",
-      admin_bldg: "Admin Registrar Building",
-      bus_stop: "Campus Shuttle Stop",
+      other: "Sylhet City Center",
     };
 
     if (knownMap[raw.toLowerCase()]) {
@@ -134,6 +137,12 @@ export default function MapPage() {
     }
 
     return raw;
+  };
+
+  // Helper to strip redundant "Found" or "Lost" prefix from item titles
+  const cleanItemTitle = (title?: string) => {
+    if (!title) return "Item";
+    return title.replace(/^(Found|Lost)\s*[:-]?\s*/i, "").trim();
   };
 
   // Clean date formatting without unstable new Date() render calls (Next.js 16 compliant)
@@ -208,13 +217,13 @@ export default function MapPage() {
           <div className="p-4 border-b border-[#273029] space-y-3 bg-[#181D1A]/95 backdrop-blur-md">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#45B58A] animate-pulse" />
-                <h2 className="text-xs font-black uppercase tracking-wider text-[#F3F4EF]">
-                  Sylhet Map Radar
+                <span className="w-2 h-2 rounded-full bg-[#45B58A]" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#F3F4EF]">
+                  Sylhet Locations
                 </h2>
               </div>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#45B58A]/10 text-[#45B58A] border border-[#45B58A]/30">
-                {filteredItems.length} Mapped Pins
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#202823] text-[#8EA295] border border-[#2B372F]">
+                {filteredItems.length} Items on Map
               </span>
             </div>
 
@@ -225,7 +234,7 @@ export default function MapPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search mapped items..."
+                placeholder="Search items by name, zone..."
                 className="w-full pl-8 pr-7 py-1.5 rounded-xl bg-[#141715] border border-[#2B352E] text-xs text-[#F3F4EF] placeholder-[#7E8880] focus:outline-none focus:border-[#45B58A] transition"
               />
               {searchQuery && (
@@ -372,7 +381,7 @@ export default function MapPage() {
                           </span>
                         </div>
                         <h4 className="text-xs font-bold text-[#F3F4EF] truncate mt-1">
-                          {item.title}
+                          {cleanItemTitle(item.title)}
                         </h4>
                         <p className="text-[11px] text-[#9EA8A0] truncate flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3 text-[#45B58A] shrink-0" />
@@ -417,10 +426,10 @@ export default function MapPage() {
           <DynamicLeafletMap
             items={filteredItems}
             focusedItemId={focusedItemId}
-            onFindMatches={(item) => setSelectedLostItem(item)}
-            onClaimItem={(item) => setClaimItem(item)}
+            onFindMatches={handleFindMatches}
+            onClaimItem={handleClaimItem}
             selectedZone={selectedZone}
-            onSelectZone={(zoneId) => setSelectedZone(zoneId)}
+            onSelectZone={handleSelectZone}
           />
 
           {/* Floating Back to Explorer Link (Top Right) */}
@@ -429,7 +438,7 @@ export default function MapPage() {
               href="/explore"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#181D1A]/90 hover:bg-[#202722] border border-[#2B352E] text-xs font-semibold text-[#F3F4EF] shadow-md backdrop-blur-md transition active:scale-95"
             >
-              <span>Catalog Explorer</span>
+              <span>View as List</span>
               <ArrowRight className="w-3.5 h-3.5 text-[#45B58A]" />
             </Link>
           </div>
@@ -452,8 +461,8 @@ export default function MapPage() {
             <div className="w-10 h-1 bg-[#3A463E] rounded-full mb-1.5" />
             <div className="w-full flex items-center justify-between text-xs font-bold text-[#F3F4EF]">
               <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#45B58A] animate-pulse" />
-                {filteredItems.length} Mapped Reports in Sylhet
+                <span className="w-2 h-2 rounded-full bg-[#45B58A]" />
+                {filteredItems.length} Items in Sylhet
               </span>
               <span className="text-[#45B58A] flex items-center gap-1 text-[11px]">
                 {isMobileSheetOpen ? (
@@ -524,7 +533,7 @@ export default function MapPage() {
                         </span>
                       </div>
                       <h4 className="text-xs font-bold text-[#F3F4EF] truncate mt-0.5">
-                        {item.title}
+                        {cleanItemTitle(item.title)}
                       </h4>
                       <p className="text-[11px] text-[#88938A] truncate flex items-center gap-1">
                         <MapPin className="w-2.5 h-2.5 text-[#45B58A] shrink-0" />

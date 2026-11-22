@@ -216,11 +216,19 @@ export async function fetchMatchesForItem(
   id: string,
   topK = 5
 ): Promise<import("../types/item").MatchResponse> {
+  const headers: Record<string, string> = {
+    "Accept": "application/json",
+  };
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("findit_auth_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(`${API_BASE}/api/items/${id}/matches?topK=${topK}`, {
     method: "GET",
-    headers: {
-      "Accept": "application/json",
-    },
+    headers,
     cache: "no-store",
   });
 
@@ -266,6 +274,25 @@ export async function registerUser(userData: {
 /**
  * Authenticate existing user with email and password.
  */
+/**
+ * Securely invalidates the current JWT session token on the backend blacklist.
+ */
+export async function logoutUser(token?: string | null): Promise<void> {
+  if (!token) return;
+  try {
+    await fetch(`${API_BASE}/api/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    // Non-blocking fallback; client logout proceeds even if network fails
+    console.warn("Session logout notice:", err);
+  }
+}
+
 export async function loginUser(credentials: {
   email: string;
   password: string;

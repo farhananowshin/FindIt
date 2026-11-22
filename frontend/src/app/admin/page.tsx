@@ -545,7 +545,7 @@ export default function AdminDashboardPage() {
                                 <div className="pl-6 space-y-0.5">
                                   <div>Email: <span className="font-medium text-[#F3F4EF]">{claimant.email}</span></div>
                                   {claimant.studentId && (
-                                    <div>Citizen / Student ID: <span className="font-medium text-[#F3F4EF]">{claimant.studentId}</span></div>
+                                    <div>National ID / Member ID: <span className="font-medium text-[#F3F4EF]">{claimant.studentId}</span></div>
                                   )}
                                   {claimant.phone && (
                                     <div>Phone: <span className="font-medium text-[#F3F4EF]">{claimant.phone}</span></div>

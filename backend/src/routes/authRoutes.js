@@ -365,6 +365,48 @@ router.post("/google", googleAuthLimiter, async (req, res) => {
  * @desc    Get profile of the currently authenticated user
  * @access  Private (Authenticated)
  */
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Invalidate / Blacklist JWT token upon logout
+ * @access  Private (Authenticated)
+ */
+router.post("/logout", authenticateToken, async (req, res) => {
+  try {
+    const token = req.token;
+    const decoded = req.tokenPayload;
+
+    // Calculate expiration date from token exp claim or fallback to 7 days
+    const expiresAt = decoded && decoded.exp
+      ? new Date(decoded.exp * 1000)
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const TokenBlacklist = require("../models/TokenBlacklist");
+
+    // Add token to blacklist collection (with MongoDB TTL auto-cleanup)
+    await TokenBlacklist.findOneAndUpdate(
+      { token },
+      {
+        token,
+        userId: req.user._id,
+        expiresAt,
+        reason: "user_logout",
+      },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully. Token has been permanently invalidated.",
+    });
+  } catch (error) {
+    console.error("❌ Logout error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to securely invalidate session token.",
+    });
+  }
+});
+
 router.get("/me", authenticateToken, async (req, res) => {
   return res.status(200).json({
     success: true,

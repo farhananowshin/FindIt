@@ -30,9 +30,9 @@ const CATEGORIES = [
   { id: "all", label: "All Categories" },
   { id: "electronics", label: "Electronics" },
   { id: "bags_wallets", label: "Wallets & Bags" },
-  { id: "id_cards", label: "ID Cards & Docs" },
+  { id: "id_cards", label: "NID & Cards" },
   { id: "keys", label: "Keys" },
-  { id: "books_notes", label: "Books & Notes" },
+  { id: "books_notes", label: "Documents & Books" },
   { id: "bottles_accessories", label: "Accessories" },
   { id: "clothing", label: "Clothing" },
 ];
@@ -103,8 +103,14 @@ export default function ExplorePage() {
     );
   };
 
-  // Filter items
+  // Filter items - Only items with valid pictures
   const filteredItems = items.filter((item) => {
+    const rawUrl =
+      (item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0]) ||
+      (item.images && item.images.length > 0 && item.images[0].previewUrl) ||
+      null;
+    if (!rawUrl || typeof rawUrl !== "string" || rawUrl.trim() === "") return false;
+
     const itemType = (item.type || item.reportType || "lost").toLowerCase();
     if (reportType !== "all" && itemType !== reportType) return false;
 
@@ -368,21 +374,43 @@ export default function ExplorePage() {
               )}
             </div>
 
-            {/* Empty State */}
+            {/* Empty State - Linear / Modern Grade */}
             {filteredItems.length === 0 ? (
-              <div className="p-12 text-center rounded-3xl bg-[#252B27] border border-[#383E39] space-y-4">
-                <HelpCircle className="w-12 h-12 text-[#A9B0AA] mx-auto" />
-                <h3 className="text-lg font-semibold text-[#F3F4EF]">No Matching Reports Found</h3>
-                <p className="text-xs text-[#A9B0AA] max-w-sm mx-auto">
-                  Try adjusting your search keywords, clearing location filters, or resetting category selections.
-                </p>
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="px-4 py-2 rounded-xl bg-[#171A18] hover:bg-[#383E39] text-[#F3F4EF] font-semibold text-xs border border-[#383E39] transition cursor-pointer"
-                >
-                  Reset All Filters
-                </button>
+              <div className="p-12 sm:p-16 text-center rounded-3xl bg-gradient-to-b from-[#18201B] to-[#121614] border border-[#2A372E] shadow-2xl relative overflow-hidden space-y-5">
+                {/* Ambient glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 bg-[#45B58A]/10 blur-3xl rounded-full pointer-events-none" />
+                
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#1D2720] border border-[#354539] flex items-center justify-center text-[#45B58A] shadow-[0_0_24px_rgba(69,181,138,0.2)]">
+                  <Search className="w-8 h-8" />
+                </div>
+                
+                <div className="space-y-1.5 max-w-md mx-auto relative z-10">
+                  <h3 className="text-xl font-bold text-[#F3F4EF]">No Matching Items in Sylhet</h3>
+                  <p className="text-xs sm:text-sm text-[#8F9B91] leading-relaxed">
+                    {searchQuery
+                      ? `No active reports match "${searchQuery}". Try searching with different keywords, brands, or color descriptions.`
+                      : "No reports found for the selected category and location filters. Try broadening your filter parameters."}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 relative z-10 pt-2">
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="px-4 py-2.5 rounded-xl bg-[#232F26] hover:bg-[#2F3E33] text-[#F3F4EF] font-semibold text-xs border border-[#384A3D] transition cursor-pointer shadow-sm"
+                  >
+                    Clear All Filters
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.location.href = "/#recent-items";
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-[#45B58A] hover:bg-[#3ca37c] text-[#121614] font-bold text-xs transition cursor-pointer shadow-md shadow-[#45B58A]/20"
+                  >
+                    Post a Lost Report +
+                  </button>
+                </div>
               </div>
             ) : (
               /* Items Grid */
@@ -416,10 +444,18 @@ export default function ExplorePage() {
                       {/* Image Thumbnail with Cinematic Flow */}
                       <div>
                         <div className="relative h-48 bg-[#111412] overflow-hidden flex items-center justify-center">
+                          {/* Shimmer Skeleton Placeholder while image loads */}
+                          <div className="absolute inset-0 bg-[#161C18] animate-pulse pointer-events-none" />
+
                           {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt={item.title}
+                              loading="lazy"
+                              onLoad={(e) => {
+                                // Fade in cleanly once image is loaded
+                                e.currentTarget.style.opacity = "1";
+                              }}
                               onError={(e) => {
                                 const target = e.currentTarget;
                                 if (target.src.includes(":3000/dataset_images/")) {
@@ -432,7 +468,8 @@ export default function ExplorePage() {
                                   if (fallback) fallback.style.display = "flex";
                                 }
                               }}
-                              className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                              style={{ opacity: 0 }}
+                              className="w-full h-full object-cover group-hover:scale-106 transition-all duration-700 ease-out relative z-1"
                             />
                           ) : null}
 

@@ -122,7 +122,7 @@ export default function HowItWorksModal({
           <div className="space-y-1.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
             <div className="flex items-center gap-1.5 text-slate-700 font-medium">
               <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span>Secret Proof: Student ID Confirmed</span>
+              <span>Secret Proof: Verified Details Confirmed</span>
             </div>
             <p className="text-[11px] text-emerald-700 font-semibold pl-5">
               Ready for Handover &bull; Amberkhana Hub

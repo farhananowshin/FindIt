@@ -176,13 +176,13 @@ async function sendClaimStatusEmail({ to, recipientName, itemTitle, status, revi
         Review Decision: ${badgeText}
       </div>
       <div style="font-size: 13px; color: #E5E7EB;">
-        ${reviewNotes || (isApproved ? "Please bring your ID card (NID / Student ID) to the designated verification desk to collect your item." : "Ownership proof could not be verified.")}
+        ${reviewNotes || (isApproved ? "Please bring your ID card (National ID or Photo ID) to the designated verification desk to collect your item." : "Ownership proof could not be verified.")}
       </div>
     </div>
 
     ${isApproved ? `
     <p style="font-size: 13px; color: #9CA3AF;">
-      <strong>Next Step:</strong> Visit the designated verification desk during operational hours with your identification card (NID or Student ID).
+      <strong>Next Step:</strong> Visit the designated verification desk during operational hours with your identification card (National ID or Photo ID).
     </p>
     ` : ""}
   `;

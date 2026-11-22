@@ -125,7 +125,7 @@ export default function RecentItemsList({
       lib_main: "Central University Library",
       sci_eng: "Science & Engineering Complex",
       dining_hall: "Campus Cafeteria",
-      stu_union: "Student Activity Center",
+      stu_union: "Central Community Hub",
       sports_rec: "Sports & Recreation Center",
       dorm_east: "East Residence Halls",
       dorm_west: "West Residence Halls",
@@ -194,6 +194,12 @@ export default function RecentItemsList({
   };
 
   const filteredItems = items.filter((item) => {
+    const rawUrl =
+      (item.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0]) ||
+      (item.images && item.images.length > 0 && item.images[0].previewUrl) ||
+      null;
+    if (!rawUrl || typeof rawUrl !== "string" || rawUrl.trim() === "") return false;
+
     const itemType = (item.type || item.reportType || "lost").toLowerCase();
     const matchesType = filterType === "all" || itemType === filterType;
 
@@ -521,10 +527,17 @@ export default function RecentItemsList({
                   {/* Visual Top Preview */}
                   <div>
                     <div className="relative h-52 bg-[#111412] overflow-hidden flex items-center justify-center">
+                      {/* Pulse Shimmer Skeleton Placeholder while loading */}
+                      <div className="absolute inset-0 bg-[#161C18] animate-pulse pointer-events-none" />
+
                       {imageUrl ? (
                         <img
                           src={imageUrl}
                           alt={item.title}
+                          loading="lazy"
+                          onLoad={(e) => {
+                            e.currentTarget.style.opacity = "1";
+                          }}
                           onError={(e) => {
                             const target = e.currentTarget;
                             if (target.src.includes(":3000/dataset_images/")) {
@@ -537,7 +550,8 @@ export default function RecentItemsList({
                               if (fallback) fallback.style.display = "flex";
                             }
                           }}
-                          className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                          style={{ opacity: 0 }}
+                          className="w-full h-full object-cover group-hover:scale-106 transition-all duration-700 ease-out relative z-1"
                         />
                       ) : null}
 

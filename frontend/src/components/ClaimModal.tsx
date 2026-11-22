@@ -229,7 +229,7 @@ export default function ClaimModal({
                   rows={3}
                   value={proofDetails}
                   onChange={(e) => setProofDetails(e.target.value)}
-                  placeholder="e.g. Serial #C02D1234MD6R; purchased from campus bookstore on Sept 15 with receipt available..."
+                  placeholder="e.g. Serial #C02D1234MD6R; purchased from Al-Hamra store with purchase receipt available..."
                   className="w-full p-3 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                 />
               </div>
@@ -238,9 +238,9 @@ export default function ClaimModal({
               <div className="p-3 bg-[#171A18] rounded-xl border border-[#383E39] text-xs text-[#A9B0AA] flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-semibold text-[#A9B0AA] block">Claimant</span>
-                  <span className="font-bold text-[#F3F4EF]">{user?.name}</span> ({user?.studentId || user?.email})
+                  <span className="font-bold text-[#F3F4EF]">{user?.name}</span> ({user?.email})
                 </div>
-                <span className="text-[11px] text-[#45B58A] font-semibold">Logged in Student</span>
+                <span className="text-[11px] text-[#45B58A] font-semibold">Verified Citizen</span>
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-3">

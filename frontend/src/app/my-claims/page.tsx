@@ -1,27 +1,30 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
-  ClipboardList,
   CheckCircle2,
   Clock,
   XCircle,
   AlertCircle,
-  Lock,
   MapPin,
   Calendar,
   RefreshCw,
   ArrowLeft,
-  ShieldCheck,
-  Info,
   LogIn,
+  Search,
+  Tag,
+  Printer,
+  X,
+  Building2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import AuthModal from "../../components/AuthModal";
 import { useAuth } from "../../context/AuthContext";
-import { fetchMyClaims } from "../../services/api";
+import { fetchMyClaims, resolveImageUrl } from "../../services/api";
 import { Claim, StoredItemReport, CAMPUS_LOCATIONS } from "../../types/item";
 
 export default function MyClaimsPage() {
@@ -30,8 +33,18 @@ export default function MyClaimsPage() {
   const [isFetchingClaims, setIsFetchingClaims] = useState(false);
   const isLoading = authLoading || isFetchingClaims;
   const [error, setError] = useState<string | null>(null);
+
+  // Modals & UI States
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
+  const [filterStatus, setFilterStatus] = useState<"all" | "approved" | "pending" | "rejected">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activePassClaim, setActivePassClaim] = useState<Claim | null>(null);
+  const [expandedClaims, setExpandedClaims] = useState<{ [id: string]: boolean }>({});
+
+  const toggleDetails = (id: string) => {
+    setExpandedClaims((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const loadClaims = useCallback(async () => {
     if (!token) return;
@@ -45,7 +58,7 @@ export default function MyClaimsPage() {
       const message =
         err instanceof Error
           ? err.message
-          : "Failed to load your ownership claims. Please try again.";
+          : "Could not load claims. Please try again.";
       setError(message);
     } finally {
       setIsFetchingClaims(false);
@@ -64,7 +77,7 @@ export default function MyClaimsPage() {
             const message =
               err instanceof Error
                 ? err.message
-                : "Failed to load your ownership claims. Please try again.";
+                : "Could not load claims. Please try again.";
             setError(message);
           }
         });
@@ -75,27 +88,56 @@ export default function MyClaimsPage() {
     };
   }, [authLoading, token]);
 
-  const getLocationName = (locId: string) => {
-    return CAMPUS_LOCATIONS.find((l) => l.id === locId)?.name || locId;
+  const getLocationText = (item: StoredItemReport) => {
+    const zoneId = item.location?.campusZone || item.campusLocation || "";
+    const specific = item.location?.specificLocation || item.specificLocation || "";
+    const matched = CAMPUS_LOCATIONS.find((l) => l.id === zoneId);
+    const zoneName = matched ? matched.name.split(" (")[0] : zoneId;
+
+    if (specific && zoneName) return `${specific}, ${zoneName}`;
+    return specific || zoneName || "Sylhet";
   };
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return "";
     try {
       const d = new Date(dateStr);
       return d.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
       });
     } catch {
       return dateStr;
     }
   };
 
+  // Metrics calculation
+  const stats = useMemo(() => {
+    const total = claims.length;
+    const approved = claims.filter((c) => c.status === "approved").length;
+    const pending = claims.filter((c) => c.status === "pending").length;
+    const rejected = claims.filter((c) => c.status === "rejected").length;
+    return { total, approved, pending, rejected };
+  }, [claims]);
+
+  // Filtered claims
+  const filteredClaims = useMemo(() => {
+    return claims.filter((claim) => {
+      if (filterStatus !== "all" && claim.status !== filterStatus) return false;
+      if (searchQuery.trim() !== "") {
+        const q = searchQuery.toLowerCase().trim();
+        const item = typeof claim.itemId === "object" && claim.itemId ? (claim.itemId as StoredItemReport) : null;
+        const titleMatch = item?.title?.toLowerCase().includes(q);
+        const categoryMatch = item?.category?.toLowerCase().includes(q);
+        if (!titleMatch && !categoryMatch) return false;
+      }
+      return true;
+    });
+  }, [claims, filterStatus, searchQuery]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#171A18] text-[#F3F4EF]">
+    <div className="min-h-screen flex flex-col bg-[#141715] text-[#F3F4EF]">
       <Navbar
         onOpenAuth={(tab) => {
           setAuthModalTab(tab);
@@ -103,290 +145,283 @@ export default function MyClaimsPage() {
         }}
       />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Breadcrumb & Navigation */}
-        <div className="flex items-center justify-between mb-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Simple Top Navigation */}
+        <div className="flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#A9B0AA] hover:text-[#45B58A] transition"
+            className="inline-flex items-center gap-1.5 text-xs text-[#8A968D] hover:text-[#45B58A] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Campus Feed
+            <span>Back to Home</span>
           </Link>
 
           {user && (
             <button
               onClick={loadClaims}
               disabled={isLoading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#383E39] bg-[#252B27] hover:bg-[#383E39] text-xs font-semibold text-[#F3F4EF] transition shadow-xs disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#2B352E] bg-[#1B221D] hover:bg-[#232D26] text-xs text-[#F3F4EF] transition cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-[#45B58A] ${isLoading ? "animate-spin" : ""}`} />
-              Refresh
+              <span>Refresh</span>
             </button>
           )}
         </div>
 
-        {/* Page Header */}
-        <div className="bg-[#252B27] rounded-3xl border border-[#383E39] p-6 sm:p-8 shadow-xl mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-[#171A18] text-[#45B58A] border border-[#383E39] rounded-2xl shrink-0">
-                <ClipboardList className="w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F3F4EF] tracking-tight">
-                  My Ownership Claims
-                </h1>
-                <p className="text-sm text-[#A9B0AA] mt-1">
-                  Track the status of items you have claimed. All claims undergo mandatory human-in-the-loop review by campus administrators.
-                </p>
-              </div>
+        {/* Clean, Simple Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#232D26]">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#F3F4EF] tracking-tight">
+              My Claims
+            </h1>
+            <p className="text-xs sm:text-sm text-[#8A968D] mt-1">
+              Check the status of your claimed items and view pickup instructions.
+            </p>
+          </div>
+
+          {user && (
+            <div className="text-xs text-[#8A968D] bg-[#1A221D] border border-[#263229] px-3.5 py-1.5 rounded-xl self-start sm:self-auto">
+              Logged in as <span className="font-semibold text-[#F3F4EF]">{user.name}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Easy Filter Buttons & Search */}
+        {user && claims.length > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5">
+              {[
+                { id: "all", label: "All", count: stats.total },
+                { id: "approved", label: "Approved", count: stats.approved },
+                { id: "pending", label: "Under Review", count: stats.pending },
+                { id: "rejected", label: "Declined", count: stats.rejected },
+              ].map((tab) => {
+                const isActive = filterStatus === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setFilterStatus(tab.id as typeof filterStatus)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-[#45B58A] text-[#111412]"
+                        : "bg-[#1B221D] text-[#8A968D] hover:text-[#F3F4EF] border border-[#27332A]"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span className="text-[10px] opacity-75">({tab.count})</span>
+                  </button>
+                );
+              })}
             </div>
 
-            {user && (
-              <div className="self-start sm:self-center bg-[#171A18] px-4 py-2.5 rounded-2xl border border-[#383E39] text-xs">
-                <span className="text-[#A9B0AA] block">Logged in as</span>
-                <span className="font-bold text-[#F3F4EF]">{user.name}</span>
-                <span className="text-[#A9B0AA] block text-[11px]">{user.email}</span>
-              </div>
-            )}
+            <div className="relative sm:w-56">
+              <Search className="w-3.5 h-3.5 text-[#738277] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by title..."
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#1A221D] border border-[#2A372E] rounded-lg text-[#F3F4EF] placeholder-[#738277] focus:outline-none focus:border-[#45B58A]"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content States */}
         {authLoading ? (
-          <div className="bg-[#252B27] rounded-3xl border border-[#383E39] p-12 text-center text-[#F3F4EF]">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#45B58A] mx-auto mb-3" />
-            <p className="text-sm font-semibold text-[#A9B0AA]">Verifying campus session...</p>
+          <div className="rounded-xl bg-[#1B221D] border border-[#263229] p-12 text-center text-xs text-[#8A968D]">
+            <RefreshCw className="w-6 h-6 animate-spin text-[#45B58A] mx-auto mb-2" />
+            Loading your account...
           </div>
         ) : !user ? (
-          /* Unauthenticated State */
-          <div className="bg-[#252B27] rounded-3xl border border-[#383E39] p-10 text-center shadow-xl text-[#F3F4EF]">
-            <div className="w-14 h-14 bg-[#171A18] text-[#45B58A] border border-[#383E39] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <LogIn className="w-7 h-7" />
-            </div>
-            <h2 className="text-xl font-bold text-[#F3F4EF] mb-2">Student Authentication Required</h2>
-            <p className="text-sm text-[#A9B0AA] max-w-md mx-auto mb-6">
-              Please log in or register with your student account to view and manage your filed ownership claims.
-            </p>
+          <div className="rounded-xl bg-[#1B221D] border border-[#263229] p-10 text-center space-y-3 max-w-sm mx-auto">
+            <LogIn className="w-8 h-8 text-[#45B58A] mx-auto" />
+            <h2 className="text-base font-bold text-[#F3F4EF]">Please log in</h2>
+            <p className="text-xs text-[#8A968D]">Log in to see and manage your submitted claims.</p>
             <button
               onClick={() => {
                 setAuthModalTab("login");
                 setAuthModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-sm shadow-sm transition"
+              className="px-4 py-2 rounded-lg bg-[#45B58A] hover:bg-[#3ca37c] text-[#111412] font-semibold text-xs cursor-pointer"
             >
-              <LogIn className="w-4 h-4" />
-              Log In to FindIt
+              Log In
             </button>
           </div>
         ) : error ? (
-          /* Error State */
-          <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Error loading claims:</span>
-              <p className="mt-0.5">{error}</p>
-            </div>
+          <div className="p-3.5 rounded-lg bg-rose-950/30 border border-rose-900/50 text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{error}</span>
           </div>
         ) : isLoading ? (
-          /* Loading Claims */
-          <div className="bg-[#252B27] rounded-3xl border border-[#383E39] p-12 text-center text-[#F3F4EF]">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#45B58A] mx-auto mb-3" />
-            <p className="text-sm font-semibold text-[#A9B0AA]">Loading your ownership claims...</p>
+          <div className="rounded-xl bg-[#1B221D] border border-[#263229] p-12 text-center text-xs text-[#8A968D]">
+            <RefreshCw className="w-6 h-6 animate-spin text-[#45B58A] mx-auto mb-2" />
+            Loading claims...
           </div>
         ) : claims.length === 0 ? (
-          /* Empty State */
-          <div className="bg-[#252B27] rounded-3xl border border-[#383E39] p-12 text-center shadow-xl text-[#F3F4EF]">
-            <div className="w-14 h-14 bg-[#171A18] text-[#45B58A] border border-[#383E39] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <ClipboardList className="w-7 h-7" />
-            </div>
-            <h3 className="text-lg font-bold text-[#F3F4EF] mb-1">No Claims Submitted Yet</h3>
-            <p className="text-sm text-[#A9B0AA] max-w-md mx-auto mb-6">
-              You haven&apos;t filed any ownership claims yet. If you see a found item that belongs to you on campus, submit a claim with your confidential verification proof.
+          <div className="rounded-xl bg-[#1B221D] border border-[#263229] p-10 text-center space-y-3">
+            <h3 className="text-sm font-bold text-[#F3F4EF]">No claims submitted yet</h3>
+            <p className="text-xs text-[#8A968D] max-w-xs mx-auto">
+              If you found your item in the lost &amp; found feed, submit a claim to get it back.
             </p>
             <Link
-              href="/#recent-items"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#45B58A] hover:bg-[#3ca37c] text-[#171A18] font-bold text-xs transition"
+              href="/explore"
+              className="inline-block px-4 py-1.5 rounded-lg bg-[#45B58A] text-[#111412] font-semibold text-xs"
             >
-              Browse Campus Found Items
+              Browse Items
             </Link>
           </div>
         ) : (
-          /* Claims List */
-          <div className="space-y-6">
-            {claims.map((claim, index) => {
+          /* Simplified, Clean Cards */
+          <div className="space-y-4">
+            {filteredClaims.map((claim) => {
               const claimId = claim._id || (claim as unknown as { id: string }).id;
               const item =
-                typeof claim.itemId === "object" && claim.itemId
-                  ? (claim.itemId as StoredItemReport)
-                  : null;
+                typeof claim.itemId === "object" && claim.itemId ? (claim.itemId as StoredItemReport) : null;
+
+              const isApproved = claim.status === "approved";
+              const isRejected = claim.status === "rejected";
+              const isPending = claim.status === "pending";
+              const isExpanded = !!expandedClaims[claimId];
+
+              const rawUrl =
+                (item?.imageUrls && item.imageUrls.length > 0 && item.imageUrls[0]) ||
+                (item?.images && item.images.length > 0 && item.images[0].previewUrl) ||
+                null;
+              const imageUrl = resolveImageUrl(rawUrl);
+
               return (
                 <div
                   key={claimId}
-                  style={{ animationDelay: `${(index % 6) * 60}ms` }} className="animate-linear-up linear-card-interactive rounded-3xl overflow-hidden text-[#F3F4EF]"
+                  className="rounded-xl bg-[#1B221D] border border-[#27352B] p-5 space-y-4 hover:border-[#38483B] transition-colors"
                 >
-                  {/* Claim Status Header Bar */}
-                  <div
-                    className={`px-6 py-3.5 border-b border-[#383E39] flex flex-wrap items-center justify-between gap-3 bg-[#1E2320]`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {claim.status === "approved" ? (
-                        <CheckCircle2 className="w-5 h-5 text-[#45B58A]" />
-                      ) : claim.status === "rejected" ? (
-                        <XCircle className="w-5 h-5 text-rose-400" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-[#45B58A] animate-pulse" />
-                      )}
-                      <span className="font-bold text-sm tracking-wide capitalize text-[#F3F4EF]">
-                        Claim Status: {claim.status}
-                      </span>
+                  {/* Top Item Summary Row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      {/* Photo Thumbnail */}
+                      <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-lg overflow-hidden bg-[#141A16] border border-[#28352C] shrink-0">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={item?.title || "Item"}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[#738277]">
+                            <Tag className="w-5 h-5 text-[#45B58A]" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Title & Metadata */}
+                      <div className="space-y-1">
+                        <span className="text-[11px] text-[#7E8C82]">
+                          Claim #{claimId.slice(-6).toUpperCase()} · Filed {formatDate(claim.createdAt)}
+                        </span>
+                        <h3 className="text-base font-bold text-[#F3F4EF] leading-snug">
+                          {item?.title || "Claimed Item"}
+                        </h3>
+                        {item && (
+                          <p className="text-xs text-[#8A968D] flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-[#45B58A] shrink-0" />
+                            <span>{getLocationText(item)}</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="text-xs font-medium text-[#A9B0AA]">
-                      <span>Submitted: {formatDate(claim.createdAt)}</span>
+                    {/* Status Badge */}
+                    <div className="self-start sm:self-auto">
+                      {isApproved && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Approved</span>
+                        </span>
+                      )}
+                      {isPending && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 text-xs font-semibold border border-amber-500/30">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>Under Review</span>
+                        </span>
+                      )}
+                      {isRejected && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 text-xs font-semibold border border-rose-500/30">
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>Declined</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Claim Details Body */}
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Left: Item Information */}
-                      <div className="md:col-span-1 space-y-3 pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-[#383E39] md:pr-6">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#A9B0AA]">
-                          Target Item
-                        </span>
-                        {item ? (
-                          <>
-                            <h3 className="text-lg font-bold text-[#F3F4EF] leading-snug">
-                              {item.title}
-                            </h3>
-                            <div className="flex flex-wrap gap-1.5">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-[#171A18] border border-[#383E39] text-[#A9B0AA]">
-                                {item.category}
-                              </span>
-                              <span
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                  item.status === "claimed"
-                                    ? "bg-[#45B58A]/15 text-[#45B58A] border border-[#45B58A]/30"
-                                    : "bg-[#171A18] text-[#F3F4EF] border border-[#383E39]"
-                                }`}
-                              >
-                                {item.status}
-                              </span>
-                            </div>
-                            <div className="text-xs text-[#A9B0AA] space-y-1 pt-1">
-                              <div className="flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-[#45B58A] shrink-0" />
-                                <span>{getLocationName(item.campusLocation)}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5 text-[#A9B0AA] shrink-0" />
-                                <span>{formatDate(item.dateTime)}</span>
-                              </div>
-                            </div>
-                            {item.description && (
-                              <p className="text-xs text-[#A9B0AA] line-clamp-3 pt-1">
-                                {item.description}
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <div className="text-xs text-[#A9B0AA] italic">
-                            Item report #{typeof claim.itemId === "string" ? claim.itemId : "Linked Report"}
-                          </div>
+                  {/* Clean Status Box */}
+                  {isApproved && (
+                    <div className="rounded-lg bg-emerald-950/20 border border-emerald-500/30 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="space-y-0.5">
+                        <h4 className="font-bold text-emerald-400">Ready for Collection</h4>
+                        <p className="text-[#9DAEA1]">
+                          Your ownership is confirmed. Please bring a photo ID to the Lost &amp; Found desk to pick up your item.
+                        </p>
+                        {claim.reviewNotes && (
+                          <p className="text-[11px] text-emerald-300/90 italic pt-1">
+                            Note from staff: &ldquo;{claim.reviewNotes}&rdquo;
+                          </p>
                         )}
                       </div>
 
-                      {/* Middle & Right: Submitted Evidence & Review Outcome */}
-                      <div className="md:col-span-2 space-y-5">
-                        {/* Submitted Evidence */}
-                        <div className="space-y-3">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#A9B0AA] flex items-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 text-[#45B58A]" />
-                            Your Confidential Proof
-                          </span>
-
-                          <div className="bg-[#171A18] rounded-2xl p-4 border border-[#383E39] space-y-3">
-                            <div>
-                              <span className="text-xs font-semibold text-[#A9B0AA] block">
-                                Secret Verification Answer:
-                              </span>
-                              <p className="text-sm font-medium text-[#F3F4EF] mt-0.5 bg-[#252B27] p-2.5 rounded-xl border border-[#383E39]">
-                                {claim.secretVerificationAnswer}
-                              </p>
-                            </div>
-
-                            <div>
-                              <span className="text-xs font-semibold text-[#A9B0AA] block">
-                                Proof / Unique Identifying Details:
-                              </span>
-                              <p className="text-xs text-[#A9B0AA] mt-0.5 bg-[#252B27] p-2.5 rounded-xl border border-[#383E39] leading-relaxed whitespace-pre-wrap">
-                                {claim.proofDetails}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Admin Review Outcome */}
-                        {claim.status === "approved" && (
-                          <div className="p-4 rounded-2xl bg-[#171A18] border border-[#45B58A]/50 text-xs">
-                            <div className="flex items-center gap-2 text-[#45B58A] font-bold mb-1">
-                              <ShieldCheck className="w-4 h-4 text-[#45B58A]" />
-                              <span>Ownership Approved — Action Required</span>
-                            </div>
-                            <p className="text-[#A9B0AA] mt-1 leading-relaxed">
-                              Your ownership claim has been verified by the campus administration. Please visit the campus lost &amp; found facility with your university ID to retrieve your item.
-                            </p>
-                            {claim.reviewNotes && (
-                              <div className="mt-2.5 pt-2 border-t border-[#383E39]">
-                                <span className="font-semibold text-[#F3F4EF] block">Administrator Instructions:</span>
-                                <p className="mt-0.5 text-[#45B58A] italic font-medium">
-                                  &ldquo;{claim.reviewNotes}&rdquo;
-                                </p>
-                              </div>
-                            )}
-                            {claim.reviewedAt && (
-                              <span className="text-[10px] text-[#A9B0AA] block mt-2">
-                                Verified on {formatDate(claim.reviewedAt)}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {claim.status === "rejected" && (
-                          <div className="p-4 rounded-2xl bg-[#171A18] border border-rose-900/50 text-xs">
-                            <div className="flex items-center gap-2 text-rose-400 font-bold mb-1">
-                              <XCircle className="w-4 h-4 text-rose-400" />
-                              <span>Claim Rejected</span>
-                            </div>
-                            <p className="text-[#A9B0AA] mt-1 leading-relaxed">
-                              The submitted verification answers or proof details did not match the physical item records on file.
-                            </p>
-                            {claim.reviewNotes && (
-                              <div className="mt-2.5 pt-2 border-t border-[#383E39]">
-                                <span className="font-semibold text-[#F3F4EF] block">Reason / Staff Notes:</span>
-                                <p className="mt-0.5 text-rose-400 italic font-medium">
-                                  &ldquo;{claim.reviewNotes}&rdquo;
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {claim.status === "pending" && (
-                          <div className="p-4 rounded-2xl bg-[#171A18] border border-[#383E39] text-xs">
-                            <div className="flex items-center gap-2 text-[#45B58A] font-bold mb-1">
-                              <Info className="w-4 h-4 text-[#45B58A]" />
-                              <span>Pending Human Review</span>
-                            </div>
-                            <p className="text-[#A9B0AA] leading-relaxed">
-                              Your claim is in the verification queue. A campus administrator will review your secret answer against the finder&apos;s hidden verification details. Multimodal AI never automatically confirms ownership.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        onClick={() => setActivePassClaim(claim)}
+                        className="px-3.5 py-1.5 rounded-lg bg-[#45B58A] hover:bg-[#3ca37c] text-[#111412] font-semibold text-xs transition cursor-pointer shrink-0 self-start sm:self-auto"
+                      >
+                        View Pickup Slip
+                      </button>
                     </div>
+                  )}
+
+                  {isPending && (
+                    <div className="rounded-lg bg-amber-950/15 border border-amber-500/25 p-3 text-xs text-[#9DA8A0]">
+                      <span className="font-semibold text-amber-300 block mb-0.5">Review in Progress</span>
+                      An administrator is reviewing your details against the physical item. You will be notified once verified.
+                    </div>
+                  )}
+
+                  {isRejected && (
+                    <div className="rounded-lg bg-rose-950/15 border border-rose-900/30 p-3 text-xs text-[#A89899]">
+                      <span className="font-semibold text-rose-300 block mb-0.5">Claim Declined</span>
+                      The information provided did not match the records for this item.
+                      {claim.reviewNotes && (
+                        <p className="italic text-rose-200 mt-1">&ldquo;{claim.reviewNotes}&rdquo;</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Collapsible Accordion: Clean Submission Details */}
+                  <div className="pt-2 border-t border-[#232D26]">
+                    <button
+                      type="button"
+                      onClick={() => toggleDetails(claimId)}
+                      className="text-xs text-[#8A968D] hover:text-[#F3F4EF] transition flex items-center gap-1 cursor-pointer font-medium"
+                    >
+                      <span>{isExpanded ? "Hide my submitted details" : "View what I submitted"}</span>
+                      {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+
+                    {isExpanded && (
+                      <div className="mt-2.5 p-3 rounded-lg bg-[#141A16] border border-[#242E27] space-y-2 text-xs">
+                        <div>
+                          <span className="text-[#738277] block text-[11px]">Your Security Answer:</span>
+                          <span className="text-[#F3F4EF] font-medium">{claim.secretVerificationAnswer}</span>
+                        </div>
+                        {claim.proofDetails && (
+                          <div>
+                            <span className="text-[#738277] block text-[11px]">Additional Details You Gave:</span>
+                            <span className="text-[#A4B1A7]">{claim.proofDetails}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -394,6 +429,80 @@ export default function MyClaimsPage() {
           </div>
         )}
       </main>
+
+      {/* Clean, Simple Pickup Slip Modal */}
+      {activePassClaim && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-sm rounded-xl bg-[#1B221D] border border-[#2D3A30] p-5 shadow-2xl space-y-4">
+            <button
+              onClick={() => setActivePassClaim(null)}
+              className="absolute top-4 right-4 p-1 rounded-md text-[#8A968D] hover:text-[#F3F4EF] hover:bg-[#253027] transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold text-[#45B58A] uppercase tracking-wider">
+                Authorized Collection
+              </span>
+              <h3 className="text-lg font-bold text-[#F3F4EF]">Item Pickup Slip</h3>
+              <p className="text-xs text-[#8A968D]">
+                Show this slip at the desk to collect your item.
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-[#141B16] border border-[#242E27] p-3.5 space-y-3 text-xs">
+              <div>
+                <span className="text-[10px] text-[#738277] uppercase block">Item</span>
+                <span className="font-bold text-[#F3F4EF] text-sm block">
+                  {typeof activePassClaim.itemId === "object" ? activePassClaim.itemId?.title : "Item"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[10px] text-[#738277] uppercase block">Claimant</span>
+                  <span className="font-semibold text-[#F3F4EF] block truncate">{user?.name}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-[#738277] uppercase block">Claim ID</span>
+                  <span className="font-mono text-[#45B58A] font-semibold block">
+                    #{activePassClaim._id.slice(-6).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-md bg-[#18211A] border border-[#222E25] space-y-0.5">
+                <span className="font-semibold text-[#F3F4EF] flex items-center gap-1.5 text-xs">
+                  <Building2 className="w-3.5 h-3.5 text-[#45B58A]" />
+                  Pickup Desk:
+                </span>
+                <p className="text-[11px] text-[#8A968D]">
+                  Lost &amp; Found Office (Please bring a photo ID or NID)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-1.5 rounded-lg bg-[#232D26] hover:bg-[#2C3830] text-[#F3F4EF] font-semibold text-xs border border-[#2F3E33] transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 text-[#45B58A]" />
+                <span>Print</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePassClaim(null)}
+                className="flex-1 py-1.5 rounded-lg bg-[#45B58A] hover:bg-[#3ca37c] text-[#111412] font-semibold text-xs transition cursor-pointer"
+              >
+                <span>Close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AuthModal
         isOpen={authModalOpen}

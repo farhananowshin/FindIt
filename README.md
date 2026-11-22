@@ -44,9 +44,19 @@ FindIt is an intelligent, privacy-first, explainable lost-and-found matching pla
 * **AI Service Dispatch:** Express communicates via asynchronous HTTP with [`ai-service/main.py`](ai-service/main.py) to extract OpenCLIP visual embeddings and Sentence Transformer contextual vectors.
 * **MongoDB Storage:** [`backend/src/models/ItemReport.js`](backend/src/models/ItemReport.js) stores items and precomputed dense vectors.
 
-### 2. Validation Dataset & Dynamic Online Tuning
-* **Benchmark Dataset:** [`dataset/campus_benchmark_350.json`](dataset/campus_benchmark_350.json) contains **350 ground-truth pairs** (175 positive matches and candidate pools) across electronics, wallets, bags, IDs, books, and keys.
-* **Offline Baseline vs Tuned Weights:** Pre-computed and analyzed in [`ai-service/tests/evaluate_ir_metrics.py`](ai-service/tests/evaluate_ir_metrics.py).
+### 2. Validation Dataset & Research Integration
+* **Research Directory:** [`research/`](research/) contains the complete 500-item dataset (`ground_truth.csv`, `items.csv`, train/val/test splits, 500 images), `grid_search_results.csv`, `optimized_weights.json`, and `final_metrics.csv`.
+* **Validation-Tuned Optimal Weights:**
+  - `visual: 0.20`
+  - `textual: 0.30`
+  - `location: 0.15`
+  - `time: 0.15`
+  - `attributes: 0.20`
+* **Test Evaluation Metrics:**
+  - **P@5:** `0.20`
+  - **R@5:** `1.00` (100% recall of true match within top-5)
+  - **MRR:** `1.00`
+* **Reproducibility Evaluation Script:** Run `python ai-service/evaluate.py` to evaluate and verify test metrics and grid search results against the research benchmarks.
 * **Live Interactive Tuning Console:** [`frontend/src/components/WeightsModal.tsx`](frontend/src/components/WeightsModal.tsx) allows users and admins to dynamically tune weights (`POST /api/items/weights/tune`) on the fly.
 * **Continuous Feedback Loop:** When admins approve/reject claims in [`backend/src/routes/claimRoutes.js`](backend/src/routes/claimRoutes.js), positive/negative match feedback is automatically recorded (`POST /api/weights/feedback`) for closed-loop continuous fine-tuning.
 

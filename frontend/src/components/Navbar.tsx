@@ -51,26 +51,26 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#2C342E] bg-[#141715]/90 backdrop-blur-xl animate-slide-down">
-      {/* Specular hairline highlight along top border with emerald glow */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#45B58A]/30 to-transparent pointer-events-none" />
+    <header className="sticky top-0 z-40 w-full border-b border-[#242C26] bg-[#121513]/75 backdrop-blur-md animate-slide-down transition-all duration-300">
+      {/* Ultra-subtle specular hairline along top border with emerald shimmer */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#45B58A]/25 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 sm:h-[60px]">
           {/* Logo / Branding + Live Status Indicator */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#1C221E] border border-[#313A33] text-[#45B58A] group-hover:border-[#45B58A]/60 group-hover:scale-105 transition-all shadow-xs">
-                <Compass className="w-5 h-5" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#161C18] border border-[#2B372F] text-[#45B58A] group-hover:border-[#45B58A]/60 group-hover:scale-105 transition-all shadow-xs">
+                <Compass className="w-4 h-4" />
               </div>
               <div className="flex items-center">
-                <span className="text-xl font-bold tracking-tight text-[#F3F4EF]">
+                <span className="text-lg font-bold tracking-tight text-[#F3F4EF]">
                   Find<span className="text-[#45B58A]">It</span>
                 </span>
               </div>
             </Link>
 
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-widest uppercase bg-[#1C221E] text-[#C4CBC5] border border-[#313A33] shadow-xs">
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-[#161C18] text-[#8F9C92] border border-[#253128]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#45B58A] animate-pulse" />
               <span>SYLHET</span>
             </div>
@@ -120,23 +120,6 @@ export default function Navbar({
               </span>
               <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
             </Link>
-
-            {user?.role !== "admin" && (
-              <Link
-                href="/benchmark"
-                className={`relative group px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-                  pathname === "/benchmark"
-                    ? "text-[#45B58A] bg-[#1C221E] border border-[#45B58A]/40 shadow-xs"
-                    : "text-[#C4CBC5] hover:text-[#F3F4EF]"
-                }`}
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <BarChart3 className="w-3.5 h-3.5 text-[#45B58A]" />
-                  <span>Benchmark</span>
-                </span>
-                <span className="absolute inset-0 rounded-xl bg-[#1C221E] border border-[#313A33] opacity-0 group-hover:opacity-100 group-hover:scale-100 scale-95 transition-all duration-200 pointer-events-none" />
-              </Link>
-            )}
 
             {/* Citizen Protected Nav Links */}
             {user && user.role !== "admin" && (
@@ -215,14 +198,14 @@ export default function Navbar({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onOpenAuth?.("login")}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#C4CBC5] hover:text-[#F3F4EF] hover:bg-[#1C221E] rounded-xl transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#A7B3A9] hover:text-white hover:bg-[#18201B] rounded-lg transition-colors cursor-pointer"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-[#A2ABA4]" />
+                  <LogIn className="w-3.5 h-3.5 text-[#7E8B80]" />
                   Sign In
                 </button>
                 <button
                   onClick={() => onOpenAuth?.("register")}
-                  className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-bold text-[#141715] bg-[#45B58A] hover:bg-[#3ca37c] rounded-xl shadow-md shadow-[#45B58A]/15 active:scale-95 transition cursor-pointer"
+                  className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-bold text-[#111412] bg-[#45B58A] hover:bg-[#4ed09e] rounded-lg shadow-sm hover:shadow-[0_0_16px_rgba(69,181,138,0.35)] active:scale-95 transition-all cursor-pointer"
                 >
                   Create Account
                 </button>
@@ -282,17 +265,6 @@ export default function Navbar({
               <MapPin className="w-4 h-4 text-[#45B58A]" />
               Map
             </Link>
-
-            {user?.role !== "admin" && (
-              <Link
-                href="/benchmark"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#45B58A] hover:bg-[#45B58A]/10 rounded-xl text-left transition"
-              >
-                <BarChart3 className="w-4 h-4 text-[#45B58A]" />
-                AI Benchmark (350 Dataset)
-              </Link>
-            )}
 
             {user && user.role !== "admin" && (
               <Link

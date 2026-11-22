@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Compass, Shield, Heart, Sparkles, X, Lock, FileText, ArrowUpRight } from "lucide-react";
 
 interface FooterProps {
@@ -100,6 +101,11 @@ export default function Footer({ onOpenProposal, onOpenWeights }: FooterProps) {
                     <button type="button" onClick={onOpenWeights} className="hover:text-[#F3F4EF] transition cursor-pointer text-left">
                       Location Scoring
                     </button>
+                  </li>
+                  <li>
+                    <Link href="/benchmark" className="hover:text-[#45B58A] transition text-left flex items-center gap-1">
+                      AI Performance &amp; Metrics
+                    </Link>
                   </li>
                   {onOpenProposal && (
                     <li>
@@ -214,7 +220,7 @@ export default function Footer({ onOpenProposal, onOpenWeights }: FooterProps) {
                   </p>
                   <h4 className="font-semibold text-[#F3F4EF] text-sm">2. Contact Information Security</h4>
                   <p>
-                    Personal phone numbers and student email addresses are masked by default and only disclosed to authenticated administrators or when a claim has been verified and approved.
+                    Personal phone numbers and contact email addresses are masked by default and only disclosed to authenticated administrators or when a claim has been verified and approved.
                   </p>
                   <h4 className="font-semibold text-[#F3F4EF] text-sm">3. Multimodal Vector Processing</h4>
                   <p>
@@ -224,7 +230,7 @@ export default function Footer({ onOpenProposal, onOpenWeights }: FooterProps) {
               ) : (
                 <>
                   <div className="p-3 rounded-xl bg-[#171A18] border border-[#383E39] text-[#F3F4EF] font-medium">
-                    🤝 FindIt operates as a trusted community recovery network for citizens and students across Sylhet.
+                    🤝 FindIt operates as a trusted community recovery network for citizens across Sylhet.
                   </div>
                   <h4 className="font-semibold text-[#F3F4EF] text-sm">1. Community Good Samaritan Guidelines</h4>
                   <p>
@@ -232,11 +238,11 @@ export default function Footer({ onOpenProposal, onOpenWeights }: FooterProps) {
                   </p>
                   <h4 className="font-semibold text-[#F3F4EF] text-sm">2. Safe Handover Points in Sylhet</h4>
                   <p>
-                    All physical item exchanges should take place at official, well-lit public hubs—such as university proctor offices, library reception desks, or verified transit desks in Zindabazar, Amberkhana, and Shibganj.
+                    All physical item exchanges should take place at official, well-lit public hubs—such as civic reception desks, or verified transit desks in Zindabazar, Amberkhana, and Shibganj.
                   </p>
                   <h4 className="font-semibold text-[#F3F4EF] text-sm">3. Fraud Prevention</h4>
                   <p>
-                    Submitting false claims or pretending to own another student&apos;s lost device is strictly prohibited and subject to account suspension and campus disciplinary referral.
+                    Submitting false claims or pretending to own another citizen&apos;s lost property is strictly prohibited and subject to account suspension and legal reporting.
                   </p>
                 </>
               )}

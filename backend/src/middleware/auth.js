@@ -1,10 +1,12 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const TokenBlacklist = require("../models/TokenBlacklist");
 const { getJwtSecret } = require("../config/security");
 
 /**
  * Middleware: Authenticates JWT token from Authorization header (Bearer <token>).
- * Verifies token signature, expiration, and ensures user account still exists in MongoDB.
+ * Verifies token signature, expiration, checks blacklist (revocation),
+ * and ensures user account still exists in MongoDB.
  */
 async function authenticateToken(req, res, next) {
   try {
@@ -21,6 +23,15 @@ async function authenticateToken(req, res, next) {
       return res.status(401).json({
         success: false,
         message: "Authentication token is missing.",
+      });
+    }
+
+    // Check if token has been revoked / logged out
+    const isBlacklisted = await TokenBlacklist.exists({ token });
+    if (isBlacklisted) {
+      return res.status(401).json({
+        success: false,
+        message: "Token has been revoked. Please log in again.",
       });
     }
 
@@ -59,8 +70,10 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // Attach verified user identity from trusted server-side DB
+    // Attach verified user identity and raw token to request
     req.user = user;
+    req.token = token;
+    req.tokenPayload = decoded;
     next();
   } catch (error) {
     console.error("❌ Auth middleware error:", error);

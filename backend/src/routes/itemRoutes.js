@@ -271,6 +271,11 @@ router.get("/", async (req, res) => {
       ];
     }
 
+    // Only return items with images unless withEmptyImages is explicitly set
+    if (req.query.withEmptyImages !== "true") {
+      query["imageUrls.0"] = { $exists: true, $ne: null };
+    }
+
     // Fetch from MongoDB, sorting newest first, strictly excluding secretVerificationDetail
     const items = await ItemReport.find(query)
       .select("-secretVerificationDetail -submitterEmail -submitterPhone -submitterStudentId")
@@ -485,7 +490,7 @@ router.post("/match-feedback", authenticateToken, async (req, res) => {
  * @desc    Fetch comprehensive cache and fallback telemetry from backend and AI service
  * @access  Public
  */
-router.get("/cache-telemetry", async (req, res) => {
+router.get("/cache-telemetry", authenticateToken, requireRole(["admin"]), async (req, res) => {
   try {
     const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8001";
     const response = await fetch(`${aiServiceUrl}/api/cache/stats`);
@@ -625,7 +630,7 @@ function setCachedMatches(key, data) {
  * @desc    Proxy matching request to the FastAPI AI service (OpenCLIP + S-BERT) with in-memory TTL caching
  * @access  Public
  */
-router.get("/:id/matches", authenticateToken, async (req, res) => {
+router.get("/:id/matches", async (req, res) => {
   try {
     const { id } = req.params;
     const topK = req.query.topK ? parseInt(req.query.topK, 10) : 5;
@@ -860,7 +865,7 @@ Distinctive Marks: ${uniqueMarks || "None specified"}`;
       suggestions.push("Is there any engraved number, vehicle brand logo, or distinct color band?");
       suggestions.push("Is there a USB drive, bottle opener, or tag attached to the bunch?");
     } else if (cat.includes("book") || cat.includes("note") || cat.includes("id_card")) {
-      suggestions.push("What name, handwritten notes, or student ID number is on the first or back page?");
+      suggestions.push("What name, handwritten notes, or identification number is on the first or back page?");
       suggestions.push("Is there any specific bookmark, highlighter color, or folded section?");
       suggestions.push("What specific department, semester, or subject is referenced inside?");
     } else {

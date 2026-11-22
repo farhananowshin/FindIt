@@ -248,30 +248,55 @@
   animation-delay: 500ms;
 }
 
-/* 3. Linear Signature Text Shimmer Reflection */
+/* 3. Linear Signature Flowing Beam Text Shimmer */
 @keyframes linearTextShimmer {
   0% {
-    background-position: -200% 0;
+    background-position: -250% center;
   }
   100% {
-    background-position: 200% 0;
+    background-position: 250% center;
   }
 }
 
-.animate-linear-text-shimmer {
+/* Full Headline Flowing Beam (Silver-to-White with Emerald Highlights) */
+.animate-headline-shimmer {
   background: linear-gradient(
-    90deg,
-    #45B58A 0%,
-    #A8F3D6 45%,
-    #FFFFFF 50%,
-    #A8F3D6 55%,
-    #45B58A 100%
+    100deg,
+    #E8EDE9 0%,
+    #E8EDE9 35%,
+    #FFFFFF 48%,
+    #6EE7B7 50%,
+    #FFFFFF 52%,
+    #E8EDE9 65%,
+    #E8EDE9 100%
   );
-  background-size: 200% auto;
+  background-size: 250% auto;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: linearTextShimmer 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: linearTextShimmer 4s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* FindIt Brand Word Shimmer (Vibrant Emerald with Radiant Pure White Core) */
+.animate-linear-text-shimmer {
+  background: linear-gradient(
+    100deg,
+    #34D399 0%,
+    #45B58A 30%,
+    #A7F3D0 46%,
+    #FFFFFF 50%,
+    #A7F3D0 54%,
+    #45B58A 70%,
+    #34D399 100%
+  );
+  background-size: 250% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: linearTextShimmer 4s ease-in-out infinite;
+  display: inline-block;
+  filter: drop-shadow(0 0 16px rgba(69, 181, 138, 0.35));
 }
 
 /* 4. Linear Spotlight Card Hover & Top Specular Highlight */

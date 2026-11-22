@@ -84,41 +84,29 @@ export interface StoredItemReport {
 }
 
 export const CAMPUS_LOCATIONS: CampusLocation[] = [
-  // Sylhet Metropolitan City Hubs
+  // Sylhet Metropolitan City Hubs & Neighborhoods
   { id: "syl_zinda", name: "Zindabazar Commercial Center (Al-Hamra / Blue Water)", zone: "Sylhet City Center", lat: 24.8949, lng: 91.8687 },
   { id: "syl_amber", name: "Amberkhana Point & Transit Hub", zone: "Sylhet North Hub", lat: 24.9037, lng: 91.8706 },
   { id: "syl_bandar", name: "Bandarbazar & Court Point (Keane Bridge / Surma)", zone: "Old Sylhet & Riverfront", lat: 24.8898, lng: 91.8690 },
   { id: "syl_rail_bus", name: "Kadamtali Bus Terminal & Sylhet Railway Station", zone: "South Sylhet Transit", lat: 24.8770, lng: 91.8715 },
-  { id: "syl_shibganj", name: "Shibganj & Tilagarh (MC College Area)", zone: "East Sylhet", lat: 24.8990, lng: 91.9050 },
-  { id: "syl_sust", name: "Kumargaon / SUST Campus Hub", zone: "Northwest Sylhet", lat: 24.9172, lng: 91.8319 },
-  { id: "syl_mu", name: "Bateshwar / Metropolitan University Campus", zone: "East Sylhet Suburb", lat: 24.8988, lng: 91.9715 },
+  { id: "syl_shibganj", name: "Shibganj & Tilagarh Area", zone: "East Sylhet", lat: 24.8990, lng: 91.9050 },
+  { id: "syl_sust", name: "Kumargaon & Akhalia Hub", zone: "Northwest Sylhet", lat: 24.9172, lng: 91.8319 },
+  { id: "syl_mu", name: "Bateshwar & Subidbazar Hub", zone: "East Sylhet Suburb", lat: 24.8988, lng: 91.9715 },
   { id: "syl_upashahar", name: "Shahjalal Upashahar Main Road", zone: "Sylhet Residential Hub", lat: 24.8870, lng: 91.8850 },
-  { id: "syl_osmani_med", name: "MAG Osmani Medical College & Hospital", zone: "Medical Core", lat: 24.8980, lng: 91.8540 },
-  { id: "syl_dargah", name: "Hazrat Shah Jalal Dargah Sharif", zone: "Historic Core", lat: 24.9015, lng: 91.8720 },
+  { id: "syl_osmani_med", name: "MAG Osmani Medical Area & Hospital", zone: "Medical Core", lat: 24.8980, lng: 91.8540 },
+  { id: "syl_dargah", name: "Hazrat Shah Jalal Dargah Area", zone: "Historic Core", lat: 24.9015, lng: 91.8720 },
   { id: "syl_airport", name: "Osmani International Airport (ZIA)", zone: "Sylhet North Perimeter", lat: 24.9632, lng: 91.8714 },
-
-  // Campus Core Landmarks
-  { id: "lib_main", name: "Central University Library", zone: "Academic Core", lat: 24.8988, lng: 91.9715 },
-  { id: "sci_eng", name: "Science & Engineering Complex", zone: "North Campus", lat: 24.8995, lng: 91.9710 },
-  { id: "stu_union", name: "Student Union & Activity Center", zone: "Central Campus", lat: 24.8985, lng: 91.9720 },
-  { id: "dining_hall", name: "Campus Cafeteria & Dining Hall", zone: "Central Campus", lat: 24.8980, lng: 91.9718 },
-  { id: "sports_rec", name: "Sports & Recreation Center", zone: "South Campus", lat: 24.8975, lng: 91.9708 },
-  { id: "dorm_east", name: "East Campus Residence Halls", zone: "Residential East", lat: 24.8990, lng: 91.9730 },
-  { id: "dorm_west", name: "West Campus Residence Halls", zone: "Residential West", lat: 24.8992, lng: 91.9700 },
-  { id: "auditorium", name: "Grand Auditorium & Hall A-C", zone: "Arts & Humanities", lat: 24.8982, lng: 91.9725 },
-  { id: "admin_bldg", name: "Administration & Registrar Building", zone: "Central Campus", lat: 24.8987, lng: 91.9705 },
-  { id: "bus_stop", name: "Campus Shuttle Terminal / Bus Stop", zone: "Transit", lat: 24.8978, lng: 91.9735 },
-  { id: "other", name: "Other Sylhet / Metropolitan Location", zone: "Greater Sylhet", lat: 24.8949, lng: 91.8687 },
+  { id: "other", name: "Other Sylhet City Location", zone: "Greater Sylhet", lat: 24.8949, lng: 91.8687 },
 ];
 
 export const ITEM_CATEGORIES: { id: ItemCategory; label: string; icon: string }[] = [
-  { id: "electronics", label: "Electronics (Laptops, Phones, Earbuds)", icon: "Laptop" },
-  { id: "id_cards", label: "Student IDs, Cards & Documents", icon: "CreditCard" },
+  { id: "electronics", label: "Electronics (Phones, Laptops, Earbuds)", icon: "Laptop" },
+  { id: "id_cards", label: "NID, Passports, Driving Licenses & Cards", icon: "CreditCard" },
   { id: "keys", label: "Keys & Keychains", icon: "Key" },
-  { id: "bags_wallets", label: "Backpacks, Purses & Wallets", icon: "Briefcase" },
-  { id: "clothing", label: "Clothing, Jackets & Hats", icon: "Shirt" },
-  { id: "books_notes", label: "Textbooks, Notebooks & Stationary", icon: "BookOpen" },
-  { id: "bottles_accessories", label: "Water Bottles, Umbrellas & Glasses", icon: "Coffee" },
+  { id: "bags_wallets", label: "Wallets, Bags & Backpacks", icon: "Briefcase" },
+  { id: "clothing", label: "Clothing, Jackets & Accessories", icon: "Shirt" },
+  { id: "books_notes", label: "Documents, Books & Files", icon: "BookOpen" },
+  { id: "bottles_accessories", label: "Bottles, Watches, Glasses & Everyday Carry", icon: "Coffee" },
   { id: "other", label: "Other Miscellaneous Items", icon: "HelpCircle" },
 ];
 

@@ -207,20 +207,24 @@ export default function Home() {
 
       {/* Hero Section: Centered, Focused Sylhet Lost & Found Network (Visible on Feed Tab) */}
       {activeTab === "feed" && (
-        <section className="relative min-h-[72vh] lg:min-h-[76vh] flex flex-col justify-center overflow-hidden pt-12 pb-16 border-b border-[#2C342E] bg-transparent">
+        <section className="relative min-h-[calc(100vh-4.5rem)] flex flex-col justify-center overflow-hidden py-16 lg:py-24 border-b border-[#2C342E] bg-transparent">
           {/* Real Sylhet Cityscape Skyline Backdrop with Calm Ambient Glow (No mouse movement aura) */}
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            {/* Real Sylhet Cityscape Skyline - Clearer & brighter opacity */}
             <img
               src="/images/sylhet_city_hero.jpg"
               alt="Sylhet Keane Bridge Cityscape"
-              className="w-full h-full object-cover object-center opacity-50 transform scale-100"
+              className="w-full h-full object-cover object-center opacity-65 transform scale-100 transition-opacity duration-700"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#141715] via-[#141715]/75 to-[#141715]/45" />
-            <div className="absolute inset-0 bg-radial from-transparent via-[#141715]/30 to-[#141715]/85" />
+            
+            {/* Lighter, balanced gradient overlays (less muddy black, more vibrant visual flow) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#121513] via-[#121513]/40 to-[#121513]/25" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#121513_85%)] opacity-60" />
 
-            {/* Balanced Ambient Emerald Lighting Accents */}
-            <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-[#45B58A]/10 blur-[100px] pointer-events-none" />
-            <div className="absolute top-1/3 left-10 w-[380px] h-[380px] rounded-full bg-[#45B58A]/8 blur-[90px] pointer-events-none" />
+            {/* Central Emerald Radiant Ambient Glow - Gives life and eliminates flat heavy dark */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] rounded-full bg-[#45B58A]/16 blur-[140px] pointer-events-none" />
+            <div className="absolute top-1/4 right-1/4 w-[420px] h-[420px] rounded-full bg-[#45B58A]/12 blur-[110px] pointer-events-none" />
+            <div className="absolute top-1/3 left-10 w-[360px] h-[360px] rounded-full bg-[#45B58A]/10 blur-[100px] pointer-events-none" />
           </div>
 
           <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
@@ -228,17 +232,17 @@ export default function Home() {
             <div>
               <div className="animate-linear-blur animation-delay-100 linear-shimmer-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#1C221E]/90 text-[#45B58A] border border-[#313A33] hover:border-[#45B58A]/50 backdrop-blur-md shadow-sm transition-colors cursor-default">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#45B58A] animate-pulse" />
-                <span>SYLHET LOST &amp; FOUND NETWORK</span>
+                <span>Sylhet Lost &amp; Found Network</span>
               </div>
             </div>
 
             {/* 2. Headline: Linear Blur Entrance + Trademark Flowing Light Shimmer */}
-            <h1 className="animate-linear-blur animation-delay-200 text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-[#F3F4EF] leading-[1.08] select-none">
-              <span className="relative inline-block hover:scale-[1.02] transition-transform duration-300">
+            <h1 className="animate-linear-blur animation-delay-200 text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] select-none">
+              <span className="animate-headline-shimmer transition-transform duration-300 hover:scale-[1.02]">
                 Lost it?
               </span>{" "}
               <span className="relative inline-block">
-                <span className="animate-linear-text-shimmer font-black">
+                <span className="animate-linear-text-shimmer font-black transition-transform duration-300 hover:scale-[1.03]">
                   FindIt.
                 </span>
               </span>
@@ -250,18 +254,18 @@ export default function Home() {
             </p>
 
             {/* 4. Action Buttons: Linear Staggered Blur Entrance + Tactile Micro-Interactions */}
-            <div className="animate-linear-blur animation-delay-400 flex flex-wrap items-center justify-center gap-3.5 pt-2">
+            <div className="animate-linear-blur animation-delay-400 flex flex-wrap items-center justify-center gap-3.5 pt-4">
               <button
                 type="button"
                 onClick={handleOpenFoundReport}
-                className="linear-btn-primary px-6 py-3 rounded-xl text-xs sm:text-sm cursor-pointer"
+                className="linear-btn-primary px-7 py-3.5 rounded-xl text-xs sm:text-sm font-bold cursor-pointer shadow-lg shadow-[#45B58A]/25"
               >
                 Report Found Item
               </button>
               <button
                 type="button"
                 onClick={handleOpenLostReport}
-                className="linear-btn-secondary px-6 py-3 rounded-xl text-xs sm:text-sm cursor-pointer"
+                className="linear-btn-secondary px-7 py-3.5 rounded-xl text-xs sm:text-sm font-semibold cursor-pointer"
               >
                 Report Lost Item
               </button>

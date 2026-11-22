@@ -491,7 +491,7 @@ router.patch("/:id/status", authenticateToken, requireRole(["admin"]), async (re
           emailService
             .sendClaimStatusEmail({
               to: claimant.email,
-              recipientName: claimant.name || "Student",
+              recipientName: claimant.name || "Citizen",
               itemTitle: item.title,
               status: targetStatus,
               reviewNotes: claim.reviewNotes,

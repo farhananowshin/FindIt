@@ -1,0 +1,21 @@
+{
+  "initial_weights": {
+    "visual": 0.4,
+    "text": 0.25,
+    "location": 0.15,
+    "time": 0.1,
+    "attributes": 0.1
+  },
+  "optimized_weights": {
+    "visual": 0.2,
+    "text": 0.3,
+    "location": 0.15,
+    "time": 0.15,
+    "attributes": 0.2
+  },
+  "validation_metrics": {
+    "P@5": 0.2,
+    "R@5": 1.0,
+    "MRR": 1.0
+  }
+}

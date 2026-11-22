@@ -245,7 +245,7 @@ export default function AnonymousChatModal({
           </button>
           <button
             type="button"
-            onClick={() => applyQuickChip("I will bring my National ID / Student ID for physical verification.")}
+            onClick={() => applyQuickChip("I will bring my National ID / Photo ID for physical verification.")}
             className="text-[11px] px-2.5 py-1 rounded-full bg-[#1A221D] hover:bg-[#232F27] text-[#C4CEC6] border border-[#2B382F] hover:border-[#45B58A]/40 transition shrink-0"
           >
             🆔 Bringing ID

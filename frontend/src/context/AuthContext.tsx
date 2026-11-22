@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { UserProfile, AuthResponse } from "../types/item";
-import { fetchCurrentUser, loginUser, registerUser, googleLoginUser } from "../services/api";
+import { fetchCurrentUser, loginUser, registerUser, googleLoginUser, logoutUser } from "../services/api";
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -104,6 +104,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Notify server to permanently blacklist / invalidate the JWT session token
+    if (token) {
+      logoutUser(token);
+    }
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKEN_KEY);
     }

@@ -407,7 +407,7 @@ export default function ItemUploadForm({
                   <span className="font-semibold text-[#F3F4EF]">AI Multimodal Pipeline Status:</span>
                   <p className="mt-0.5 text-[#A9B0AA]">
                     {submittedReport.images.length > 0
-                      ? `Successfully extracted OpenCLIP 512-dim visual embeddings from ${submittedReport.images.length} photo(s) & Sentence Transformer tokens from description.`
+                      ? `Successfully extracted visual and textual features from ${submittedReport.images.length} photo(s) & item description for automatic matching.`
                       : "No photos provided. Activated zero-shot text-only semantic matching pipeline (re-weighted to text description + attributes)."}
                   </p>
                 </div>
@@ -518,7 +518,7 @@ export default function ItemUploadForm({
             <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
               <Tag className="w-5 h-5 text-[#45B58A]" />
               <h3 className="text-base font-bold text-[#F3F4EF]">
-                1. Item Classification & Basic Details
+                Basic Information
               </h3>
             </div>
 
@@ -600,24 +600,7 @@ export default function ItemUploadForm({
                 </select>
               </div>
 
-              {/* Secondary Color */}
-              <div>
-                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
-                  Secondary / Accent Color
-                </label>
-                <select
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] focus:outline-none focus:border-[#45B58A]"
-                >
-                  <option value="None" className="bg-[#171A18] text-[#F3F4EF]">None / Single Tone</option>
-                  {COMMON_COLORS.map((c) => (
-                    <option key={c.name} value={c.name} className="bg-[#171A18] text-[#F3F4EF]">
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              
             </div>
           </div>
 
@@ -627,7 +610,7 @@ export default function ItemUploadForm({
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-[#45B58A]" />
                 <h3 className="text-base font-bold text-[#F3F4EF]">
-                  2. Visual Image Upload (OpenCLIP Matching)
+                  Item Photos
                 </h3>
               </div>
               <span className="text-xs text-[#A9B0AA] font-medium">Up to 4 images (5MB max each)</span>
@@ -728,7 +711,7 @@ export default function ItemUploadForm({
             <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
               <MapPin className="w-5 h-5 text-[#45B58A]" />
               <h3 className="text-base font-bold text-[#F3F4EF]">
-                3. Sylhet Location &amp; Time Proximity
+                Location &amp; Date
               </h3>
             </div>
 
@@ -736,7 +719,7 @@ export default function ItemUploadForm({
               {/* Sylhet Hub / Campus Zone */}
               <div>
                 <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
-                  Sylhet Area / Transit Hub / Campus <span className="text-[#45B58A]">*</span>
+                  Sylhet Area / Neighborhood / Landmark <span className="text-[#45B58A]">*</span>
                 </label>
                 <select
                   value={campusLocation}
@@ -821,7 +804,7 @@ export default function ItemUploadForm({
             <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
               <FileText className="w-5 h-5 text-[#45B58A]" />
               <h3 className="text-base font-bold text-[#F3F4EF]">
-                4. Semantic Description & Explainable Attributes
+                Description &amp; Identifying Details
               </h3>
             </div>
 
@@ -829,7 +812,7 @@ export default function ItemUploadForm({
               {/* Detailed Description */}
               <div>
                 <label htmlFor="description" className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
-                  Full Semantic Description <span className="text-[#45B58A]">*</span>
+                  Detailed Description <span className="text-[#45B58A]">*</span>
                 </label>
                 <textarea
                   id="description"
@@ -886,7 +869,7 @@ export default function ItemUploadForm({
                     ) : (
                       <>
                         <Sparkles className="w-3.5 h-3.5 text-[#45B58A]" />
-                        <span>Generate AI Challenge (Groq LLM)</span>
+                        <span>Suggest Security Questions</span>
                       </>
                     )}
                   </button>
@@ -894,7 +877,7 @@ export default function ItemUploadForm({
                 <p className="text-xs text-[#A9B0AA] mb-2">
                   {isLost
                     ? "Provide a private detail only the true owner would know (e.g. lock screen photo, interior pocket contents, engraving initials)."
-                    : "If the found item contains hidden details (e.g., specific student name card, distinct keychain), note what a claimer must identify."}
+                    : "If the found item contains hidden details (e.g., specific ID/card name, distinct keychain), note what a claimer must identify."}
                 </p>
                 <input
                   type="text"
@@ -910,7 +893,7 @@ export default function ItemUploadForm({
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[11px] font-bold text-[#45B58A] flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3 text-[#45B58A]" />
-                        AI-Generated Challenge Questions ({challengeSource || "Groq LLM"}):
+                        Suggested Verification Questions:
                       </span>
                       <span className="text-[10px] text-[#A9B0AA]">Click question to apply</span>
                     </div>
@@ -942,7 +925,7 @@ export default function ItemUploadForm({
             <div className="flex items-center gap-2 pb-2 mb-4 border-b border-[#383E39]">
               <User className="w-5 h-5 text-[#45B58A]" />
               <h3 className="text-base font-bold text-[#F3F4EF]">
-                5. Reporter Contact & Verification
+                Contact Information
               </h3>
             </div>
 
@@ -1000,19 +983,7 @@ export default function ItemUploadForm({
                 )}
               </div>
 
-              {/* Student / Citizen ID */}
-              <div>
-                <label className="block text-xs font-semibold text-[#A9B0AA] uppercase tracking-wider mb-1">
-                  National ID (NID) / Student ID (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  placeholder="e.g. 2026-CSE / NID No."
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#383E39] bg-[#171A18] text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]"
-                />
-              </div>
+              
 
               {/* Email */}
               <div>
@@ -1024,7 +995,7 @@ export default function ItemUploadForm({
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="alex.johnson@university.edu"
+                  placeholder="alex.johnson@example.com"
                   className={`w-full px-4 py-2.5 rounded-xl border ${
                     formErrors.contactEmail ? "border-rose-500/80 bg-rose-950/20" : "border-[#383E39] bg-[#171A18]"
                   } text-sm text-[#F3F4EF] placeholder:text-[#A9B0AA]/40 focus:outline-none focus:border-[#45B58A]`}
@@ -1061,7 +1032,7 @@ export default function ItemUploadForm({
                     className="mt-1 h-4 w-4 rounded border-[#383E39] bg-[#171A18] text-[#45B58A] focus:ring-[#45B58A]"
                   />
                   <span className="text-xs text-[#A9B0AA] leading-relaxed">
-                    I understand that submitted data will be processed by the campus multimodal matching system and stored in the secure university repository. Contact details remain confidential until an administrator validates a genuine match.
+                    I understand that my report will be cross-matched against city lost & found records. My personal phone and email remain private until verified.
                   </span>
                 </label>
               </div>
@@ -1085,8 +1056,8 @@ export default function ItemUploadForm({
           {/* Submission Bar */}
           <div className="pt-4 border-t border-[#383E39] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs text-[#A9B0AA]">
-              <Sparkles className="w-4 h-4 text-[#45B58A]" />
-              <span>Initial match weights: 0.40 Img, 0.25 Txt, 0.15 Loc, 0.10 Time, 0.10 Attr</span>
+              <Shield className="w-4 h-4 text-[#45B58A]" />
+              <span>Your report details are private & protected by Sylhet Safe Recovery</span>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">

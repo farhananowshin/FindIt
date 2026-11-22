@@ -381,7 +381,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#171A18] text-[#45B58A] border border-[#383E39]">
-                Citizen &amp; Student Access
+                Citizen &amp; Community Access
               </span>
             </div>
             <h3 className="text-2xl font-black text-[#F3F4EF] tracking-tight mt-1">
@@ -570,8 +570,8 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <button
                 type="button"
                 onClick={() => {
-                  setEmail("student@campus.edu");
-                  setPassword("student123");
+                  setEmail("tanvir.syl@gmail.com");
+                  setPassword("Student2026!");
                 }}
                 className="py-2 px-2 rounded-xl border border-[#383E39] bg-[#171A18] hover:bg-[#383E39] text-[11px] font-bold text-[#F3F4EF] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
@@ -709,7 +709,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-bold text-[#A9B0AA] mb-1">
-                    Student ID / NID
+                    National ID / Identification No.
                   </label>
                   <div className="relative">
                     <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A9B0AA]" />
@@ -717,7 +717,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
                       type="text"
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      placeholder="2026-CSE / NID"
+                      placeholder="NID / Identification No."
                       className="w-full pl-8 pr-2 py-2 bg-[#171A18] border border-[#383E39] rounded-xl text-xs text-[#F3F4EF] placeholder:text-[#A9B0AA]/50 focus:outline-none focus:border-[#45B58A] transition"
                     />
                   </div>
@@ -792,7 +792,7 @@ export default function AuthModal({ isOpen, onClose, defaultTab = "login" }: Aut
 
               <div className="p-2 rounded-xl bg-[#171A18] border border-[#383E39] text-[10px] text-[#A9B0AA] flex items-start gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#45B58A] shrink-0 mt-0.5" />
-                <span>Verified <strong>Citizen / Student</strong> account across Sylhet Metropolitan Hubs.</span>
+                <span>Verified <strong>Citizen</strong> account across Sylhet Metropolitan Hubs.</span>
               </div>
 
               <button

@@ -522,10 +522,10 @@ export default function BenchmarkEvaluationPage() {
 
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#45B58A]/15 text-[#45B58A] border border-[#45B58A]/30">
-              Academic IR Evaluation
+              AI Performance Metrics
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#1C221E] text-[#A2ABA4] border border-[#313A33]">
-              CSE 300
+              Multimodal Engine
             </span>
           </div>
         </div>
@@ -540,10 +540,10 @@ export default function BenchmarkEvaluationPage() {
                 <span>Multimodal Evaluation Harness &bull; OpenCLIP ViT-B/32 + S-BERT</span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-black text-[#F3F4EF] tracking-tight">
-                Academic Benchmark &amp; Weight Tuning Dashboard
+                Multimodal AI Performance &amp; Evaluation Dashboard
               </h1>
               <p className="text-sm text-[#A2ABA4] leading-relaxed">
-                Empirical evaluation of the 5-factor explainable matching algorithm on a labeled 350-pair ground-truth benchmark dataset (<code className="text-[#45B58A] font-mono text-xs">campus_benchmark_350.json</code>). Justifies weights tuning, decision threshold analysis, and Information Retrieval (IR) performance.
+                Empirical evaluation of the 5-factor explainable matching algorithm across ground-truth benchmark datasets. Demonstrates optimal weight tuning, decision threshold analysis, and Information Retrieval (IR) metrics.
               </p>
             </div>
 
@@ -978,7 +978,7 @@ export default function BenchmarkEvaluationPage() {
                 >
                   <option value="all">All Categories (8)</option>
                   <option value="electronics">Electronics</option>
-                  <option value="id_cards">Student IDs</option>
+                  <option value="id_cards">ID Cards &amp; Wallets</option>
                   <option value="bags_wallets">Wallets &amp; Bags</option>
                   <option value="books_notes">Books &amp; Notes</option>
                   <option value="keys">Keys</option>

@@ -10,6 +10,8 @@ import {
   Info,
   Check,
   RefreshCw,
+  ExternalLink,
+  MessageSquare,
 } from "lucide-react";
 import { NotificationItem } from "../types/item";
 import {
@@ -30,6 +32,33 @@ export default function NotificationBell() {
   const [isMarkingAll, setIsMarkingAll] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize subtle notification audio chime (synthesized Web Audio API)
+  const playChime = useCallback(() => {
+    try {
+      const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.25);
+    } catch {
+      // Audio autoplay policy fallback
+    }
+  }, []);
 
   const loadNotifications = useCallback(
     async (showLoadingSpinner = false) => {
@@ -38,15 +67,22 @@ export default function NotificationBell() {
 
       try {
         const res = await fetchNotifications(token);
+        const newUnread = res.unreadCount || 0;
+        
+        // Play gentle audio alert if unread count increased while on screen
+        if (newUnread > unreadCount && unreadCount > 0) {
+          playChime();
+        }
+
         setNotifications(res.data || []);
-        setUnreadCount(res.unreadCount || 0);
+        setUnreadCount(newUnread);
       } catch (err) {
         console.warn("Failed to fetch notifications:", err);
       } finally {
         if (showLoadingSpinner) setIsLoading(false);
       }
     },
-    [token]
+    [token, unreadCount, playChime]
   );
 
   // Reset notifications if user logs out
@@ -59,7 +95,7 @@ export default function NotificationBell() {
     }
   }
 
-  // Initial load and periodic polling every 30 seconds
+  // Active High-Frequency Polling: Every 10 seconds for instant responsiveness
   useEffect(() => {
     if (!token) return;
 
@@ -72,29 +108,48 @@ export default function NotificationBell() {
         }
       })
       .catch((err) => {
-        console.warn("Failed to fetch notifications:", err);
+        console.warn("Notification sync notice:", err);
       });
 
+    // Request native Web Push Notification permission if supported
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission().catch(() => {});
+      }
+    }
+
     const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
         fetchNotifications(token)
           .then((res) => {
             if (isMounted) {
+              const prev = unreadCount;
+              const next = res.unreadCount || 0;
               setNotifications(res.data || []);
-              setUnreadCount(res.unreadCount || 0);
+              setUnreadCount(next);
+
+              // Trigger desktop web notification if new alert arrived while tab active
+              if (next > prev && res.data && res.data.length > 0) {
+                const latest = res.data[0];
+                if (!latest.isRead && "Notification" in window && Notification.permission === "granted") {
+                  new Notification(latest.title, {
+                    body: latest.message,
+                    icon: "/favicon.ico",
+                  });
+                }
+                playChime();
+              }
             }
           })
-          .catch((err) => {
-            console.warn("Failed to fetch notifications:", err);
-          });
+          .catch(() => {});
       }
-    }, 30000);
+    }, 10000); // 10s instant sync
 
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [token]);
+  }, [token, unreadCount, playChime]);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -144,7 +199,7 @@ export default function NotificationBell() {
     if (notif.type === "claim_approved" || notif.type === "claim_rejected") {
       router.push("/my-claims");
     } else if (notif.type === "match_alert") {
-      router.push("/#recent-items");
+      router.push("/explore");
     }
   };
 
@@ -167,42 +222,54 @@ export default function NotificationBell() {
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return "";
+      const now = new Date();
+      const diffSecs = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+      if (diffSecs < 60) return "Just now";
+      if (diffSecs < 3600) return `${Math.floor(diffSecs / 60)}m ago`;
+      if (diffSecs < 86400) return `${Math.floor(diffSecs / 3600)}h ago`;
       return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     } catch {
       return "";
     }
   };
 
-  if (!user) return null;
-
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Bell Button */}
+      {/* Bell Trigger Button with Emerald Glow & Pulse Ping */}
       <button
         type="button"
         onClick={handleToggle}
         aria-label="View notifications"
         aria-expanded={isOpen}
-        className="relative p-2 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="relative p-2 rounded-xl text-[#C4CBC5] hover:text-[#45B58A] hover:bg-[#18201B] border border-transparent hover:border-[#2C382F] transition-all cursor-pointer focus:outline-none"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-5 h-5 transition-transform duration-200 hover:scale-105" />
+
+        {/* Razor-sharp Crisp Unread Badge */}
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-extrabold text-white bg-rose-600 rounded-full shadow-sm animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-extrabold text-[#111412] bg-[#45B58A] rounded-full border-2 border-[#121513] shadow-xs">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Dropdown Panel */}
+      {/* Dropdown Panel: Matches Dark Linear Theme */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 mt-2.5 w-84 sm:w-96 bg-[#161B18] rounded-2xl shadow-2xl border border-[#2B372F] overflow-hidden z-50 animate-linear-up backdrop-blur-xl">
           {/* Header */}
-          <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="px-4 py-3 bg-[#1B221E] border-b border-[#263129] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-slate-900">Notifications</span>
-              {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-700">
-                  {unreadCount} unread
+              <span className="font-bold text-xs sm:text-sm text-[#F3F4EF] tracking-tight">
+                Live Notifications
+              </span>
+              {unreadCount > 0 ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#45B58A]/20 text-[#45B58A] border border-[#45B58A]/35">
+                  {unreadCount} new
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#222B25] text-[#8C988E]">
+                  All caught up
                 </span>
               )}
             </div>
@@ -212,29 +279,29 @@ export default function NotificationBell() {
                 type="button"
                 onClick={handleMarkAllRead}
                 disabled={isMarkingAll}
-                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1 disabled:opacity-50"
+                className="text-[11px] font-semibold text-[#45B58A] hover:text-[#3da07a] transition flex items-center gap-1 disabled:opacity-50 cursor-pointer"
               >
-                <Check className="w-3 h-3" />
+                <Check className="w-3.5 h-3.5" />
                 <span>Mark all read</span>
               </button>
             )}
           </div>
 
-          {/* Notifications List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+          {/* Notifications List with Dark Modern Item Styling */}
+          <div className="max-h-88 overflow-y-auto divide-y divide-[#212A23]">
             {isLoading ? (
-              <div className="py-8 text-center text-slate-400">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500" />
-                <span className="text-xs">Loading updates...</span>
+              <div className="py-10 text-center text-[#8C988E]">
+                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#45B58A]" />
+                <span className="text-xs">Checking real-time updates...</span>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="py-8 px-4 text-center">
-                <div className="w-10 h-10 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center mx-auto mb-2">
-                  <Bell className="w-5 h-5" />
+              <div className="py-10 px-4 text-center">
+                <div className="w-12 h-12 bg-[#1C2420] text-[#717E73] rounded-2xl border border-[#2B382F] flex items-center justify-center mx-auto mb-3 shadow-inner">
+                  <Bell className="w-5 h-5 text-[#45B58A]" />
                 </div>
-                <p className="text-xs font-semibold text-slate-700">All caught up!</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  No new notifications right now.
+                <p className="text-xs font-bold text-[#F3F4EF]">No Alerts Yet</p>
+                <p className="text-[11px] text-[#8C988E] mt-1 max-w-[220px] mx-auto leading-relaxed">
+                  When our multimodal AI identifies matching items or an owner chats, alerts appear here.
                 </p>
               </div>
             ) : (
@@ -245,26 +312,26 @@ export default function NotificationBell() {
                     key={notif._id}
                     type="button"
                     onClick={() => handleNotificationClick(notif)}
-                    className={`w-full text-left p-3.5 transition flex items-start gap-3 hover:bg-slate-50 ${
-                      isUnread ? "bg-indigo-50/50" : "bg-white"
+                    className={`w-full text-left p-3.5 transition-all flex items-start gap-3 hover:bg-[#1E2621] cursor-pointer ${
+                      isUnread ? "bg-[#18231C]/65" : "bg-[#161B18]"
                     }`}
                   >
-                    {/* Icon based on type */}
+                    {/* Icon based on notification type */}
                     <div className="shrink-0 mt-0.5">
                       {notif.type === "match_alert" ? (
-                        <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-xl bg-[#45B58A]/15 border border-[#45B58A]/35 text-[#45B58A] flex items-center justify-center shadow-xs">
                           <Sparkles className="w-4 h-4" />
                         </div>
                       ) : notif.type === "claim_approved" ? (
-                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 flex items-center justify-center shadow-xs">
                           <CheckCircle2 className="w-4 h-4" />
                         </div>
                       ) : notif.type === "claim_rejected" ? (
-                        <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/35 text-rose-400 flex items-center justify-center shadow-xs">
                           <XCircle className="w-4 h-4" />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-xl bg-[#232D27] border border-[#313E35] text-[#A7B3A9] flex items-center justify-center shadow-xs">
                           <Info className="w-4 h-4" />
                         </div>
                       )}
@@ -275,38 +342,54 @@ export default function NotificationBell() {
                       <div className="flex items-center justify-between gap-1">
                         <h4
                           className={`text-xs truncate ${
-                            isUnread ? "font-bold text-slate-900" : "font-medium text-slate-700"
+                            isUnread ? "font-bold text-[#F3F4EF]" : "font-medium text-[#C4CBC5]"
                           }`}
                         >
                           {notif.title}
                         </h4>
-                        <span className="text-[10px] text-slate-400 shrink-0">
+                        <span className="text-[10px] text-[#717E73] shrink-0 font-medium">
                           {formatRelativeTime(notif.createdAt)}
                         </span>
                       </div>
 
-                      <p className="text-[11px] text-slate-600 line-clamp-2 mt-0.5 leading-snug">
+                      <p className="text-[11px] text-[#8F9C92] line-clamp-2 mt-1 leading-snug">
                         {notif.message}
                       </p>
 
-                      {notif.matchScore && (
-                        <div className="mt-1 flex items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-violet-100 text-violet-800">
+                      {/* AI Match Score Badge if applicable */}
+                      {notif.matchScore ? (
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#45B58A]/20 text-[#45B58A] border border-[#45B58A]/35">
                             <Sparkles className="w-2.5 h-2.5" />
-                            {notif.matchScore}% Match
+                            {notif.matchScore}% Match Found
                           </span>
                         </div>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* Unread indicator dot */}
                     {isUnread && (
-                      <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0 self-center" />
+                      <span className="w-2 h-2 rounded-full bg-[#45B58A] shrink-0 self-center shadow-[0_0_6px_#45B58A]" />
                     )}
                   </button>
                 );
               })
             )}
+          </div>
+
+          {/* Footer Link to Explore */}
+          <div className="p-2.5 bg-[#141815] border-t border-[#232B25] text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/explore");
+              }}
+              className="text-[11px] font-semibold text-[#8F9C92] hover:text-[#45B58A] transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+            >
+              <span>Explore All Live Items in Sylhet</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
           </div>
         </div>
       )}
